@@ -1,0 +1,912 @@
+-------------------------------------------------------------------------------------------
+1 PASSO - INSTALAR O VITE
+Criar a pasta front-end
+Digitar no terminal, pasta front-end:
+npm create vite@latest .
+O espaço e ponto e para inidicar a criação do vite justamente na pasta em questão
+React
+JavaScript
+
+Foi criado vários arquivos, assim como package.json
+
+Para instalar as dependências que estão no package.json
+Digitar no terminal, pasta front-end:
+npm install
+Será criado a pasta node_modules
+
+Para rodar o script que está no package.json
+Digitar no terminal, pasta front-end:
+npm run dev
+
+Deletar o README.md
+Deixar o arquivo App.jsx assim:
+
+// Componentes = funções
+function App() {
+  return <></>;
+}
+export default App;
+
+Deletar reac.svg, está em src/assets
+Retirar do index.html => <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+Alterar o title
+
+Deletar a pasta public
+
+Em assets, criar o style.css na mesma pasta do main.jsx
+Colar bem no início do index.css:
+
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&display=swap");
+/* ----- FAZER O RESET ----- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+Em main.jsx, importar o style.css do projeto
+import "./style.css";
+
+Deletar o index.css
+Deletar o App.css
+
+
+-------------------------------------------------------------------------------------------
+2 PASSO - INSTALAR CÓDIGO DO FONT AWESOME React
+Ir no site, clicar em docs => view the docs => Integrations => React => Set Up with React
+
+Rolar para baixo até Add SVG Core e pegar o código
+Digitar no terminal, pasta front-end:
+npm i --save @fortawesome/fontawesome-svg-core
+
+Rolar mais para baixo até Add Icons Packages e pegar o código em Free SVG Icon Package
+Digitar no terminal tudo de uma vez só, pasta front-end:
+npm i --save @fortawesome/free-solid-svg-icons
+npm i --save @fortawesome/free-regular-svg-icons
+npm i --save @fortawesome/free-brands-svg-icons
+
+Rolar mais para baixo até Add React Component e pegar o código
+Digitar no terminal, pasta front-end:
+npm i --save @fortawesome/react-fontawesome@latest
+
+
+-----------------------------------------------------------------------------------------
+3 PASSO - CRIAR O HEADER
+Em src criar a pasta components e criar o arquivo Header.jsx
+Em App.jsx importar o Header.jsx
+O arquivo App.jsx vai ficar assim
+import Header from "./components/Header";
+
+function App() {
+  return (
+    <>
+      <Header />
+    </>
+  );
+}
+export default App;
+
+
+Colocar no arquivo onde for utilizar o ícone
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
+E para instalar o ícnone precisa importar - React / Individual import
+O arquivo Header ficará assim:
+
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faHouseChimney } from "@fortawesome/free-solid-svg-icons";
+import { faCircleLeft } from "@fortawesome/free-solid-svg-icons";
+
+const Header = () => {
+  return (
+    <header className="header">
+      <FontAwesomeIcon icon={faCircleLeft} />
+      <h1>Daniel</h1>
+      <FontAwesomeIcon icon={faHouseChimney} />
+    </header>
+  );
+};
+
+export default Header;
+
+
+-----------------------------------------------------------------------------------------
+4 PASSO - SUBIR PROJETO PARA O GITHUB
+Antes,
+No package.json global, do backend e frontend do projeto, criar uma pasta .gitignore:
+node_modules
+
+
+Abrir o github:
+Ir em new
+Colocar o nome do repositório, ex: TaskList
+Deixar em público
+Clicar em criar repositório
+
+Agora é ir para o VS Code 
+Abrir na pasta global
+Digite no terminal:
+git init, vai deixar os arquivos U
+git add .
+git commit -m "Salvando projeto no Github"
+Em or push an existing repository from the comnad line
+Copiar todos os códigos e rodar no terminal:
+git remote add origin https://github.com/dvs78/TaskList.git
+git branch -M main
+git push -u origin main
+
+Avisos de "LF will be replaced by CRLF"
+Isso é apenas um aviso de que as quebras de linha no seu projeto (LF — estilo Unix) estão sendo convertidas para o estilo do Windows (CRLF). Eles não impedem o funcionamento nem o commit dos arquivos.
+
+Digite no terminal:
+git config --global core.autocrlf true
+Esse comando faz o Git converter LF para CRLF no checkout e reverter para LF no commit.
+
+
+-----------------------------------------------------------------------------------------
+5 PASSO - CRIAR A PÁGINA LOGIN
+
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; // import para navegação
+
+const Login = () => {
+  const [senha, setSenha] = useState("");
+  const navigate = useNavigate(); // hook do react-router
+
+  const handleLogin = () => {
+    // Aqui você pode validar a senha
+    if (senha === "1234") {
+      // Se a senha estiver certa, vai para Home
+      navigate("/home");
+    } else {
+      alert("Senha incorreta!");
+    }
+  };
+
+  return (
+    <div className="login__container">
+      <h1>Login</h1>
+      <label className="label__login" htmlFor="input__login">
+        Digite sua senha:
+      </label>
+      <input
+        type="password"
+        name="input__login"
+        placeholder="senha"
+        value={senha}
+        onChange={(e) => {
+          setSenha(e.target.value);
+        }}
+      />
+      <button className="btn__enter" onClick={handleLogin}>
+        <h3>Entrar</h3>
+      </button>
+    </div>
+  );
+};
+
+export default Login;
+
+
+-----------------------------------------------------------------------------------------
+6. CRIANDO AS ROTAS DO PROJETO
+Instalar o gerenciador de rotas
+Digitar no terminal, pasta front-end:
+npm i react-router-dom
+
+Em App.jsx, importar BrowserRouter, Routes e Route para gerenciar as rotas:
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+Dentro da pasta src criar a pasta Pages e dentro delas ciar a pasta Login e Home e dentro de cada pasta criar os arquivos Login e Home
+Dentro da pasta components, criar o arquivo Header
+
+Deixar a página App.jsx, assim:
+import Home from "./pages/home/Home";
+import Login from "./pages/login/Login";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+function App() {
+  return (
+    <div className="app_components">
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/home" element={<Home />} />
+        </Routes>
+      </BrowserRouter>
+    </div>
+  );
+}
+export default App;
+
+
+-----------------------------------------------------------------------------------------
+7. CRIAÇÃO DO BACK-END
+Vamos criar a API do projeto. Preparar o projeto para receber requisição e resposta 
+Então vamos criar a pasta back-end e vamos precisar do package.json
+Digitar no terminal, na pasta back-end:
+npm init -y
+Esse -y é para concordar com tudo que será proposto para configurar, se quiser configurar personalizado, basta digitar = npm init, mas nessa altura do projeto não tem necessidade
+
+No package.json do back-end, colocar depois de  "description": "", isso aqui  "type": "module"
+
+
+-----------------------------------------------------------------------------------------
+8. CRIAÇÃO DO EXPRESS
+Biblioteca do back-end
+Vamos instalar o express
+Digitar no terminal, na pasta back-end:
+npm i express
+
+Criar o arquivo index.js (server.js) no back-end, é o servidor da api
+Só para lembrar que no package.json vai criar assim "main": "index.js", será o arquivo server.js. Por isso vamos criar o arquivo index.js se quiser criar server.js, alterar no package.json assim "main": "server.js"
+
+Vamos importar o express em index.js
+import express from "express";
+
+Colocar todas as funções do express na variável app
+const app = express();
+
+Colocar o app para rodar, ou seja, receber pedidos ou enviar respostas
+app.listen(3000, () => {
+  console.log("Meu servidor está rodando na porta http://localhost:3000");
+});
+
+O back-end roda na porta 3000
+O front-end roda na porta 5175
+O console.log no back-end roda pelo node no terminal
+O console.log no front-end roda pelo inspecionar, na tela
+
+Toda vez que mudar o arquivo, para não ter que matar o back-end e atualizar, passar a instrução node --watch ./index.js
+
+
+-----------------------------------------------------------------------------------------
+9. CRIANDO REQUISIÇÃO GET =  ENDPOINT "/"
+
+No back-end chama endpoint, http://localhost:3000
+O front-end chama rota, http://localhost:5173
+
+Por enquanto o endpoint http://localhost:3000 vai aparecer Cannot GET /
+
+GET - Pegar informações, não aceita requisição (body), só aceita resposta
+PUT/PATCH - Editar informações, aceita requisição (body), aceita resposta
+DELETE - Deletar informações, aceita requisição (body), aceita resposta
+POST - Criar informações, aceita requisição (body), aceita resposta
+
+Vamos passar as intruções antes de escutar (app.listen)
+
+Minha 1 resposta para requisição GET
+import express from "express";
+
+// Colocar todas as funções do express na variável app
+const app = express();
+
+// Criando requisição get = endpoint com barra
+app.get("/", (req, res) => {
+  res.send("Olá, mundo!");
+});
+
+Agora o endpoint https://localhost:3000 vai aparecer Olá, mundo!
+
+// Colocar o app para rodar, ou seja, receber pedidos ou enviar respostas
+app.listen(3000, () =>
+  console.log("Meu servidor está rodando na porta http://localhost:3000")
+);
+
+Toda vez que mudar o arquivo, para não ter que matar o back-end e atualizar, passar a instrução node --watch ./index.js
+
+
+-----------------------------------------------------------------------------------------
+10. CRIANDO REQUISIÇÃO POST =  ENDPOINT "/"
+
+Toda requisição na web, é do tipo get, por isso é necessário baixar um programa para testar outro tipos de requisções, ex:
+app.post("/", (req, res) => {
+  res.send("Informação nova criada com sucesso!");
+});
+
+Utilizar o aplicativo reqbin para requisição e resposta
+Digitar no google:
+reqbin
+Escrecer o caminho http://localhost:3000 e escolher a requisição
+reqbin não aceita https só http
+reqbin vai fazer o papel do front-end
+
+para receber um json no reqbin colocar em body
+{"key": "value"}
+ex: {"nome": "Daniel", "idade": 47}
+
+Middleware (express.json()): toda requisição com res.json, transforma em json, ou seja,todo body que chegar transforma em json
+
+Alterar a requisição post
+app.use(express.json());
+
+app.post("/", (req, res) => {
+  const body = req.body;
+  console.log(body.nome); // vai aparecer no terminal
+  res.json({ nome: body.nome }); // vai aparecer no reqbin
+});
+
+Deixar a requisição post mais adequada
+DESESTRUTURAÇÃO, pega chave dentro do objeto
+
+app.post("/", (req, res) => {
+  const { body } = req; // o body é uma chave do objeto req, seria assim req = { body: {"nome": "Daniel", "idade": 47} }
+  console.log(body.nome); // vai aparecer no terminal
+  res.json({ nome: body.nome }); // vai aparecer no reqbin
+});
+
+continuar a DESESTRUTURAÇÃO
+app.post("/", (req, res) => {
+  const { body } = req; // o body é uma chave do objeto req
+  const { nome, idade } = body;
+  console.log(body); // vai aparecer no terminal
+  console.log(nome, idade); // vai aparecer no terminal
+  res.json({ nome: nome, idade: idade }); // vai aparecer no reqbin
+});
+
+No json quando a chave e a variável tem o mesmo nome, é só deixar a chave que retorna a variável que tem o mesmo nome da chave
+app.post("/", (req, res) => {
+  const { body } = req; // o body é uma chave do objeto req
+  const { nome, idade } = body;
+  console.log(body); // vai aparecer no terminal
+  console.log(nome, idade); // vai aparecer no terminal
+  res.json({ nome, idade }); // vai aparecer no reqbin
+});
+
+Toda vez que mudar o arquivo, para não ter que matar o back-end e atualizar, passar a instrução node --watch ./index.js
+
+-----------------------------------------------------------------------------------------
+11. CRIANDO REQUISIÇÃO POST com ID =  ENDPOINT "/produto/:id"
+PAREI AQUI!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//req.params
+
+// Parâmetros da requisição
+app.post("/produto/:id", (req, res) => {
+  const { body } = req;
+  const { nome, imersao } = body;
+
+  // const id = req.params.id;
+  const { id } = req.params;
+  console.log(id);
+
+  res.json({ nome, imersao });
+});
+
+
+--------------------------------------------------------------------------------------------
+13 PASSO - CRIAR O ARQUIVO .env PARA DEIXAR OS DADOS DE CONEXÃO SEGUROS
+São as variáveis que não serão compartilhadas com terceiros
+Criar arquivo .env no back-end
+
+Colocar no arquivo .env:
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=Limao_10
+DB_DATABASE=TaskList
+
+Digitar no terminal, na pasta back-end:
+npm install dotenv
+npm install dotenv = serve para ter acesso as variáveis de ambiente
+
+--------------------------------------------------------------------------------------------
+14 INSTALAR O PG ADMIN
+Digitar no terminal, na pasta back-end:
+npm i pg
+
+Criar o arquivo connect.js na pasta back-end
+Colocar em connect.js
+
+import pg from "pg";
+import "dotenv/config";
+
+// Acessar o BANCO DADOS
+const pool = new pg.Pool({
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE,
+});
+
+// console.log((await pool.query("SELECT * FROM login")).rows);
+
+export default pool;
+
+Rodar o node --watch .\index.js e conferir se deu certo
+
+parei aqui
+-----------------------------------------------------------------------------------------
+15 CRIAR AS ESTRUTURAS DO CRUD
+
+
+Criar o arquivo de acesso ao banco de dados
+Criar o arquivo db.js na pasta dbOnLine
+
+Recortar do index.js e colar no db.js
+
+import pg from "pg";
+
+// Acessar o BANCO DADOS
+const pool = new pg.Pool({
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE,
+});
+
+console.log((await pool.query("SELECT * FROM login")).rows);
+
+export default pool
+
+
+-----------------------------------------------------------------------------------------
+16 CRIAR A CLASSE GERAL DAS ROTAS
+Criar a pasta crud em back-end
+POST, GET, PUT, DELETE
+CRUD - CREATE, READ, UPDATE e DELETE
+Dentro da pasta crud, criar a pasta dbOnLine, colocar as estruturas de acesso ao banco de dados
+Essa pasta vai guardar os códigos que fazem comunicação com banco de dados e terá tudo que for comunicação com banco de dados
+Dentro da pasta dbOnLine, criar um arquivo DbClass.js
+As iniciais em maiúsculo, porque iremos criar uma classe nesse arquivo
+Esse arquivo terá as ações comuns para o banco de dados
+
+Copiar o modelo de outros projetos
+
+NOVO MODELO
+No arquivo index.js
+
+Rota GET para login
+
+
+-----------------------------------------------------------------------------------------
+17. REQUISIÇÃO PELO FRONT-END COM AXIOS e Middleware CORS
+Instalar o axios 
+Digite no terminal do front-end:
+npm i axios
+
+Importar o axios em TaskList.jsx
+import axios from "axios"
+
+Instalar o CORS para comunicar front-end com back-end
+Digite no terminal do back-end:
+npm i cors
+
+Em TaskList.jsx deixar assim
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTrash, faPencil } from "@fortawesome/free-solid-svg-icons";
+import axios from "axios";
+
+const TaskList = () => {
+  const requisicaoAxios = async () => {
+    // const respostaRequisicao = await axios.get(
+    //   "http://localhost:3000/api/task"
+    // );
+    // console.log(respostaRequisicao.data);
+    const { data } = await axios.get("http://localhost:3000/api/task");
+    console.log(data);
+  };
+  requisicaoAxios();
+  return (
+    <div className="task__list">
+      <p>tarefa</p>
+      <div className="btn__task">
+        <button className="btn__edit">
+          <FontAwesomeIcon icon={faPencil} />
+        </button>
+        <button className="btn__remove">
+          <FontAwesomeIcon icon={faTrash} />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default TaskList;
+
+
+-----------------------------------------------------------------------------------------
+18. HOOK
+Colocar as funções dentro do Hook
+Atualiza a renderização da variável alterada
+useEffect(() => {  }, []);
+Executa a função para montar o componente e toda vez que a variável mudar
+
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTrash, faPencil } from "@fortawesome/free-solid-svg-icons";
+import axios from "axios";
+import { useEffect } from "react";
+
+const TaskList = () => {
+  // Hook
+  useEffect(() => {
+    const requisicaoAxios = async () => {
+      const { data } = await axios.get("http://localhost:3000/api/task");
+      console.log(data);
+    };
+    requisicaoAxios();
+  }, []);
+  return (
+    <div className="task__list">
+      <p>tarefa</p>
+      <div className="btn__task">
+        <button className="btn__edit">
+          <FontAwesomeIcon icon={faPencil} />
+        </button>
+        <button className="btn__remove">
+          <FontAwesomeIcon icon={faTrash} />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default TaskList;
+
+Variável normal não altera a renderização quando está dentro de uma função, quando ela é alterada, somente variável de estado altera a renderização
+
+Forma correta
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTrash, faPencil } from "@fortawesome/free-solid-svg-icons";
+import axios from "axios";
+import { useEffect, useState } from "react";
+
+const TaskList = () => {
+  // Variável normal
+  // let variavelNormal = "teste";
+
+  // Variável de estado
+  const [variavelEstado, setVariavelEstado] = useState("teste1");
+
+  // Hook
+  useEffect(() => {
+    const requisicaoAxios = async () => {
+      const { data } = await axios.get("http://localhost:3000/api/task");
+      console.log(data);
+      // variavelNormal = "teste2"
+      setVariavelEstado("teste3");
+    };
+    requisicaoAxios();
+  }, []);
+  return (
+    <div className="task__list">
+      <p>tarefa{variavelEstado}</p>
+      <div className="btn__task">
+        <button className="btn__edit">
+          <FontAwesomeIcon icon={faPencil} />
+        </button>
+        <button className="btn__remove">
+          <FontAwesomeIcon icon={faTrash} />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default TaskList;
+
+
+-----------------------------------------------------------------------------------------
+18. INSTALAR PACOTE FRAMER-MOTION 
+Para animação
+Digitar no terminal, pasta front-end:
+npm i framer-motion
+
+
+-----------------------------------------------------------------------------------------
+19. VITE CONFIG 
+Em vite config deixar assim:
+
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    proxy: { "/api": "http://localhost:3000" },
+  },
+});
+
+e quando puxar a rota, deixar assim:
+await axios.get("/api/login")
+
+
+-----------------------------------------------------------------------------------------
+20. TOAST
+
+Digitar no terminal, pasta front-end:
+npm i react-toastify
+
+App.jsx ficou assim:
+import { useState } from "react";
+import Home from "./pages/Home/Home";
+import Login from "./pages/Login/Login";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Toast from "./components/Toast.jsx"; // ⬅️ seu container
+
+function App() {
+  return (
+    <div className="app_components">
+      <BrowserRouter>
+       <Toast /> {/* ⬅️ precisa existir 1 vez no app inteiro */}
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/home" element={<Home />} />
+        </Routes>
+      </BrowserRouter>
+    </div>
+  );
+}
+export default App;
+
+No arquivo que irá usar o toast, no caso aqui AddTask.jsx, fica assim
+
+Colar em style.css
+/* style.css */
+.toast-success { background: #16a34a !important; color: #fff !important; }
+.toast-error   { background: #dc2626 !important; color: #fff !important; }
+.toast-info    { background: #2563eb !important; color: #fff !important; }
+.toast-alerta  { background: #f59e0b !important; color: #1f2937 !important; }
+.toast-body    { font-weight: 500; }
+
+-----------------------------------------------------------------------------------------
+20. PREPARANDO PARA DEPLOY DO PROJETO
+
+Digitar no terminal, pasta front-end:
+npm run build
+Vai construir a pasta dist
+
+Em back-end, criar a pasta teste.js
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
+// console.log(import.meta.url);
+const __fileName = fileURLToPath(import.meta.url);
+console.log(__fileName); // caminho do aqruivo
+const __dirname = dirname(__fileName);
+console.log(__dirname) // caminho da pasta
+
+Colar em index.js
+import { fileURLToPath } from "url";
+import path, { dirname } from "path";
+
+const __fileName = fileURLToPath(import.meta.url);
+const __dirname = dirname(__fileName);
+const caminhoDist = path.join(__dirname, "../front-end/dist");
+
+O arquivo index.js focou assim:
+import express from "express";
+import cors from "cors";
+import rotaLogin from "./crud/rotas/rotaLogin.js";
+import rotaTask from "./crud/rotas/rotaTask.js";
+import { fileURLToPath } from "url";
+import path, { dirname } from "path";
+
+const __fileName = fileURLToPath(import.meta.url);
+const __dirname = dirname(__fileName);
+
+const caminhoDist = path.join(__dirname, "../front-end/dist");
+console.log(caminhoDist);
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+app.use(express.static(caminhoDist));
+
+// REQUISIÇÕES
+app.use("/api/login", rotaLogin);
+app.use("/api/task", rotaTask);
+
+app.get((req, res) => {
+  res.sendFile(path.join(caminhoDist, "index.html"));
+});
+
+// SERVIDOR ESCUTAR
+const PORTA = 3000;
+app.listen(PORTA, () => {
+  console.log(`Meu servidor está rodando na porta ${PORTA}`);
+});
+
+
+Ir em App.jsx e diexar assim:
+import { useState } from "react";
+import Home from "./pages/Home/Home";
+import Login from "./pages/Login/Login";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Toast from "./components/Toast.jsx"; // ⬅️ seu container
+import axios from "axios";
+
+axios.defaults.baseURL = "http://localhost:3000/api/";
+
+function App() {
+  return (
+    <div className="app_components">
+      <BrowserRouter>
+        <Toast /> {/* ⬅️ precisa existir 1 vez no app inteiro */}
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/home" element={<Home />} />
+        </Routes>
+      </BrowserRouter>
+    </div>
+  );
+}
+export default App;
+
+
+Criar a pasta package.json global, digitar no terminal, pasta global:
+npm init -y
+
+No package.json global do projeto, em scripts substituir test por:
+ "start": "npm run start --prefix backend",
+ "build": "npm install --prefix frontend && npm install --prefix backend && npm run build --prefix frontend"
+
+No package.json do back-end, em scripts substituir test por:
+"start": "node index.js"
+
+Digitar no terminal, pasta global:
+npm run build
+npm run start
+
+No package.json global e do backend e frontend do projeto, criar uma pasta .gitignore:
+node_modules
+
+
+-----------------------------------------------------------------------------------------
+21. DEPLOY DO PROJETO NO RENDER
+
+Vá em + Add new
+Clicar em Web Service
+Clicar no projeto, vai aparecer as opções
+Em Build Command: npm run build
+Em Start Command: npm run start
+Selecionar free
+Clicar em deploy web service
+
+Em App.jsx alterar BASE_URL
+axios.defaults.baseURL =
+  import.meta.env.MODE === "development"
+    ? "http://localhost:3000/api/"
+    : "https://tasklist-1-n9u0.onrender.com/api";
+
+
+--------------------------------------------------------------------------------------------
+25 PASSO - DEPLOY DO BANDO DE DADOS NO RENDER
+
+Cadastrar o banco de dados no Render
+Vá em dashboard
+Em + Add New, clique e postgres
+Coloque o nome do banco de dados
+Clicar em Free
+Deixar os outros campos como estão
+Clicar em create database
+Vá em dashboard
+Clicar no banco e dados
+Clicar em connect
+Copiar o caminho
+postgresql://tasklist_2les_user:JmGJ5uEHInm2Ulb3BcBdB3vTJ3PvGa3S@dpg-d3024bv5r7bs73ausl9g-a/tasklist_2les
+Vá em dashboard
+Clique no projeto
+Crie uma variável de ambiente
+Key: DATABASE_URL                        Valor: postgresql://tasklist_2les_user:JmGJ5uEHInm2Ulb3BcBdB3vTJ3PvGa3S@dpg-d3024bv5r7bs73ausl9g-a/tasklist_2les
+Clique em salvar
+
+
+
+Adicione no seu package.json (o da raiz) um bloco engines:
+  "scripts": {
+    "start": "npm run start --prefix backend",
+    "build": "npm install --prefix frontend && npm install --prefix backend && npm run build --prefix frontend"
+  },
+  "engines": {
+    "node": "22.x"
+  },
+
+No Render, em Environment Variables, preencha:
+
+  DATABASE_URL = postgresql://tasklist_2les_user:JmGJ5uEHInm2Ulb3BcBdB3vTJ3PvGa3S@dpg-d3024bv5r7bs73ausl9g-a/tasklist_2les
+  NODE_ENV = production
+  NPM_CONFIG_PRODUCTION = false
+
+Para o back-end no Render, prefira usar a Internal Database URL (fica em “Connect → Internal” lá no dashboard do banco).
+Para o pgAdmin no Windows, use sempre a External Database URL, porque você está acessando de fora.
+
+No postgres local vá em Add new server
+No Render, a External Database URL tem esse formato: postgresql://tasklist_2les_user:Jm6J5uEHm2Ul3b8cBd83vTJ3PvGa3S@dpg-d3024bv5r7bs73ausl99-a.oregon-postgres.render.com:5432/tasklist_2les
+
+Server Name (nome amigável): TaskList-Render
+
+Host name/address: dpg-d3024bv5r7bs73ausl9g-a.oregon-postgres.render.com
+
+Port: 5432
+
+Database: tasklist_2les
+
+Username / User: tasklist_2les_user
+
+Password: JmGJ5uEHInm2Ulb3BcBdB3vTJ3PvGa3S
+
+SSL mode: require
+
+Role e Service não precisa preencher
+Clicar em connect e Open
+
+Depois colar o código SQL
+-- extensão p/ gerar UUID
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+-- Tabela LOGIN
+CREATE TABLE IF NOT EXISTS public.login (
+  id    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  nome  TEXT NOT NULL UNIQUE,
+  senha TEXT NOT NULL
+);
+
+-- Tabela TAREFA
+CREATE TABLE IF NOT EXISTS public.tarefa (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  usuario_id UUID NOT NULL REFERENCES public.login(id) ON DELETE CASCADE,
+  tarefa     TEXT NOT NULL
+);
+
+-- Inserir usuários
+INSERT INTO public.login (senha, nome) VALUES
+  ('0000', 'Daniel'),
+  ('0001', 'Tais')
+ON CONFLICT (nome) DO NOTHING;
+
+-- Inserir tarefas pegando o ID real de cada usuário pelo nome
+INSERT INTO public.tarefa (usuario_id, tarefa)
+SELECT l.id, x.tarefa
+FROM (VALUES
+  ('Daniel', 'Regar todas as plantas da estufa A'),
+  ('Daniel', 'Correr'),
+  ('Tais',   'Verificar nível de adubo nos viveiros')
+) AS x(nome, tarefa)
+JOIN public.login l ON l.nome = x.nome
+ON CONFLICT DO NOTHING;
+
+SELECT * FROM public.login;
+SELECT * FROM public.tarefa;
+
+
+Checklist rápido (recomendado)
+
+.gitignore
+Garanta que o repo ignora:
+.env, .env.*, node_modules/, frontend/node_modules/, backend/node_modules/, dist/, build/.
+Inclua um .env.example (sem segredos).
+
+Segurança
+Como a URL do DB circulou, gire a senha do Postgres no Render (Database → Rotate Password) e atualize a DATABASE_URL no Render e no seu .env local.
+
+Render (Web Service)
+
+Node version: fixe (ex.: 22.x) em Environment → Node.
+
+Health check: path /api/health.
+
+Auto-deploy do main ligado.
+
+Env vars: NODE_ENV=production, DATABASE_URL=<External...>.
+
+CORS: no back, aceite apenas http://localhost:5173 (dev) e seu domínio do Render (prod).
+
+CORS no back (exemplo)
+
+app.use(cors({
+  origin: [ "http://localhost:5173", "https://tasklist-o2yv.onrender.com" ],
+  credentials: true
+}));
+
+
+Catch-all do React (Express 5)
+Seu *any está ok. Se quiser reforçar:
+
+app.get(/^(?!\/api).*/, (_req, res) => {
+  res.sendFile(path.join(distPath, "index.html"));
+});
+
+
+README
