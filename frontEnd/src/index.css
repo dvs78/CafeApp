@@ -1,7 +1,440 @@
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&display=swap");
-/* ----- FAZER O RESET ----- */
+/* Fonte bonita */
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap");
+
+/* Reset */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+/* IMPORTANTE: garantir 100% de altura pra tudo */
+html,
+body,
+#root {
+  height: 100%;
+}
+
+/* Paleta da cafeicultura */
+:root {
+  --verde-folha: #3a5a40;
+  --verde-oliva: #588157;
+  --bege-claro: #f2e8cf;
+  --marrom-claro: #a98467;
+  --marrom-cafe: #6f4e37;
+}
+
+/* Fundo geral */
+body {
+  font-family: "Montserrat", sans-serif;
+  background: radial-gradient(circle at top left, #f7edd8, var(--bege-claro));
+}
+
+/* ===== LAYOUT GERAL ===== */
+.app-container {
+  min-height: 100vh; /* ocupa altura toda */
+  width: 100%; /* ocupa largura toda */
+  display: flex;
+  flex-direction: column;
+  /* REMOVER align-items:center pra não estreitar o conteúdo */
+  /* align-items: center; */
+}
+
+/* HEADER ocupando a largura toda */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  position: relative;
+  padding: 16px 32px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Conteúdo principal em “faixa” central, mas quase tela inteira */
+.app-main {
+  flex: 1; /* empurra para ocupar o resto da altura */
+  width: 100%;
+  max-width: 1200px; /* largura máxima confortável em desktop */
+  margin: 24px auto 32px; /* centraliza horizontalmente */
+  padding: 0 24px; /* respiro lateral em telas grandes */
+}
+
+/* CARD GENÉRICO */
+.card {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 22px 24px;
+  border-left: 8px solid var(--verde-folha);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.12);
+  margin-bottom: 18px;
+}
+
+/* Animação suave de entrada */
+@keyframes card-appear {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.anima-card {
+  animation: card-appear 0.25s ease-out;
+}
+
+/* FORMULÁRIO */
+.card-form .card-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.card-form h2 {
+  color: var(--verde-folha);
+}
+
+.card-badge {
+  font-size: 0.75rem;
+  background: var(--verde-oliva);
+  color: #f2e8cf;
+  padding: 4px 10px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.form-servico {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+label {
+  font-size: 0.9rem;
+  color: var(--marrom-cafe);
+}
+
+input,
+select {
+  padding: 10px;
+  border: 2px solid var(--marrom-claro);
+  border-radius: 10px;
+  font-size: 0.95rem;
+  background: #fff;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease,
+    transform 0.1s ease;
+}
+
+input:focus,
+select:focus {
+  border-color: var(--verde-folha);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(58, 90, 64, 0.25);
+  transform: translateY(-1px);
+}
+
+/* Botão principal */
+.btn-primario {
+  padding: 10px 20px;
+  background: var(--verde-folha);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+  transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+}
+
+.btn-primario:hover {
+  background: var(--verde-oliva);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(58, 90, 64, 0.35);
+}
+
+.btn-primario:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.btn-export {
+  min-width: 150px;
+  justify-content: center;
+}
+
+/* ====== CARD DE FILTROS ====== */
+.filtros-card {
+  border-left-color: var(--marrom-cafe);
+}
+
+.filtros-header {
+  margin-bottom: 12px;
+}
+
+.filtros-header h2 {
+  color: var(--marrom-cafe);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filtros-header p {
+  font-size: 0.85rem;
+  color: #6b4b2f;
+}
+
+/* Grid dos filtros */
+.filtros-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 16px;
+}
+
+.filtro-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filtro-grupo-titulo {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--marrom-cafe);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.filtros-linha {
+  display: flex;
+  gap: 10px;
+}
+
+.filtro-campo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.input-busca {
+  width: 100%;
+}
+
+/* Botão limpar filtros */
+.filtros-acoes {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.btn-limpar-filtros {
+  background: none;
+  border: none;
+  color: var(--verde-folha);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* ====== LISTA ====== */
+.lista-card h2 {
+  margin-bottom: 10px;
+}
+
+.lista-servicos {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.servico-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid rgba(169, 132, 103, 0.4);
+  border-radius: 12px;
+  padding: 10px 14px;
+  background: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+.servico-conteudo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.servico-data {
+  padding: 4px 10px;
+  background: var(--bege-claro);
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: var(--marrom-cafe);
+}
+
+.servico-descricao {
+  font-size: 0.95rem;
+  color: #111827;
+}
+
+.botoes-linha {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-editar,
+.btn-excluir {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: transform 0.1s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.btn-editar {
+  background: var(--verde-oliva);
+  color: #fff;
+}
+
+.btn-excluir {
+  background: #d9534f;
+  color: #fff;
+}
+
+.btn-editar:hover,
+.btn-excluir:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+/* Botões de exportação na lista */
+.export-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+/* ====== BOTÃO FLUTUANTE ====== */
+.fab {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: var(--verde-folha);
+  color: #ffffff;
+  font-size: 1.6rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.fab:hover {
+  background: var(--verde-oliva);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.4);
+}
+
+.fab:active {
+  transform: translateY(0);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsivo básico */
+@media (max-width: 600px) {
+  .servico-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .export-buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .app-main {
+    padding: 0 16px;
+    margin: 16px auto 24px;
+  }
+}
+
+/* Botão de filtros no header */
+.btn-filtros-header {
+  border: none;
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.35rem 0.6rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.btn-filtros-header--ativo {
+  background: #f0c37a;
+}
+
+.servico-extra {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.8rem;
+  color: #5a4735;
+  gap: 2px;
+}
+
+/* Linhas do formulário (2 ou 3 colunas) */
+.linha-form {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+/* Cada campo ocupa o mesmo espaço dentro da linha */
+.linha-form .campo {
+  flex: 1;
+}
+
+/* Linha com 3 colunas (produto / uni / qtde) */
+.linha-form--3 .campo {
+  flex: 1; /* os 3 dividem igualmente */
+}
+
+/* Em telas pequenas, tudo fica em coluna (mobile) */
+@media (max-width: 700px) {
+  .linha-form {
+    flex-direction: column;
+  }
 }

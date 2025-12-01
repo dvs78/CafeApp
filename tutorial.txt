@@ -131,7 +131,7 @@ git add .
 git commit -m "Salvando projeto no Github"
 Em or push an existing repository from the comnad line
 Copiar todos os códigos e rodar no terminal:
-git remote add origin https://github.com/dvs78/TaskList.git
+git remote add origin https://github.com/dvs78/CafeApp.git
 git branch -M main
 git push -u origin main
 
