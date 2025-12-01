@@ -1,3 +1,4 @@
+// src/pages/realizado/Realizado.jsx
 import { useState, useEffect } from "react";
 import axios from "axios";
 import * as XLSX from "xlsx";
@@ -6,13 +7,16 @@ import jsPDF from "jspdf";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faSearch,
-  faPen,
-  faTrash,
   faFileExcel,
   faFilePdf,
   faPlus,
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
+
+import RealizadoForm from "./RealizadoForm";
+import RealizadoLista from "./RealizadoLista";
+import ConfirmDialog from "../../components/ConfirmDialog";
+import { notificar } from "../../components/Toast";
 
 // FORMATA DATA
 function formatarData(iso) {
@@ -31,6 +35,7 @@ function Realizado({ mostrarFiltros }) {
   const [produto, setProduto] = useState("");
   const [uni, setUni] = useState("");
   const [quantidade, setQuantidade] = useState("");
+  const [confirmDuplicado, setConfirmDuplicado] = useState(false);
 
   // LISTA / CONTROLES
   const [servicos, setServicos] = useState([]);
@@ -43,7 +48,7 @@ function Realizado({ mostrarFiltros }) {
   const [listaProdutos, setListaProdutos] = useState([]);
   const [listaServicos, setListaServicos] = useState([]);
 
-  // FILTROS
+  // FILTROS MANUAIS (card de filtros)
   const [filtroMes, setFiltroMes] = useState("");
   const [filtroAno, setFiltroAno] = useState("");
   const [filtroTexto, setFiltroTexto] = useState("");
@@ -52,7 +57,7 @@ function Realizado({ mostrarFiltros }) {
   const temFiltrosAtivos = filtroMes || filtroAno || filtroTexto || filtroTipo;
 
   // ===================================================================
-  // CARREGAR REALIZADO AO ABRIR A TELA
+  // CARREGAR REALIZADO AO ABRIR
   // ===================================================================
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -84,25 +89,21 @@ function Realizado({ mostrarFiltros }) {
 
     const clienteId = usuario.clienteId;
 
-    // SAFRAS
     axios
       .get("http://localhost:3001/safras")
       .then((res) => setListaSafras(res.data))
       .catch((err) => console.error("Erro ao carregar safras:", err));
 
-    // LAVOURAS POR CLIENTE
     axios
       .get(`http://localhost:3001/lavouras/${clienteId}`)
       .then((res) => setListaLavouras(res.data))
       .catch((err) => console.error("Erro ao carregar lavouras:", err));
 
-    // PRODUTOS
     axios
       .get("http://localhost:3001/produtos")
       .then((res) => setListaProdutos(res.data))
       .catch((err) => console.error("Erro ao carregar produtos:", err));
 
-    // LISTA DE SERVIÇOS
     axios
       .get("http://localhost:3001/servicos-lista")
       .then((res) => setListaServicos(res.data))
@@ -116,6 +117,26 @@ function Realizado({ mostrarFiltros }) {
   // ===================================================================
   function handleSubmit(e) {
     e.preventDefault();
+
+    // ==============================================
+    // VERIFICA DUPLICIDADE (Safra + Lavoura + Serviço + Produto)
+    // ==============================================
+    const existeDuplicado = servicos.some((s) => {
+      return (
+        s.safra === safra &&
+        s.lavoura === lavoura &&
+        s.servico === servico &&
+        s.produto === produto &&
+        s.id !== editandoId // permite editar o atual
+      );
+    });
+
+    if (existeDuplicado) {
+      alert(
+        "Este serviço já foi lançado com a mesma safra, lavoura, serviço e produto."
+      );
+      return;
+    }
 
     const token = localStorage.getItem("token");
     const usuario = JSON.parse(localStorage.getItem("usuario") || "null");
@@ -139,20 +160,18 @@ function Realizado({ mostrarFiltros }) {
     };
 
     if (!editandoId) {
-      // CRIAR
       axios
         .post("http://localhost:3001/realizado", payload, {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((res) => {
           setServicos((prev) => [res.data, ...prev]);
-          limparFormulario();
+          limparFormularioDepoisDeSalvar();
         })
         .catch((err) => {
           console.error("Erro ao criar serviço realizado:", err);
         });
     } else {
-      // EDITAR
       axios
         .put(`http://localhost:3001/realizado/${editandoId}`, payload, {
           headers: { Authorization: `Bearer ${token}` },
@@ -161,7 +180,7 @@ function Realizado({ mostrarFiltros }) {
           setServicos((prev) =>
             prev.map((s) => (s.id === editandoId ? res.data : s))
           );
-          limparFormulario();
+          limparFormularioDepoisDeSalvar();
         })
         .catch((err) => {
           console.error("Erro ao atualizar serviço realizado:", err);
@@ -169,7 +188,18 @@ function Realizado({ mostrarFiltros }) {
     }
   }
 
-  function limparFormulario() {
+  // Limpa campos "rápidos", mantendo safra/lavoura/servico
+  function limparFormularioDepoisDeSalvar() {
+    setData("");
+    setStatus("");
+    setProduto("");
+    setUni("");
+    setQuantidade("");
+    setEditandoId(null);
+  }
+
+  // Limpa tudo e fecha o formulário (usado ao clicar no X do botão flutuante)
+  function fecharFormulario() {
     setSafra("");
     setLavoura("");
     setServico("");
@@ -218,9 +248,19 @@ function Realizado({ mostrarFiltros }) {
   }
 
   // ===================================================================
-  // FILTROS NO FRONT
+  // FILTRO AUTOMÁTICO PELO QUE ESTÁ NO FORM (quando aberto)
   // ===================================================================
-  const servicosFiltrados = servicos.filter((s) => {
+  const filtroAutomatico = servicos.filter((s) => {
+    if (safra && s.safra !== safra) return false;
+    if (lavoura && s.lavoura !== lavoura) return false;
+    if (servico && s.servico !== servico) return false;
+    return true;
+  });
+
+  // ===================================================================
+  // FILTROS MANUAIS (card) – usados sempre como base
+  // ===================================================================
+  const servicosComFiltrosManuais = servicos.filter((s) => {
     if (!s.data) return false;
     const [ano, mes] = s.data.split("-");
 
@@ -240,6 +280,22 @@ function Realizado({ mostrarFiltros }) {
 
     return true;
   });
+
+  // ===================================================================
+  // ESCOLHA FINAL:
+  // Se o formulário estiver aberto E tiver safra/lavoura/serviço,
+  // aplica o filtro automático em cima da lista já filtrada pelos filtros manuais.
+  // Senão, usa só os filtros manuais.
+  // ===================================================================
+  const servicosFiltrados =
+    mostrarFormulario && (safra || lavoura || servico)
+      ? servicosComFiltrosManuais.filter((s) => {
+          if (safra && s.safra !== safra) return false;
+          if (lavoura && s.lavoura !== lavoura) return false;
+          if (servico && s.servico !== servico) return false;
+          return true;
+        })
+      : servicosComFiltrosManuais;
 
   // ===================================================================
   // EXPORTAÇÕES
@@ -286,145 +342,35 @@ function Realizado({ mostrarFiltros }) {
   return (
     <>
       <main className="app-main">
-        {/* FORMULÁRIO */}
+        {/* FORMULÁRIO – aparece só quando mostrarFormulario = true */}
         {mostrarFormulario && (
-          <section className="card card-form anima-card">
-            <form onSubmit={handleSubmit} className="form-servico">
-              {/* LINHA 1 – Safra + Lavoura */}
-              <div className="linha-form">
-                <div className="campo">
-                  <label>Safra</label>
-                  <select
-                    value={safra}
-                    onChange={(e) => setSafra(e.target.value)}
-                    required
-                  >
-                    <option value="">Selecione a safra</option>
-                    {listaSafras.map((s) => (
-                      <option key={s.id} value={s.nome}>
-                        {s.nome}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="campo">
-                  <label>Lavoura</label>
-                  <select
-                    value={lavoura}
-                    onChange={(e) => setLavoura(e.target.value)}
-                    required
-                  >
-                    <option value="">Selecione a lavoura</option>
-                    {listaLavouras.map((lav) => (
-                      <option key={lav.id} value={lav.nome}>
-                        {lav.nome}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* LINHA 2 – Serviço */}
-              <div className="linha-form">
-                <div className="campo">
-                  <label>Serviço</label>
-                  <select
-                    value={servico}
-                    onChange={(e) => setServico(e.target.value)}
-                    required
-                  >
-                    <option value="">Selecione o serviço</option>
-                    {listaServicos.map((s) => (
-                      <option key={s.id} value={s.nome}>
-                        {s.nome}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* LINHA 3 – Data + Status */}
-              <div className="linha-form">
-                <div className="campo">
-                  <label>Data</label>
-                  <input
-                    type="date"
-                    value={data}
-                    onChange={(e) => setData(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div className="campo">
-                  <label>Status</label>
-                  <select
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value)}
-                    required
-                  >
-                    <option value="">Selecione</option>
-                    <option value="realizado">Realizado</option>
-                    <option value="pendente">Pendente</option>
-                    <option value="cancelado">Cancelado</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* LINHA 4 – Produto / Unidade / Quantidade */}
-              <div className="linha-form linha-form--3">
-                <div className="campo">
-                  <label>Produto</label>
-                  <select
-                    value={produto}
-                    onChange={(e) => setProduto(e.target.value)}
-                    required
-                  >
-                    <option value="">Selecione o produto</option>
-                    {listaProdutos.map((p) => (
-                      <option key={p.id} value={p.nome}>
-                        {p.nome}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="campo">
-                  <label>Unidade</label>
-                  <select
-                    value={uni}
-                    onChange={(e) => setUni(e.target.value)}
-                    required
-                  >
-                    <option value="">Selecione</option>
-                    <option value="L">Litro (L)</option>
-                    <option value="KG">Quilo (KG)</option>
-                    <option value="UN">Unidade (UN)</option>
-                    <option value="SC">Saco (SC)</option>
-                  </select>
-                </div>
-
-                <div className="campo">
-                  <label>Quantidade</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    placeholder="0,00"
-                    value={quantidade}
-                    onChange={(e) => setQuantidade(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-
-              <button className="btn-primario">
-                {editandoId ? "Salvar alterações" : "Lançar serviço"}
-              </button>
-            </form>
-          </section>
+          <RealizadoForm
+            onSubmit={handleSubmit}
+            editandoId={editandoId}
+            safra={safra}
+            setSafra={setSafra}
+            lavoura={lavoura}
+            setLavoura={setLavoura}
+            servico={servico}
+            setServico={setServico}
+            data={data}
+            setData={setData}
+            status={status}
+            setStatus={setStatus}
+            produto={produto}
+            setProduto={setProduto}
+            uni={uni}
+            setUni={setUni}
+            quantidade={quantidade}
+            setQuantidade={setQuantidade}
+            listaSafras={listaSafras}
+            listaLavouras={listaLavouras}
+            listaProdutos={listaProdutos}
+            listaServicos={listaServicos}
+          />
         )}
 
-        {/* CARD DE FILTROS */}
+        {/* CARD DE FILTROS – só aparece quando o formulário está fechado e o header mandou mostrarFiltros=true */}
         {!mostrarFormulario && mostrarFiltros && (
           <section className="card filtros-card anima-card">
             <div className="filtros-header">
@@ -521,90 +467,27 @@ function Realizado({ mostrarFiltros }) {
           </section>
         )}
 
-        {/* LISTA */}
-        {!mostrarFormulario && (
-          <section className="card lista-card anima-card">
-            <h2>Serviços lançados</h2>
-
-            {servicosFiltrados.length === 0 ? (
-              <p>Nenhum serviço encontrado.</p>
-            ) : (
-              <ul className="lista-servicos">
-                {servicosFiltrados.map((s) => (
-                  <li key={s.id} className="servico-item">
-                    <div className="servico-conteudo">
-                      <span className="servico-data">
-                        {formatarData(s.data)}
-                      </span>
-                      <span className="servico-descricao">{s.servico}</span>
-
-                      <div className="servico-extra">
-                        <span>
-                          Safra: <b>{s.safra}</b>
-                        </span>
-                        <span>
-                          Lavoura: <b>{s.lavoura}</b>
-                        </span>
-                        <span>
-                          Produto: <b>{s.produto}</b>
-                        </span>
-                        <span>
-                          {s.quantidade} {s.unidade}
-                        </span>
-                        <span>
-                          Status: <b>{s.status}</b>
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="botoes-linha">
-                      <button
-                        className="btn-editar"
-                        type="button"
-                        onClick={() => handleEditar(s)}
-                      >
-                        <FontAwesomeIcon icon={faPen} /> Editar
-                      </button>
-                      <button
-                        className="btn-excluir"
-                        type="button"
-                        onClick={() => handleExcluir(s.id)}
-                      >
-                        <FontAwesomeIcon icon={faTrash} /> Excluir
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-
-            {servicosFiltrados.length > 0 && (
-              <div className="export-buttons">
-                <button
-                  className="btn-primario btn-export"
-                  type="button"
-                  onClick={exportarExcel}
-                >
-                  <FontAwesomeIcon icon={faFileExcel} /> Exportar Excel
-                </button>
-                <button
-                  className="btn-primario btn-export"
-                  type="button"
-                  onClick={exportarPDF}
-                >
-                  <FontAwesomeIcon icon={faFilePdf} /> Exportar PDF
-                </button>
-              </div>
-            )}
-          </section>
-        )}
+        {/* LISTA – sempre visível */}
+        <RealizadoLista
+          servicosFiltrados={servicosFiltrados}
+          onEditar={handleEditar}
+          onExcluir={handleExcluir}
+          onExportarExcel={exportarExcel}
+          onExportarPDF={exportarPDF}
+        />
       </main>
 
-      {/* BOTÃO FLUTUANTE */}
+      {/* BOTÃO FLUTUANTE – abre/fecha o formulário */}
       <button
         className="fab"
         type="button"
-        onClick={() => setMostrarFormulario(!mostrarFormulario)}
+        onClick={() => {
+          if (mostrarFormulario) {
+            fecharFormulario();
+          } else {
+            setMostrarFormulario(true);
+          }
+        }}
       >
         <FontAwesomeIcon icon={mostrarFormulario ? faTimes : faPlus} />
       </button>
