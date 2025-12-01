@@ -438,3 +438,80 @@ select:focus {
     flex-direction: column;
   }
 }
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at top left, #f7edd8, var(--bege-claro));
+}
+
+.login-card {
+  max-width: 420px;
+  width: 100%;
+}
+
+.login-subtitle {
+  font-size: 0.9rem;
+  color: #6b4b2f;
+  margin-bottom: 12px;
+}
+
+.mensagem-erro {
+  color: #dc2626;
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+}
+
+.home-cards h2 {
+  margin-bottom: 4px;
+  color: var(--marrom-cafe);
+}
+
+.home-cards p {
+  font-size: 0.9rem;
+  color: #4b5563;
+}
+
+.home-cards-grid {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.home-card {
+  border: none;
+  border-radius: 18px;
+  padding: 24px 20px;
+  cursor: pointer;
+  text-align: left;
+  background: #ffffff;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.home-card h3 {
+  margin-bottom: 6px;
+  font-size: 1.2rem;
+  color: var(--marrom-cafe);
+}
+
+.home-card p {
+  font-size: 0.9rem;
+  color: #4b5563;
+}
+
+.home-card--realizado {
+  border-left: 8px solid var(--verde-folha);
+}
+
+.home-card--config {
+  border-left: 8px solid var(--marrom-cafe);
+}
+
+.home-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+}

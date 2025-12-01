@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
+import axios from "axios";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faSearch,
-  faLeaf,
   faPen,
   faTrash,
   faFileExcel,
@@ -21,24 +21,27 @@ function formatarData(iso) {
   return `${dia}/${mes}/${ano}`;
 }
 
-// ORDENAÇÃO
-function ordenarPorDataDesc(lista) {
-  return [...lista].sort((a, b) => (a.data < b.data ? 1 : -1));
-}
-
 function Realizado({ mostrarFiltros }) {
-  const [servico, setServico] = useState("");
-  const [data, setData] = useState("");
+  // CAMPOS DO FORM
   const [safra, setSafra] = useState("");
   const [lavoura, setLavoura] = useState("");
+  const [servico, setServico] = useState("");
+  const [data, setData] = useState("");
+  const [status, setStatus] = useState("");
   const [produto, setProduto] = useState("");
   const [uni, setUni] = useState("");
   const [quantidade, setQuantidade] = useState("");
-  const [status, setStatus] = useState("");
 
+  // LISTA / CONTROLES
   const [servicos, setServicos] = useState([]);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [editandoId, setEditandoId] = useState(null);
+
+  // LISTAS VINDAS DO BANCO
+  const [listaSafras, setListaSafras] = useState([]);
+  const [listaLavouras, setListaLavouras] = useState([]);
+  const [listaProdutos, setListaProdutos] = useState([]);
+  const [listaServicos, setListaServicos] = useState([]);
 
   // FILTROS
   const [filtroMes, setFiltroMes] = useState("");
@@ -46,77 +49,177 @@ function Realizado({ mostrarFiltros }) {
   const [filtroTexto, setFiltroTexto] = useState("");
   const [filtroTipo, setFiltroTipo] = useState("");
 
-  // CARREGAR DO LOCALSTORAGE
+  const temFiltrosAtivos = filtroMes || filtroAno || filtroTexto || filtroTipo;
+
+  // ===================================================================
+  // CARREGAR REALIZADO AO ABRIR A TELA
+  // ===================================================================
   useEffect(() => {
-    const salvo = localStorage.getItem("servicos_cafe");
-    if (salvo) setServicos(ordenarPorDataDesc(JSON.parse(salvo)));
+    const token = localStorage.getItem("token");
+    const usuario = JSON.parse(localStorage.getItem("usuario") || "null");
+
+    if (!token || !usuario) return;
+
+    axios
+      .get("http://localhost:3001/realizado", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "cliente-id": usuario.clienteId,
+        },
+      })
+      .then((res) => {
+        setServicos(res.data);
+      })
+      .catch((err) => {
+        console.error("Erro ao carregar serviços realizados:", err);
+      });
   }, []);
 
-  // SALVAR / EDITAR
+  // ===================================================================
+  // CARREGAR LISTAS (SAFRAS, LAVOURAS, PRODUTOS, SERVIÇOS)
+  // ===================================================================
+  useEffect(() => {
+    const usuario = JSON.parse(localStorage.getItem("usuario") || "null");
+    if (!usuario) return;
+
+    const clienteId = usuario.clienteId;
+
+    // SAFRAS
+    axios
+      .get("http://localhost:3001/safras")
+      .then((res) => setListaSafras(res.data))
+      .catch((err) => console.error("Erro ao carregar safras:", err));
+
+    // LAVOURAS POR CLIENTE
+    axios
+      .get(`http://localhost:3001/lavouras/${clienteId}`)
+      .then((res) => setListaLavouras(res.data))
+      .catch((err) => console.error("Erro ao carregar lavouras:", err));
+
+    // PRODUTOS
+    axios
+      .get("http://localhost:3001/produtos")
+      .then((res) => setListaProdutos(res.data))
+      .catch((err) => console.error("Erro ao carregar produtos:", err));
+
+    // LISTA DE SERVIÇOS
+    axios
+      .get("http://localhost:3001/servicos-lista")
+      .then((res) => setListaServicos(res.data))
+      .catch((err) =>
+        console.error("Erro ao carregar lista de serviços:", err)
+      );
+  }, []);
+
+  // ===================================================================
+  // SALVAR (CRIAR / EDITAR)
+  // ===================================================================
   function handleSubmit(e) {
     e.preventDefault();
 
-    if (!editandoId) {
-      const novo = {
-        id: Date.now(),
-        servico,
-        data,
-        safra,
-        lavoura,
-        produto,
-        uni,
-        quantidade,
-        status,
-      };
-      const novaLista = ordenarPorDataDesc([...servicos, novo]);
-      setServicos(novaLista);
-      localStorage.setItem("servicos_cafe", JSON.stringify(novaLista));
-    } else {
-      const atualizada = ordenarPorDataDesc(
-        servicos.map((s) =>
-          s.id === editandoId
-            ? {
-                ...s,
-                servico,
-                data,
-                safra,
-                lavoura,
-                produto,
-                uni,
-                quantidade,
-                status,
-              }
-            : s
-        )
-      );
+    const token = localStorage.getItem("token");
+    const usuario = JSON.parse(localStorage.getItem("usuario") || "null");
 
-      setServicos(atualizada);
-      localStorage.setItem("servicos_cafe", JSON.stringify(atualizada));
+    if (!token || !usuario) {
+      alert("Sessão expirada. Faça login novamente.");
+      return;
     }
 
+    const payload = {
+      safra,
+      lavoura,
+      servico,
+      data,
+      status,
+      produto,
+      unidade: uni,
+      quantidade,
+      cliente_id: usuario.clienteId,
+      usuario_id: usuario.id,
+    };
+
+    if (!editandoId) {
+      // CRIAR
+      axios
+        .post("http://localhost:3001/realizado", payload, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((res) => {
+          setServicos((prev) => [res.data, ...prev]);
+          limparFormulario();
+        })
+        .catch((err) => {
+          console.error("Erro ao criar serviço realizado:", err);
+        });
+    } else {
+      // EDITAR
+      axios
+        .put(`http://localhost:3001/realizado/${editandoId}`, payload, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((res) => {
+          setServicos((prev) =>
+            prev.map((s) => (s.id === editandoId ? res.data : s))
+          );
+          limparFormulario();
+        })
+        .catch((err) => {
+          console.error("Erro ao atualizar serviço realizado:", err);
+        });
+    }
+  }
+
+  function limparFormulario() {
+    setSafra("");
+    setLavoura("");
     setServico("");
     setData("");
+    setStatus("");
+    setProduto("");
+    setUni("");
+    setQuantidade("");
     setEditandoId(null);
     setMostrarFormulario(false);
   }
 
+  // ===================================================================
   // EXCLUIR
+  // ===================================================================
   function handleExcluir(id) {
-    const filtrada = servicos.filter((s) => s.id !== id);
-    const ordenada = ordenarPorDataDesc(filtrada);
-    setServicos(ordenada);
-    localStorage.setItem("servicos_cafe", JSON.stringify(ordenada));
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    axios
+      .delete(`http://localhost:3001/realizado/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then(() => {
+        setServicos((prev) => prev.filter((s) => s.id !== id));
+      })
+      .catch((err) => {
+        console.error("Erro ao excluir serviço realizado:", err);
+      });
   }
 
+  // ===================================================================
   // EDITAR
-  function handleEditar(item) {
-    setEditandoId(item.id);
-    setServico(item.servico);
-    setData(item.data);
+  // ===================================================================
+  function handleEditar(s) {
+    setEditandoId(s.id);
+    setSafra(s.safra || "");
+    setLavoura(s.lavoura || "");
+    setServico(s.servico || "");
+    setData(s.data || "");
+    setStatus(s.status || "");
+    setProduto(s.produto || "");
+    setUni(s.unidade || "");
+    setQuantidade(String(s.quantidade ?? ""));
     setMostrarFormulario(true);
   }
 
-  // FILTRO COMPLETO
+  // ===================================================================
+  // FILTROS NO FRONT
+  // ===================================================================
   const servicosFiltrados = servicos.filter((s) => {
     if (!s.data) return false;
     const [ano, mes] = s.data.split("-");
@@ -126,23 +229,31 @@ function Realizado({ mostrarFiltros }) {
 
     if (
       filtroTexto &&
-      !s.servico.toLowerCase().includes(filtroTexto.toLowerCase())
+      !s.servico?.toLowerCase().includes(filtroTexto.toLowerCase())
     )
       return false;
 
     if (filtroTipo && filtroTipo !== "") {
-      if (!s.servico.toLowerCase().includes(filtroTipo.toLowerCase()))
+      if (!s.servico?.toLowerCase().includes(filtroTipo.toLowerCase()))
         return false;
     }
 
     return true;
   });
 
-  // EXPORTAÇÃO EXCEL
+  // ===================================================================
+  // EXPORTAÇÕES
+  // ===================================================================
   function exportarExcel() {
     const dados = servicosFiltrados.map((s) => ({
       Data: formatarData(s.data),
+      Safra: s.safra,
+      Lavoura: s.lavoura,
       Serviço: s.servico,
+      Produto: s.produto,
+      Quantidade: s.quantidade,
+      Unidade: s.unidade,
+      Status: s.status,
     }));
 
     const ws = XLSX.utils.json_to_sheet(dados);
@@ -151,7 +262,6 @@ function Realizado({ mostrarFiltros }) {
     XLSX.writeFile(wb, "servicos_cafe.xlsx");
   }
 
-  // EXPORTAÇÃO PDF
   function exportarPDF() {
     const doc = new jsPDF();
     doc.setFontSize(14);
@@ -159,15 +269,20 @@ function Realizado({ mostrarFiltros }) {
 
     let y = 20;
     servicosFiltrados.forEach((s) => {
-      doc.text(`${formatarData(s.data)} - ${s.servico}`, 10, y);
+      doc.text(
+        `${formatarData(s.data)} - ${s.servico} - ${s.quantidade} ${s.unidade}`,
+        10,
+        y
+      );
       y += 8;
     });
 
     doc.save("servicos_cafe.pdf");
   }
 
-  const temFiltrosAtivos = filtroMes || filtroAno || filtroTexto || filtroTipo;
-
+  // ===================================================================
+  // RENDER
+  // ===================================================================
   return (
     <>
       <main className="app-main">
@@ -175,46 +290,61 @@ function Realizado({ mostrarFiltros }) {
         {mostrarFormulario && (
           <section className="card card-form anima-card">
             <form onSubmit={handleSubmit} className="form-servico">
-              {/* LINHA 1 – Safra + Lavoura (2 colunas) */}
+              {/* LINHA 1 – Safra + Lavoura */}
               <div className="linha-form">
                 <div className="campo">
                   <label>Safra</label>
-                  <input
-                    type="text"
-                    placeholder="Ex.: 24/25"
+                  <select
                     value={safra}
                     onChange={(e) => setSafra(e.target.value)}
                     required
-                  />
+                  >
+                    <option value="">Selecione a safra</option>
+                    {listaSafras.map((s) => (
+                      <option key={s.id} value={s.nome}>
+                        {s.nome}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="campo">
                   <label>Lavoura</label>
-                  <input
-                    type="text"
-                    placeholder="Ex.: Talhão 01"
+                  <select
                     value={lavoura}
                     onChange={(e) => setLavoura(e.target.value)}
                     required
-                  />
+                  >
+                    <option value="">Selecione a lavoura</option>
+                    {listaLavouras.map((lav) => (
+                      <option key={lav.id} value={lav.nome}>
+                        {lav.nome}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
-              {/* LINHA 2 – Serviço (linha inteira) */}
+              {/* LINHA 2 – Serviço */}
               <div className="linha-form">
                 <div className="campo">
                   <label>Serviço</label>
-                  <input
-                    type="text"
-                    placeholder="Roçagem, Adubação..."
+                  <select
                     value={servico}
                     onChange={(e) => setServico(e.target.value)}
                     required
-                  />
+                  >
+                    <option value="">Selecione o serviço</option>
+                    {listaServicos.map((s) => (
+                      <option key={s.id} value={s.nome}>
+                        {s.nome}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
-              {/* LINHA 3 – Data + Status (2 colunas) */}
+              {/* LINHA 3 – Data + Status */}
               <div className="linha-form">
                 <div className="campo">
                   <label>Data</label>
@@ -241,17 +371,22 @@ function Realizado({ mostrarFiltros }) {
                 </div>
               </div>
 
-              {/* LINHA 4 – Produto / Unidade / Quantidade (3 colunas) */}
+              {/* LINHA 4 – Produto / Unidade / Quantidade */}
               <div className="linha-form linha-form--3">
                 <div className="campo">
                   <label>Produto</label>
-                  <input
-                    type="text"
-                    placeholder="Nome do produto"
+                  <select
                     value={produto}
                     onChange={(e) => setProduto(e.target.value)}
                     required
-                  />
+                  >
+                    <option value="">Selecione o produto</option>
+                    {listaProdutos.map((p) => (
+                      <option key={p.id} value={p.nome}>
+                        {p.nome}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="campo">
@@ -289,7 +424,7 @@ function Realizado({ mostrarFiltros }) {
           </section>
         )}
 
-        {/* CARD ÚNICO DE FILTROS */}
+        {/* CARD DE FILTROS */}
         {!mostrarFormulario && mostrarFiltros && (
           <section className="card filtros-card anima-card">
             <div className="filtros-header">
@@ -367,7 +502,6 @@ function Realizado({ mostrarFiltros }) {
               </div>
             </div>
 
-            {/* BOTÃO LIMPAR */}
             {temFiltrosAtivos && (
               <div className="filtros-acoes">
                 <button
@@ -406,7 +540,7 @@ function Realizado({ mostrarFiltros }) {
 
                       <div className="servico-extra">
                         <span>
-                          S Safra: <b>{s.safra}</b>
+                          Safra: <b>{s.safra}</b>
                         </span>
                         <span>
                           Lavoura: <b>{s.lavoura}</b>
@@ -415,7 +549,7 @@ function Realizado({ mostrarFiltros }) {
                           Produto: <b>{s.produto}</b>
                         </span>
                         <span>
-                          {s.quantidade} {s.uni}
+                          {s.quantidade} {s.unidade}
                         </span>
                         <span>
                           Status: <b>{s.status}</b>
@@ -444,7 +578,6 @@ function Realizado({ mostrarFiltros }) {
               </ul>
             )}
 
-            {/* EXPORTAÇÃO */}
             {servicosFiltrados.length > 0 && (
               <div className="export-buttons">
                 <button
@@ -467,7 +600,7 @@ function Realizado({ mostrarFiltros }) {
         )}
       </main>
 
-      {/* BOTÃO FLOAT */}
+      {/* BOTÃO FLUTUANTE */}
       <button
         className="fab"
         type="button"
