@@ -94,7 +94,7 @@ function Header({
             className={`btn-icon btn-filtros-header ${
               mostrarFiltros ? "btn-filtros-header--ativo" : ""
             }`}
-            onToggleFiltros
+            onClick={onToggleFiltros}
             title="Mostrar filtros"
           >
             <FontAwesomeIcon icon={faFilter} />
