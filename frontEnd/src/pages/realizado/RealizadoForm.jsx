@@ -1,6 +1,24 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSave } from "@fortawesome/free-solid-svg-icons";
 
+function formatarQuantidadeBR(valor) {
+  if (!valor) return "";
+
+  // remove tudo que não for número
+  let v = valor.replace(/\D/g, "");
+
+  if (!v) return "";
+
+  // adiciona centavos
+  v = (parseInt(v, 10) / 100).toFixed(2);
+
+  // troca . por , para centavos
+  v = v.replace(".", ",");
+
+  // adiciona pontos de milhar
+  return v.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+
 function RealizadoForm({
   onSubmit,
   editandoId,
@@ -135,11 +153,14 @@ function RealizadoForm({
           <div className="campo">
             <label>Quantidade (opcional)</label>
             <input
-              type="number"
-              step="0.01"
-              value={quantidade}
-              onChange={(e) => setQuantidade(e.target.value)}
+              type="text" // 👈 não usa "number", senão não aceita 200.000,00
+              inputMode="decimal" // 👈 teclado numérico no celular
               placeholder="0,00"
+              value={quantidade}
+              onChange={(e) => {
+                const somenteNumeros = e.target.value.replace(/\D/g, "");
+                setQuantidade(formatarQuantidadeBR(somenteNumeros));
+              }}
             />
           </div>
         </div>

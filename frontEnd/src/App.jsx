@@ -13,7 +13,8 @@ import Toast from "./components/Toast";
 function App() {
   const { usuario, logout } = useAuth(); // vem do AuthContext
   const [mostrarFiltros, setMostrarFiltros] = useState(false);
-
+  const [ocultarBotaoFiltros, setOcultarBotaoFiltros] = useState(false);
+  const [tituloCustom, setTituloCustom] = useState("");
   const isAdminEmail = usuario?.email === "dvs.veiga78@gmail.com";
 
   return (
@@ -25,6 +26,8 @@ function App() {
           mostrarFiltros={mostrarFiltros}
           onToggleFiltros={() => setMostrarFiltros((prev) => !prev)}
           onLogout={logout}
+          ocultarBotaoFiltros={ocultarBotaoFiltros}
+          tituloCustom={tituloCustom}
         />
       )}
 
@@ -50,7 +53,11 @@ function App() {
             path="/realizado"
             element={
               usuario ? (
-                <Realizado mostrarFiltros={mostrarFiltros} />
+                <Realizado
+                  mostrarFiltros={mostrarFiltros}
+                  setOcultarBotaoFiltros={setOcultarBotaoFiltros}
+                  setTituloCustom={setTituloCustom}
+                />
               ) : (
                 <Navigate to="/login" />
               )

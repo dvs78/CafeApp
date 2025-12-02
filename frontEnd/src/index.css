@@ -60,60 +60,125 @@ body {
 }
 
 /* HEADER ocupando a largura toda */
+
+/* ============================
+   HEADER CONTAINER
+============================ */
 .app-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 1000;
-  padding: 16px 32px;
-  color: black;
-  backdrop-filter: blur(6px);
+  width: 100%;
+  height: 70px;
   background: var(--bege-claro);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  gap: 7px;
 }
 
-/* ===== BOTÃO VOLTAR (CANTO ESQUERDO) ===== */
+/* ============================
+   REGIÕES DO HEADER
+============================ */
+.header-left,
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 80px; /* garante alinhamento */
+}
 
-.btn-voltar {
-  position: absolute;
-  left: 16px;
-  top: 50%;
-  transform: translateY(-50%);
+.header-title {
+  flex: 1;
+  text-align: center;
+  font-size: 26px;
+  font-weight: 700;
+  color: #222;
+  pointer-events: none; /* evita clicar sobre o título */
+}
 
-  background: var(--marrom-claro);
-  border: 2px solid var(--marrom-claro);
-  color: black;
+/* ============================
+   BOTÕES (Voltar / Home)
+============================ */
 
-  padding: 10px 12px;
-  border-radius: 50%;
-
+.btn-home,
+.btn-filtros-header {
+  background: transparent;
+  border: none;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 30px;
+  color: #222;
+  padding: 4px;
+  line-height: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* background-color: var(--bege-claro); */
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.btn-home:hover,
+.btn-filtros-header:hover {
+  transform: scale(1.12);
+  color: var(--marrom-cafe);
+}
+
+/* Ícones limpos sem fundo */
+
+.btn-home svg,
+.btn-filtros-header svg {
+  background: none !important;
+  fill: currentColor !important;
+}
+
+/* área direita do header */
+.header-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px; /* espaço entre filtro e home */
+  min-width: 110px; /* garante alinhamento geral com o lado esquerdo */
+}
+
+/* botão icônico (filtro / home) */
+.btn-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  /* border: 1px solid rgba(0, 0, 0, 0.12); */
+  background: var(--bege-claro);
+  /* background: rgba(255, 255, 255, 0.7); */
+  cursor: pointer;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-  transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.2s ease,
-    border-color 0.15s ease, color 0.15s ease;
+  font-size: 18px;
+  color: #222;
+
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease,
+    color 0.15s ease, border-color 0.15s ease;
 }
 
-.btn-voltar:hover {
-  background: var(--marrom-cafe);
-  color: #fff;
-  border-color: var(--marrom-cafe);
-  transform: translateY(-50%) scale(1.08);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
+.btn-icon:hover {
+  transform: scale(1.08);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.18);
+  background: #fff;
+  border-color: rgba(0, 0, 0, 0.18);
 }
 
-.btn-voltar:active {
-  transform: translateY(-50%) scale(0.95);
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.18);
+/* home pode ter um destaque levemente diferente se quiser */
+
+/* garante ícones sem fundo estranho */
+.btn-icon svg {
+  background: none !important;
+  fill: currentColor !important;
 }
 
 /* Conteúdo principal em “faixa” central */
@@ -159,10 +224,6 @@ body {
   margin-bottom: 14px;
 }
 
-.card-form h2 {
-  color: var(--verde-folha);
-}
-
 .card-badge {
   font-size: 0.75rem;
   background: var(--verde-oliva);
@@ -186,9 +247,15 @@ body {
   gap: 4px;
 }
 
-label {
-  font-size: 0.9rem;
+/* Labels do formulário E dos filtros IGUAIS */
+.form-servico label,
+.filtro-campo label,
+.filtro-grupo-titulo {
+  font-size: 12px;
   color: var(--marrom-cafe);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: none; /* nada de UPPERCASE */
 }
 
 input,
@@ -246,7 +313,7 @@ select:focus {
 /* ====== CARD DE FILTROS ====== */
 .filtros-card {
   border-left-color: var(--marrom-cafe);
-  margin-top: 8px; /* respiro abaixo do título Serviços */
+  margin-top: 1px; /* respiro abaixo do título Serviços */
 }
 
 .filtros-header {
@@ -275,22 +342,25 @@ select:focus {
 /* Linha com Safra / Mês / Ano / Lavoura */
 .filtros-linha {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr)); /* desktop: 4 colunas */
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.filtro-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.filtro-campo select,
+.filtro-campo input {
+  width: 100%;
 }
 
 .filtro-grupo {
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
-
-.filtro-grupo-titulo {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--marrom-cafe);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
 }
 
 .filtro-campo {
@@ -394,9 +464,9 @@ select:focus {
 /* Botões de exportação na lista */
 .export-buttons {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   gap: 10px;
-  margin-top: 14px;
+  margin-top: 20px;
 }
 
 /* ====== BOTÃO FLUTUANTE ====== */

@@ -14,6 +14,18 @@ function formatarData(iso) {
   return data.toLocaleDateString("pt-BR"); // ex.: 05/12/2025
 }
 
+function formatarNumero(valor) {
+  if (valor === null || valor === undefined || valor === "") return "0,00";
+
+  const numero = Number(valor);
+  if (Number.isNaN(numero)) return "0,00";
+
+  return numero.toLocaleString("pt-BR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
 function RealizadoLista({
   servicosFiltrados,
   onEditar,
@@ -60,7 +72,10 @@ function RealizadoLista({
                         <b>Produto:</b> {s.produto || "-"}
                       </span>
                       <span>
-                        <b>Quantidade:</b> {s.quantidade || "-"}{" "}
+                        <b>Quantidade:</b>{" "}
+                        {s.quantidade != null && s.quantidade !== ""
+                          ? formatarNumero(s.quantidade)
+                          : "-"}{" "}
                         {s.unidade || ""}
                       </span>
                     </div>

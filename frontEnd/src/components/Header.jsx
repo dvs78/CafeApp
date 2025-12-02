@@ -2,10 +2,24 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faFilter } from "@fortawesome/free-solid-svg-icons";
+import {
+  // faArrowLeft,
+  faAngleLeft,
+  faHouse,
+  // faCircleLeft,
+  faRightFromBracket,
+  faFilter,
+} from "@fortawesome/free-solid-svg-icons";
 import { useLocation, useNavigate } from "react-router-dom";
 
-function Header({ usuario, mostrarFiltros, onToggleFiltros }) {
+function Header({
+  usuario,
+  mostrarFiltros,
+  onToggleFiltros,
+  ocultarBotaoFiltros,
+  tituloCustom,
+  onLogout,
+}) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -13,6 +27,7 @@ function Header({ usuario, mostrarFiltros, onToggleFiltros }) {
 
   const podeVoltar = location.pathname !== "/home";
   const estaEmRealizado = location.pathname === "/realizado";
+  const estaNaHome = location.pathname === "/home";
 
   // =========================================================
   // 🔎 Busca o cliente correspondente ao clienteId do usuário
@@ -50,6 +65,7 @@ function Header({ usuario, mostrarFiltros, onToggleFiltros }) {
   // 🧠 TÍTULO DINÂMICO
   // =========================================================
   const titulo = (() => {
+    if (tituloCustom) return tituloCustom;
     if (estaEmRealizado) return "Serviços";
     if (location.pathname === "/settings") return "Configurações";
 
@@ -59,35 +75,52 @@ function Header({ usuario, mostrarFiltros, onToggleFiltros }) {
 
   return (
     <header className="app-header">
-      {/* BOTÃO VOLTAR — canto esquerdo */}
-      {podeVoltar && (
-        <button
-          className="btn-voltar"
-          onClick={() => navigate(-1)}
-          title="Voltar"
-        >
-          <FontAwesomeIcon icon={faArrowLeft} />
-        </button>
-      )}
+      <div className="header-left">
+        {podeVoltar && (
+          <button
+            className="btn-icon btn-filtros-header  "
+            onClick={() => navigate(-1)}
+          >
+            <FontAwesomeIcon icon={faAngleLeft} />
+          </button>
+        )}
+      </div>
 
-      {/* TÍTULO CENTRAL */}
-      <h1>{titulo}</h1>
+      <h1 className="header-title">{titulo}</h1>
 
-      {/* BOTÃO FILTROS – só aparece em /realizado */}
-      {estaEmRealizado ? (
-        <button
-          className={`btn-filtros-header ${
-            mostrarFiltros ? "btn-filtros-header--ativo" : ""
-          }`}
-          onClick={onToggleFiltros}
-          title="Mostrar filtros"
-        >
-          <FontAwesomeIcon icon={faFilter} />
-        </button>
-      ) : (
-        // pra manter o alinhamento quando não tem botão
-        <span className="app-header__spacer" />
-      )}
+      <div className="header-right">
+        {estaEmRealizado && !ocultarBotaoFiltros ? (
+          <button
+            className={`btn-icon btn-filtros-header ${
+              mostrarFiltros ? "btn-filtros-header--ativo" : ""
+            }`}
+            onToggleFiltros
+            title="Mostrar filtros"
+          >
+            <FontAwesomeIcon icon={faFilter} />
+          </button>
+        ) : (
+          <span className="app-header__spacer" />
+        )}
+
+        {estaNaHome ? (
+          <button
+            className="btn-icon btn-filtros-header "
+            title="Sair"
+            onClick={onLogout}
+          >
+            <FontAwesomeIcon icon={faRightFromBracket} />
+          </button>
+        ) : (
+          <button
+            className="btn-home btn-icon"
+            title="Início"
+            onClick={() => navigate("/home")}
+          >
+            <FontAwesomeIcon icon={faHouse} />
+          </button>
+        )}
+      </div>
     </header>
   );
 }

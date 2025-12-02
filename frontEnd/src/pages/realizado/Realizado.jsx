@@ -25,12 +25,21 @@ function formatarData(iso) {
   return data.toLocaleDateString("pt-BR"); // 05/12/2025
 }
 
+function limparQuantidade(valor) {
+  if (!valor) return null;
+  return valor.replace(/\./g, "").replace(",", ".");
+}
+
 // normaliza qualquer valor para comparação segura
 function normalizar(v) {
   return (v ?? "").toString().trim().toLowerCase();
 }
 
-function Realizado({ mostrarFiltros }) {
+function Realizado({
+  mostrarFiltros,
+  setOcultarBotaoFiltros,
+  setTituloCustom,
+}) {
   // CAMPOS DO FORM
   const [safra, setSafra] = useState("");
   const [lavoura, setLavoura] = useState("");
@@ -60,6 +69,7 @@ function Realizado({ mostrarFiltros }) {
   const [filtroTipo, setFiltroTipo] = useState("");
   const [filtroSafra, setFiltroSafra] = useState("");
   const [filtroLavoura, setFiltroLavoura] = useState("");
+  const [filtroServico, setFiltroServico] = useState("");
 
   const temFiltrosAtivos =
     filtroMes ||
@@ -72,6 +82,29 @@ function Realizado({ mostrarFiltros }) {
   // ===================================================================
   // CARREGAR REALIZADO AO ABRIR
   // ===================================================================
+
+  useEffect(() => {
+    // some o botão de filtro quando o formulário estiver aberto
+    setOcultarBotaoFiltros(mostrarFormulario);
+
+    if (mostrarFormulario) {
+      // se estiver editando, muda o título para "Editar serviço"
+      if (editandoId) {
+        setTituloCustom("Editar serviço");
+      } else {
+        // se for um lançamento novo
+        setTituloCustom("Novo lançamento");
+      }
+    } else {
+      // formulário fechado → volta para o título padrão "Serviços"
+      setTituloCustom("");
+    }
+  }, [mostrarFormulario, editandoId, setOcultarBotaoFiltros, setTituloCustom]);
+
+  useEffect(() => {
+    return () => setTituloCustom(""); // cleanup ao desmontar Realizado
+  }, [setTituloCustom]);
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     const usuario = JSON.parse(localStorage.getItem("usuario") || "null");
@@ -186,7 +219,8 @@ function Realizado({ mostrarFiltros }) {
       status,
       produto: produto || null,
       unidade: uni || null,
-      quantidade: quantidade || null,
+      quantidade: limparQuantidade(quantidade),
+
       cliente_id: usuario.clienteId,
       usuario_id: usuario.id,
     };
@@ -277,7 +311,10 @@ function Realizado({ mostrarFiltros }) {
     setSafra(s.safra || "");
     setLavoura(s.lavoura || "");
     setServico(s.servico || "");
-    setData(s.data || "");
+    // setData(s.data || "");
+    // converte '2025-12-01T00:00:00.000Z' → '2025-12-01'
+    const dataFormatada = s.data ? s.data.split("T")[0] : "";
+    setData(dataFormatada);
     setStatus(s.status || "");
     setProduto(s.produto || "");
     setUni(s.unidade || "");
@@ -410,19 +447,16 @@ function Realizado({ mostrarFiltros }) {
 
             <div className="filtros-grid">
               <div className="filtros-linha">
-                {/* SAFRA (antes de MÊS) */}
+                {/* SAFRA */}
                 <div className="filtro-campo">
-                  <span className="filtro-grupo-titulo">Safra</span>
+                  <div className="filtro-grupo-titulo">Safra</div>
                   <select
                     value={filtroSafra}
                     onChange={(e) => setFiltroSafra(e.target.value)}
                   >
                     <option value="">Todas</option>
                     {listaSafras.map((saf) => (
-                      <option
-                        key={saf.id}
-                        value={saf.nome} // use a mesma propriedade que você usa no formulário
-                      >
+                      <option key={saf.id} value={saf.nome}>
                         {saf.nome}
                       </option>
                     ))}
@@ -431,7 +465,7 @@ function Realizado({ mostrarFiltros }) {
 
                 {/* MÊS */}
                 <div className="filtro-campo">
-                  <span className="filtro-grupo-titulo">Mês</span>
+                  <div className="filtro-grupo-titulo">Mês</div>
                   <select
                     value={filtroMes}
                     onChange={(e) => setFiltroMes(e.target.value)}
@@ -454,7 +488,7 @@ function Realizado({ mostrarFiltros }) {
 
                 {/* ANO */}
                 <div className="filtro-campo">
-                  <span className="filtro-grupo-titulo">Ano</span>
+                  <div className="filtro-grupo-titulo">Ano</div>
                   <select
                     value={filtroAno}
                     onChange={(e) => setFiltroAno(e.target.value)}
@@ -465,32 +499,47 @@ function Realizado({ mostrarFiltros }) {
                     <option value="2026">2026</option>
                   </select>
                 </div>
+              </div>
 
-                {/* LAVOURA (depois do ANO) */}
+              <div className="filtros-linha">
+                {/* LAVOURA */}
                 <div className="filtro-campo">
-                  <span className="filtro-grupo-titulo">Lavoura</span>
+                  <div className="filtro-grupo-titulo">Lavoura</div>
                   <select
                     value={filtroLavoura}
                     onChange={(e) => setFiltroLavoura(e.target.value)}
                   >
                     <option value="">Todas</option>
                     {listaLavouras.map((lav) => (
-                      <option
-                        key={lav.id}
-                        value={lav.nome} // mesma propriedade que você usa no formulário
-                      >
+                      <option key={lav.id} value={lav.nome}>
                         {lav.nome}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* SERVIÇOS */}
+                <div className="filtro-campo">
+                  <div className="filtro-grupo-titulo">Serviço</div>
+                  <select
+                    value={filtroServico}
+                    onChange={(e) => setFiltroServico(e.target.value)}
+                  >
+                    <option value="">Todos</option>
+                    {listaServicos.map((srv) => (
+                      <option key={srv.id} value={srv.nome}>
+                        {srv.nome}
                       </option>
                     ))}
                   </select>
                 </div>
               </div>
 
-              {/* TEXTO */}
+              {/* BUSCA TEXTO */}
               <div className="filtro-grupo filtro-grupo-texto">
-                <span className="filtro-grupo-titulo">
+                <div className="filtro-grupo-titulo">
                   <FontAwesomeIcon icon={faSearch} /> Buscar texto
-                </span>
+                </div>
                 <input
                   className="input-busca"
                   type="text"
@@ -536,9 +585,8 @@ function Realizado({ mostrarFiltros }) {
         open={confirmDuplicado}
         title="Lançamento duplicado"
         description="Já existe um serviço lançado com esta Safra, Lavoura, Serviço e Produto."
-        confirmLabel="OK"
-        cancelLabel="Cancelar"
-        onConfirm={() => setConfirmDuplicado(false)}
+        cancelLabel="Cancelar" // texto do único botão
+        onlyCancel // 👈 mostra apenas esse botão
         onCancel={() => setConfirmDuplicado(false)}
         variant="danger"
       />
