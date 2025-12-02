@@ -114,7 +114,6 @@ function RealizadoForm({
             <select value={status} onChange={(e) => setStatus(e.target.value)}>
               <option value="">Selecione</option>
               <option value="realizado">Realizado</option>
-              <option value="pendente">Pendente</option>
               <option value="cancelado">Cancelado</option>
             </select>
           </div>
