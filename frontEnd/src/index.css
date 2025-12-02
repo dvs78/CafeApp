@@ -30,14 +30,33 @@ body {
   background: radial-gradient(circle at top left, #f7edd8, var(--bege-claro));
 }
 
+/* ----- TOAST ----- */
+.toast-success {
+  background: #16a34a !important;
+  color: #fff !important;
+}
+.toast-error {
+  background: #dc2626 !important;
+  color: #fff !important;
+}
+.toast-info {
+  background: #2563eb !important;
+  color: #fff !important;
+}
+.toast-alerta {
+  background: #f59e0b !important;
+  color: #1f2937 !important;
+}
+.toast-body {
+  font-weight: 500;
+}
+
 /* ===== LAYOUT GERAL ===== */
 .app-container {
-  min-height: 100vh; /* ocupa altura toda */
-  width: 100%; /* ocupa largura toda */
+  min-height: 100vh;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  /* REMOVER align-items:center pra não estreitar o conteúdo */
-  /* align-items: center; */
 }
 
 /* HEADER ocupando a largura toda */
@@ -46,20 +65,64 @@ body {
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  position: relative;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
   padding: 16px 32px;
-  background: rgba(255, 255, 255, 0.85);
+  color: black;
   backdrop-filter: blur(6px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background: var(--bege-claro);
 }
 
-/* Conteúdo principal em “faixa” central, mas quase tela inteira */
+/* ===== BOTÃO VOLTAR (CANTO ESQUERDO) ===== */
+
+.btn-voltar {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+
+  background: var(--marrom-claro);
+  border: 2px solid var(--marrom-claro);
+  color: black;
+
+  padding: 10px 12px;
+  border-radius: 50%;
+
+  cursor: pointer;
+  font-size: 1rem;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.2s ease,
+    border-color 0.15s ease, color 0.15s ease;
+}
+
+.btn-voltar:hover {
+  background: var(--marrom-cafe);
+  color: #fff;
+  border-color: var(--marrom-cafe);
+  transform: translateY(-50%) scale(1.08);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
+}
+
+.btn-voltar:active {
+  transform: translateY(-50%) scale(0.95);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.18);
+}
+
+/* Conteúdo principal em “faixa” central */
 .app-main {
-  flex: 1; /* empurra para ocupar o resto da altura */
+  flex: 1;
   width: 100%;
-  max-width: 1200px; /* largura máxima confortável em desktop */
-  margin: 24px auto 32px; /* centraliza horizontalmente */
-  padding: 0 24px; /* respiro lateral em telas grandes */
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 110px 24px 32px; /* espaço pro header + respiro antes dos filtros */
 }
 
 /* CARD GENÉRICO */
@@ -160,7 +223,6 @@ select:focus {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
   gap: 6px;
   transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
 }
@@ -184,6 +246,7 @@ select:focus {
 /* ====== CARD DE FILTROS ====== */
 .filtros-card {
   border-left-color: var(--marrom-cafe);
+  margin-top: 8px; /* respiro abaixo do título Serviços */
 }
 
 .filtros-header {
@@ -202,11 +265,18 @@ select:focus {
   color: #6b4b2f;
 }
 
-/* Grid dos filtros */
+/* Grid dos filtros – bloco de selects + busca texto */
 .filtros-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  grid-template-columns: 1fr;
   gap: 16px;
+}
+
+/* Linha com Safra / Mês / Ano / Lavoura */
+.filtros-linha {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr)); /* desktop: 4 colunas */
+  gap: 10px;
 }
 
 .filtro-grupo {
@@ -221,11 +291,6 @@ select:focus {
   color: var(--marrom-cafe);
   text-transform: uppercase;
   letter-spacing: 0.06em;
-}
-
-.filtros-linha {
-  display: flex;
-  gap: 10px;
 }
 
 .filtro-campo {
@@ -268,10 +333,8 @@ select:focus {
   gap: 10px;
 }
 
+/* estilo base do item (usado como “tema” geral) */
 .servico-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   border: 1px solid rgba(169, 132, 103, 0.4);
   border-radius: 12px;
   padding: 10px 14px;
@@ -279,26 +342,12 @@ select:focus {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
-.servico-conteudo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.servico-data {
-  padding: 4px 10px;
-  background: var(--bege-claro);
-  border-radius: 999px;
-  font-weight: 600;
-  font-size: 0.8rem;
-  color: var(--marrom-cafe);
-}
-
 .servico-descricao {
   font-size: 0.95rem;
   color: #111827;
 }
 
+/* Botões à direita */
 .botoes-linha {
   display: flex;
   gap: 8px;
@@ -306,8 +355,8 @@ select:focus {
 
 .btn-editar,
 .btn-excluir {
-  padding: 6px 12px;
-  border-radius: 999px;
+  padding: 12px 12px;
+  border-radius: 50%;
   border: none;
   cursor: pointer;
   font-size: 0.8rem;
@@ -319,7 +368,7 @@ select:focus {
 }
 
 .btn-editar {
-  background: var(--verde-oliva);
+  background: blue; /* ou var(--verde-oliva) se preferir */
   color: #fff;
 }
 
@@ -332,6 +381,14 @@ select:focus {
 .btn-excluir:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+.btn-editar:hover {
+  background: rgba(0, 0, 255, 0.5);
+}
+
+.btn-excluir:hover {
+  background: rgba(217, 83, 79, 0.5);
 }
 
 /* Botões de exportação na lista */
@@ -373,72 +430,7 @@ select:focus {
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.3);
 }
 
-/* Responsivo básico */
-@media (max-width: 600px) {
-  .servico-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .export-buttons {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .app-main {
-    padding: 0 16px;
-    margin: 16px auto 24px;
-  }
-}
-
-/* Botão de filtros no header */
-.btn-filtros-header {
-  border: none;
-  background: #fff;
-  border-radius: 999px;
-  padding: 0.35rem 0.6rem;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  cursor: pointer;
-  font-size: 0.95rem;
-}
-
-.btn-filtros-header--ativo {
-  background: #f0c37a;
-}
-
-.servico-extra {
-  display: flex;
-  flex-direction: column;
-  font-size: 0.8rem;
-  color: #5a4735;
-  gap: 2px;
-}
-
-/* Linhas do formulário (2 ou 3 colunas) */
-.linha-form {
-  display: flex;
-  gap: 12px;
-  width: 100%;
-}
-
-/* Cada campo ocupa o mesmo espaço dentro da linha */
-.linha-form .campo {
-  flex: 1;
-}
-
-/* Linha com 3 colunas (produto / uni / qtde) */
-.linha-form--3 .campo {
-  flex: 1; /* os 3 dividem igualmente */
-}
-
-/* Em telas pequenas, tudo fica em coluna (mobile) */
-@media (max-width: 700px) {
-  .linha-form {
-    flex-direction: column;
-  }
-}
-
+/* ====== LOGIN E HOME ====== */
 .login-page {
   min-height: 100vh;
   display: flex;
@@ -514,4 +506,336 @@ select:focus {
 .home-card:hover {
   transform: translateY(-3px);
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+}
+
+/* ----- MODAL DE CONFIRMAÇÃO ----- */
+.confirm-modal__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  animation: confirm-backdrop-fade 180ms ease-out;
+}
+
+@keyframes confirm-backdrop-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.confirm-modal {
+  width: min(90vw, 420px);
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 22px 22px 18px;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.25);
+  font-family: "Montserrat", system-ui, -apple-system, "Segoe UI", Roboto, Arial,
+    "Noto Sans", "Helvetica Neue", sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  animation: confirm-modal-enter 180ms ease-out;
+}
+
+@keyframes confirm-modal-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.confirm-modal__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.confirm-modal__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(248, 113, 113, 0.12);
+  color: #b91c1c;
+  font-size: 18px;
+}
+
+.confirm-modal__title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.confirm-modal__description {
+  margin-top: 2px;
+  font-size: 14px;
+  color: #475569;
+}
+
+.confirm-modal__item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.confirm-modal__item-cultivar {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.confirm-modal__item-line {
+  font-size: 13px;
+  color: #4b5563;
+}
+
+.confirm-modal__actions {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.confirm-modal__btn {
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-size: 14px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease,
+    background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.confirm-modal__btn:focus-visible {
+  outline: 2px solid #0ea5e9;
+  outline-offset: 2px;
+}
+
+.confirm-modal__btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.15);
+}
+
+.confirm-modal__btn--cancel {
+  background: #e5e7eb;
+  color: #111827;
+  border-color: #d1d5db;
+}
+
+.confirm-modal__btn--confirm {
+  background: #16a34a;
+  color: #ffffff;
+  border-color: #15803d;
+}
+
+.confirm-modal__btn--confirm:hover {
+  background: #15803d;
+}
+
+/* ===== LISTA COMPACTA EM 2 LINHAS (ALINHADA) ===== */
+
+/* Card da linha da lista */
+.servico-item.compacto {
+  display: grid;
+  grid-template-columns: 1fr auto; /* esquerda: textos | direita: botões */
+  gap: 14px 18px;
+  align-items: center;
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: 1px solid rgba(169, 132, 103, 0.35);
+  background: #fff;
+}
+
+/* Bloco de textos (linhas 1 e 2) */
+.servico-linhas {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+/* LINHA 1 (Safra, Data, Lavoura, Serviço) */
+.linha-1 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.3fr 1.7fr; /* 4 colunas */
+  column-gap: 16px;
+  font-size: 0.9rem;
+  align-items: center;
+}
+
+.linha-1 span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* LINHA 2 (Status, Produto, Quantidade) */
+.linha-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.3fr 1.7fr; /* mesmas larguras da linha 1 */
+  column-gap: 16px;
+  font-size: 0.85rem;
+  align-items: center;
+  color: #5a4735;
+}
+
+/* base dos spans da linha 2 */
+.linha-2 span {
+  display: block;
+}
+
+/* 1º span = Status -> coluna 1 */
+.linha-2 span:nth-child(1) {
+  grid-column: 1 / 2;
+}
+
+/* 2º span = Produto -> colunas 2 e 3 (Data + Lavoura) */
+.linha-2 span:nth-child(2) {
+  grid-column: 2 / 4;
+}
+
+/* 3º span = Quantidade -> coluna 4 (Serviço) */
+.linha-2 span:nth-child(3) {
+  grid-column: 4 / 5;
+}
+
+/* STATUS (badge só do tamanho do texto) */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  white-space: nowrap;
+  width: fit-content;
+  max-width: max-content;
+  justify-self: start;
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge.realizado {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge.pendente {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-badge.cancelado {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* ========= RESPONSIVO ========= */
+
+/* Tablets: 2 filtros por linha */
+@media (max-width: 900px) {
+  .filtros-linha {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Celular: 1 filtro por linha */
+@media (max-width: 600px) {
+  .filtros-linha {
+    grid-template-columns: 1fr;
+  }
+
+  .export-buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .app-main {
+    padding: 110px 16px 24px;
+  }
+}
+
+/* Cards da lista em 1 coluna no mobile */
+@media (max-width: 700px) {
+  .servico-item.compacto {
+    grid-template-columns: 1fr;
+    align-items: flex-start;
+  }
+
+  .linha-1,
+  .linha-2 {
+    grid-template-columns: 1fr;
+    column-gap: 0;
+    row-gap: 2px;
+  }
+
+  .linha-2 span:nth-child(1),
+  .linha-2 span:nth-child(2),
+  .linha-2 span:nth-child(3) {
+    grid-column: auto;
+  }
+
+  .botoes-linha {
+    justify-content: flex-start;
+    padding-left: 0;
+  }
+}
+
+/* ====== FORMULÁRIO RESPONSIVO EM LINHAS ====== */
+
+/* === Novos grupos de 3 colunas === */
+.form-row-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 100%;
+}
+
+.form-row-3 .campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Responsivo – celular */
+@media (max-width: 700px) {
+  .form-row-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+/* Campos que ocupam a linha toda */
+.form-row-full {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+/* Ajuste para mobile */
+@media (max-width: 700px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
 }

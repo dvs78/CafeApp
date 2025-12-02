@@ -1,6 +1,5 @@
-// src/pages/realizado/RealizadoForm.jsx
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinner } from "@fortawesome/free-solid-svg-icons"; // se quiser usar loading no futuro
+import { faSave } from "@fortawesome/free-solid-svg-icons";
 
 function RealizadoForm({
   onSubmit,
@@ -28,16 +27,16 @@ function RealizadoForm({
 }) {
   return (
     <section className="card card-form anima-card">
-      <form onSubmit={onSubmit} className="form-servico">
-        {/* LINHA 1 – Safra + Lavoura */}
-        <div className="linha-form">
+      <div className="card-title-row">
+        <h2>{editandoId ? "Editar serviço" : "Lançar serviço"}</h2>
+      </div>
+
+      <form className="form-servico" onSubmit={onSubmit}>
+        {/* SAFRA | LAVOURA */}
+        <div className="form-row">
           <div className="campo">
             <label>Safra</label>
-            <select
-              value={safra}
-              onChange={(e) => setSafra(e.target.value)}
-              required
-            >
+            <select value={safra} onChange={(e) => setSafra(e.target.value)}>
               <option value="">Selecione a safra</option>
               {listaSafras.map((s) => (
                 <option key={s.id} value={s.nome}>
@@ -52,26 +51,24 @@ function RealizadoForm({
             <select
               value={lavoura}
               onChange={(e) => setLavoura(e.target.value)}
-              required
             >
               <option value="">Selecione a lavoura</option>
-              {listaLavouras.map((lav) => (
-                <option key={lav.id} value={lav.nome}>
-                  {lav.nome}
+              {listaLavouras.map((l) => (
+                <option key={l.id} value={l.nome}>
+                  {l.nome}
                 </option>
               ))}
             </select>
           </div>
         </div>
 
-        {/* LINHA 2 – Serviço */}
-        <div className="linha-form">
+        {/* SERVIÇO (linha inteira) */}
+        <div className="form-row-full">
           <div className="campo">
             <label>Serviço</label>
             <select
               value={servico}
               onChange={(e) => setServico(e.target.value)}
-              required
             >
               <option value="">Selecione o serviço</option>
               {listaServicos.map((s) => (
@@ -83,25 +80,20 @@ function RealizadoForm({
           </div>
         </div>
 
-        {/* LINHA 3 – Data + Status */}
-        <div className="linha-form">
+        {/* DATA | STATUS */}
+        <div className="form-row">
           <div className="campo">
             <label>Data</label>
             <input
               type="date"
               value={data}
               onChange={(e) => setData(e.target.value)}
-              required
             />
           </div>
 
           <div className="campo">
             <label>Status</label>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              required
-            >
+            <select value={status} onChange={(e) => setStatus(e.target.value)}>
               <option value="">Selecione</option>
               <option value="realizado">Realizado</option>
               <option value="pendente">Pendente</option>
@@ -110,15 +102,17 @@ function RealizadoForm({
           </div>
         </div>
 
-        {/* LINHA 4 – Produto / Unidade / Quantidade */}
-        <div className="linha-form linha-form--3">
+        {/* PRODUTO (opcional, linha inteira) */}
+
+        {/* PRODUTO | UNIDADE | QUANTIDADE (3 colunas lado a lado) */}
+        <div className="form-row-3">
           <div className="campo">
-            <label>Produto</label>
+            <label>Produto (opcional)</label>
             <select
               value={produto}
               onChange={(e) => setProduto(e.target.value)}
             >
-              <option value="">Selecione o produto</option>
+              <option value="">Selecione o produto (opcional)</option>
               {listaProdutos.map((p) => (
                 <option key={p.id} value={p.nome}>
                   {p.nome}
@@ -128,29 +122,31 @@ function RealizadoForm({
           </div>
 
           <div className="campo">
-            <label>Unidade</label>
+            <label>Unidade (opcional)</label>
             <select value={uni} onChange={(e) => setUni(e.target.value)}>
               <option value="">Selecione</option>
-              <option value="L">Litro (L)</option>
-              <option value="KG">Quilo (KG)</option>
-              <option value="UN">Unidade (UN)</option>
-              <option value="SC">Saco (SC)</option>
+              <option value="L">L</option>
+              <option value="Kg">Kg</option>
+              <option value="mL">mL</option>
+              <option value="g">g</option>
             </select>
           </div>
 
           <div className="campo">
-            <label>Quantidade</label>
+            <label>Quantidade (opcional)</label>
             <input
               type="number"
               step="0.01"
-              placeholder="0,00"
               value={quantidade}
               onChange={(e) => setQuantidade(e.target.value)}
+              placeholder="0,00"
             />
           </div>
         </div>
 
-        <button className="btn-primario">
+        {/* BOTÃO */}
+        <button type="submit" className="btn-primario">
+          <FontAwesomeIcon icon={faSave} />
           {editandoId ? "Salvar alterações" : "Lançar serviço"}
         </button>
       </form>

@@ -21,8 +21,13 @@ import { notificar } from "../../components/Toast";
 // FORMATA DATA
 function formatarData(iso) {
   if (!iso) return "";
-  const [ano, mes, dia] = iso.split("-");
-  return `${dia}/${mes}/${ano}`;
+  const data = new Date(iso);
+  return data.toLocaleDateString("pt-BR"); // 05/12/2025
+}
+
+// normaliza qualquer valor para comparação segura
+function normalizar(v) {
+  return (v ?? "").toString().trim().toLowerCase();
 }
 
 function Realizado({ mostrarFiltros }) {
@@ -53,8 +58,16 @@ function Realizado({ mostrarFiltros }) {
   const [filtroAno, setFiltroAno] = useState("");
   const [filtroTexto, setFiltroTexto] = useState("");
   const [filtroTipo, setFiltroTipo] = useState("");
+  const [filtroSafra, setFiltroSafra] = useState("");
+  const [filtroLavoura, setFiltroLavoura] = useState("");
 
-  const temFiltrosAtivos = filtroMes || filtroAno || filtroTexto || filtroTipo;
+  const temFiltrosAtivos =
+    filtroMes ||
+    filtroAno ||
+    filtroTexto ||
+    filtroTipo ||
+    filtroSafra ||
+    filtroLavoura;
 
   // ===================================================================
   // CARREGAR REALIZADO AO ABRIR
@@ -115,27 +128,46 @@ function Realizado({ mostrarFiltros }) {
   // ===================================================================
   // SALVAR (CRIAR / EDITAR)
   // ===================================================================
+  // dentro de src/pages/realizado/Realizado.jsx
+
   function handleSubmit(e) {
     e.preventDefault();
 
+    // 🔍 Validação manual usando o estado
+    if (!safra || !lavoura || !servico || !data || !status) {
+      notificar(
+        "erro",
+        "Preencha Safra, Lavoura, Serviço, Data e Status antes de lançar."
+      );
+      return;
+    }
+
     // ==============================================
-    // VERIFICA DUPLICIDADE (Safra + Lavoura + Serviço + Produto)
+    // VERIFICA DUPLICIDADE
     // ==============================================
+    const produtoAtualNorm = normalizar(produto);
+    const safraNorm = normalizar(safra);
+    const lavouraNorm = normalizar(lavoura);
+    const servicoNorm = normalizar(servico);
+
     const existeDuplicado = servicos.some((s) => {
+      const produtoExistenteNorm = normalizar(s.produto);
       return (
-        s.safra === safra &&
-        s.lavoura === lavoura &&
-        s.servico === servico &&
-        s.produto === produto &&
-        s.id !== editandoId // permite editar o atual
+        s.id !== editandoId &&
+        normalizar(s.safra) === safraNorm &&
+        normalizar(s.lavoura) === lavouraNorm &&
+        normalizar(s.servico) === servicoNorm &&
+        produtoExistenteNorm === produtoAtualNorm
       );
     });
 
     if (existeDuplicado) {
-      alert(
-        "Este serviço já foi lançado com a mesma safra, lavoura, serviço e produto."
+      notificar(
+        "erro",
+        "Este serviço já está lançado com a mesma Safra, Lavoura, Serviço e Produto."
       );
-      return;
+      setConfirmDuplicado(true);
+      return; // não tenta salvar no backend
     }
 
     const token = localStorage.getItem("token");
@@ -152,9 +184,9 @@ function Realizado({ mostrarFiltros }) {
       servico,
       data,
       status,
-      produto,
-      unidade: uni,
-      quantidade,
+      produto: produto || null,
+      unidade: uni || null,
+      quantidade: quantidade || null,
       cliente_id: usuario.clienteId,
       usuario_id: usuario.id,
     };
@@ -167,9 +199,11 @@ function Realizado({ mostrarFiltros }) {
         .then((res) => {
           setServicos((prev) => [res.data, ...prev]);
           limparFormularioDepoisDeSalvar();
+          notificar("sucesso", "Serviço lançado com sucesso!");
         })
         .catch((err) => {
           console.error("Erro ao criar serviço realizado:", err);
+          notificar("erro", "Erro ao salvar serviço realizado.");
         });
     } else {
       axios
@@ -181,9 +215,11 @@ function Realizado({ mostrarFiltros }) {
             prev.map((s) => (s.id === editandoId ? res.data : s))
           );
           limparFormularioDepoisDeSalvar();
+          notificar("sucesso", "Serviço atualizado com sucesso!");
         })
         .catch((err) => {
           console.error("Erro ao atualizar serviço realizado:", err);
+          notificar("erro", "Erro ao atualizar serviço realizado.");
         });
     }
   }
@@ -225,9 +261,11 @@ function Realizado({ mostrarFiltros }) {
       })
       .then(() => {
         setServicos((prev) => prev.filter((s) => s.id !== id));
+        notificar("sucesso", "Serviço excluído.");
       })
       .catch((err) => {
         console.error("Erro ao excluir serviço realizado:", err);
+        notificar("erro", "Erro ao excluir serviço.");
       });
   }
 
@@ -248,21 +286,15 @@ function Realizado({ mostrarFiltros }) {
   }
 
   // ===================================================================
-  // FILTRO AUTOMÁTICO PELO QUE ESTÁ NO FORM (quando aberto)
-  // ===================================================================
-  const filtroAutomatico = servicos.filter((s) => {
-    if (safra && s.safra !== safra) return false;
-    if (lavoura && s.lavoura !== lavoura) return false;
-    if (servico && s.servico !== servico) return false;
-    return true;
-  });
-
-  // ===================================================================
   // FILTROS MANUAIS (card) – usados sempre como base
   // ===================================================================
   const servicosComFiltrosManuais = servicos.filter((s) => {
     if (!s.data) return false;
     const [ano, mes] = s.data.split("-");
+
+    // ➕ novos filtros
+    if (filtroSafra && s.safra !== filtroSafra) return false;
+    if (filtroLavoura && s.lavoura !== filtroLavoura) return false;
 
     if (filtroMes && mes !== filtroMes) return false;
     if (filtroAno && ano !== filtroAno) return false;
@@ -282,10 +314,7 @@ function Realizado({ mostrarFiltros }) {
   });
 
   // ===================================================================
-  // ESCOLHA FINAL:
-  // Se o formulário estiver aberto E tiver safra/lavoura/serviço,
-  // aplica o filtro automático em cima da lista já filtrada pelos filtros manuais.
-  // Senão, usa só os filtros manuais.
+  // ESCOLHA FINAL
   // ===================================================================
   const servicosFiltrados =
     mostrarFormulario && (safra || lavoura || servico)
@@ -326,7 +355,9 @@ function Realizado({ mostrarFiltros }) {
     let y = 20;
     servicosFiltrados.forEach((s) => {
       doc.text(
-        `${formatarData(s.data)} - ${s.servico} - ${s.quantidade} ${s.unidade}`,
+        `${formatarData(s.data)} - ${s.servico} - ${s.quantidade || ""} ${
+          s.unidade || ""
+        }`,
         10,
         y
       );
@@ -378,59 +409,81 @@ function Realizado({ mostrarFiltros }) {
             </div>
 
             <div className="filtros-grid">
-              {/* PERÍODO */}
-              <div className="filtro-grupo">
-                <div className="filtros-linha">
-                  <div className="filtro-campo">
-                    <label>Mês</label>
-                    <select
-                      value={filtroMes}
-                      onChange={(e) => setFiltroMes(e.target.value)}
-                    >
-                      <option value="">Todos</option>
-                      <option value="01">Janeiro</option>
-                      <option value="02">Fevereiro</option>
-                      <option value="03">Março</option>
-                      <option value="04">Abril</option>
-                      <option value="05">Maio</option>
-                      <option value="06">Junho</option>
-                      <option value="07">Julho</option>
-                      <option value="08">Agosto</option>
-                      <option value="09">Setembro</option>
-                      <option value="10">Outubro</option>
-                      <option value="11">Novembro</option>
-                      <option value="12">Dezembro</option>
-                    </select>
-                  </div>
-
-                  <div className="filtro-campo">
-                    <label>Ano</label>
-                    <select
-                      value={filtroAno}
-                      onChange={(e) => setFiltroAno(e.target.value)}
-                    >
-                      <option value="">Todos</option>
-                      <option value="2024">2024</option>
-                      <option value="2025">2025</option>
-                      <option value="2026">2026</option>
-                    </select>
-                  </div>
+              <div className="filtros-linha">
+                {/* SAFRA (antes de MÊS) */}
+                <div className="filtro-campo">
+                  <span className="filtro-grupo-titulo">Safra</span>
+                  <select
+                    value={filtroSafra}
+                    onChange={(e) => setFiltroSafra(e.target.value)}
+                  >
+                    <option value="">Todas</option>
+                    {listaSafras.map((saf) => (
+                      <option
+                        key={saf.id}
+                        value={saf.nome} // use a mesma propriedade que você usa no formulário
+                      >
+                        {saf.nome}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-              </div>
 
-              {/* TIPO */}
-              <div className="filtro-grupo">
-                <span className="filtro-grupo-titulo">Tipo de serviço</span>
-                <select
-                  value={filtroTipo}
-                  onChange={(e) => setFiltroTipo(e.target.value)}
-                >
-                  <option value="">Todos</option>
-                  <option value="roç">Roçagem</option>
-                  <option value="adub">Adubação</option>
-                  <option value="pulf">Pulverização</option>
-                  <option value="colh">Colheita</option>
-                </select>
+                {/* MÊS */}
+                <div className="filtro-campo">
+                  <span className="filtro-grupo-titulo">Mês</span>
+                  <select
+                    value={filtroMes}
+                    onChange={(e) => setFiltroMes(e.target.value)}
+                  >
+                    <option value="">Todos</option>
+                    <option value="01">Janeiro</option>
+                    <option value="02">Fevereiro</option>
+                    <option value="03">Março</option>
+                    <option value="04">Abril</option>
+                    <option value="05">Maio</option>
+                    <option value="06">Junho</option>
+                    <option value="07">Julho</option>
+                    <option value="08">Agosto</option>
+                    <option value="09">Setembro</option>
+                    <option value="10">Outubro</option>
+                    <option value="11">Novembro</option>
+                    <option value="12">Dezembro</option>
+                  </select>
+                </div>
+
+                {/* ANO */}
+                <div className="filtro-campo">
+                  <span className="filtro-grupo-titulo">Ano</span>
+                  <select
+                    value={filtroAno}
+                    onChange={(e) => setFiltroAno(e.target.value)}
+                  >
+                    <option value="">Todos</option>
+                    <option value="2024">2024</option>
+                    <option value="2025">2025</option>
+                    <option value="2026">2026</option>
+                  </select>
+                </div>
+
+                {/* LAVOURA (depois do ANO) */}
+                <div className="filtro-campo">
+                  <span className="filtro-grupo-titulo">Lavoura</span>
+                  <select
+                    value={filtroLavoura}
+                    onChange={(e) => setFiltroLavoura(e.target.value)}
+                  >
+                    <option value="">Todas</option>
+                    {listaLavouras.map((lav) => (
+                      <option
+                        key={lav.id}
+                        value={lav.nome} // mesma propriedade que você usa no formulário
+                      >
+                        {lav.nome}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               {/* TEXTO */}
@@ -458,6 +511,8 @@ function Realizado({ mostrarFiltros }) {
                     setFiltroAno("");
                     setFiltroTexto("");
                     setFiltroTipo("");
+                    setFiltroSafra("");
+                    setFiltroLavoura("");
                   }}
                 >
                   Limpar filtros
@@ -476,6 +531,17 @@ function Realizado({ mostrarFiltros }) {
           onExportarPDF={exportarPDF}
         />
       </main>
+
+      <ConfirmDialog
+        open={confirmDuplicado}
+        title="Lançamento duplicado"
+        description="Já existe um serviço lançado com esta Safra, Lavoura, Serviço e Produto."
+        confirmLabel="OK"
+        cancelLabel="Cancelar"
+        onConfirm={() => setConfirmDuplicado(false)}
+        onCancel={() => setConfirmDuplicado(false)}
+        variant="danger"
+      />
 
       {/* BOTÃO FLUTUANTE – abre/fecha o formulário */}
       <button

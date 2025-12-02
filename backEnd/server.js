@@ -8,6 +8,7 @@ import rotasRealizado from "./routes/rotasRealizado.routes.js";
 import rotasSafras from "./routes/rotasSafras.routes.js";
 import rotasProdutos from "./routes/rotasProdutos.routes.js";
 import rotasLavouras from "./routes/rotasLavouras.routes.js";
+import rotasCliente from "./routes/rotasCliente.routes.js";
 
 const app = express();
 app.use(cors());
@@ -16,6 +17,7 @@ app.use(express.json());
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
 app.use("/login", rotaslogin);
+app.use("/clientes", rotasCliente);
 app.use("/safras", rotasSafras);
 app.use("/lavouras", rotasLavouras);
 app.use("/servicos-lista", rotasServicosLista);

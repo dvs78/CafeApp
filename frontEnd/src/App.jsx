@@ -8,6 +8,7 @@ import Home from "./pages/home/Home";
 import Realizado from "./pages/realizado/Realizado";
 import Settings from "./pages/settings/Settings";
 import Login from "./pages/login/Login";
+import Toast from "./components/Toast";
 
 function App() {
   const { usuario, logout } = useAuth(); // vem do AuthContext
@@ -17,16 +18,18 @@ function App() {
 
   return (
     <BrowserRouter>
-      {/* Header só aparece quando estiver logado */}
+      {/* Header só aparece quando estiver logado - src/App.jsx */}
       {usuario && (
         <Header
+          usuario={usuario}
           mostrarFiltros={mostrarFiltros}
           onToggleFiltros={() => setMostrarFiltros((prev) => !prev)}
-          onLogout={logout} // se você quiser usar botão de sair no Header
+          onLogout={logout}
         />
       )}
 
       <div className="app-container">
+        <Toast />
         <Routes>
           {/* LOGIN */}
           <Route

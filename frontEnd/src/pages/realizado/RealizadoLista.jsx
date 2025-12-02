@@ -7,11 +7,11 @@ import {
   faFilePdf,
 } from "@fortawesome/free-solid-svg-icons";
 
-// pequena função local só para exibir data bonitinha
+// Formata a data corretamente, independente do formato recebido
 function formatarData(iso) {
   if (!iso) return "";
-  const [ano, mes, dia] = iso.split("-");
-  return `${dia}/${mes}/${ano}`;
+  const data = new Date(iso);
+  return data.toLocaleDateString("pt-BR"); // ex.: 05/12/2025
 }
 
 function RealizadoLista({
@@ -30,27 +30,41 @@ function RealizadoLista({
       ) : (
         <ul className="lista-servicos">
           {servicosFiltrados.map((s) => (
-            <li key={s.id} className="servico-item">
-              <div className="servico-conteudo">
-                <span className="servico-data">{formatarData(s.data)}</span>
-                <span className="servico-descricao">{s.servico}</span>
+            <li key={s.id} className="servico-item compacto">
+              <div className="servico-linhas">
+                {/* Linha 1 — principais */}
+                <div className="servico-linhas">
+                  <div className="servico-linhas">
+                    {/* Linha 1 */}
+                    <div className="linha-1">
+                      <span>
+                        <b>Safra:</b> {s.safra}
+                      </span>
+                      <span>
+                        <b>Data:</b> {formatarData(s.data)}
+                      </span>
+                      <span>
+                        <b>Lavoura:</b> {s.lavoura}
+                      </span>
+                      <span>
+                        <b>Serviço:</b> {s.servico}
+                      </span>
+                    </div>
 
-                <div className="servico-extra">
-                  <span>
-                    Safra: <b>{s.safra}</b>
-                  </span>
-                  <span>
-                    Lavoura: <b>{s.lavoura}</b>
-                  </span>
-                  <span>
-                    Produto: <b>{s.produto}</b>
-                  </span>
-                  <span>
-                    {s.quantidade} {s.unidade}
-                  </span>
-                  <span>
-                    Status: <b>{s.status}</b>
-                  </span>
+                    {/* Linha 2 */}
+                    <div className="linha-2">
+                      <span className={`status-badge ${s.status}`}>
+                        {s.status}
+                      </span>
+                      <span>
+                        <b>Produto:</b> {s.produto || "-"}
+                      </span>
+                      <span>
+                        <b>Quantidade:</b> {s.quantidade || "-"}{" "}
+                        {s.unidade || ""}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -60,14 +74,15 @@ function RealizadoLista({
                   type="button"
                   onClick={() => onEditar(s)}
                 >
-                  <FontAwesomeIcon icon={faPen} /> Editar
+                  <FontAwesomeIcon icon={faPen} />
                 </button>
+
                 <button
                   className="btn-excluir"
                   type="button"
                   onClick={() => onExcluir(s.id)}
                 >
-                  <FontAwesomeIcon icon={faTrash} /> Excluir
+                  <FontAwesomeIcon icon={faTrash} />
                 </button>
               </div>
             </li>
@@ -84,6 +99,7 @@ function RealizadoLista({
           >
             <FontAwesomeIcon icon={faFileExcel} /> Exportar Excel
           </button>
+
           <button
             className="btn-primario btn-export"
             type="button"
