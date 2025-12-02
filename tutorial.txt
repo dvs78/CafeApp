@@ -813,8 +813,17 @@ No Render, em Environment Variables, preencha:
 Para o back-end no Render, prefira usar a Internal Database URL (fica em “Connect → Internal” lá no dashboard do banco).
 Para o pgAdmin no Windows, use sempre a External Database URL, porque você está acessando de fora.
 
-No postgres local vá em Add new server
+No postgres local vá Servers → Register → Server
+Em general coloque o nome do projeto: CafeApp_Render
 No Render, a External Database URL tem esse formato: postgresql://tasklist_2les_user:Jm6J5uEHm2Ul3b8cBd83vTJ3PvGa3S@dpg-d3024bv5r7bs73ausl99-a.oregon-postgres.render.com:5432/tasklist_2les
+
+Copie e cole no chatgpt: para ele preencher
+
+Continue no pgAdmin
+
+Servers → Register → Server
+Vá na aba connection
+
 
 Server Name (nome amigável): TaskList-Render
 
@@ -828,48 +837,146 @@ Username / User: tasklist_2les_user
 
 Password: JmGJ5uEHInm2Ulb3BcBdB3vTJ3PvGa3S
 
+Marque sim
+
+Clique na aba Parameter e deixe o valor de SSl mode = require
+
 SSL mode: require
 
-Role e Service não precisa preencher
-Clicar em connect e Open
+Salvar
 
-Depois colar o código SQL
--- extensão p/ gerar UUID
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
--- Tabela LOGIN
-CREATE TABLE IF NOT EXISTS public.login (
-  id    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  nome  TEXT NOT NULL UNIQUE,
-  senha TEXT NOT NULL
-);
+No pgAdmin → clique na seta ao lado de CafeApp_Render
 
--- Tabela TAREFA
-CREATE TABLE IF NOT EXISTS public.tarefa (
-  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  usuario_id UUID NOT NULL REFERENCES public.login(id) ON DELETE CASCADE,
-  tarefa     TEXT NOT NULL
-);
+O nome que você deu.
 
--- Inserir usuários
-INSERT INTO public.login (senha, nome) VALUES
-  ('0000', 'Daniel'),
-  ('0001', 'Tais')
-ON CONFLICT (nome) DO NOTHING;
+Ele deve expandir mostrando:
 
--- Inserir tarefas pegando o ID real de cada usuário pelo nome
-INSERT INTO public.tarefa (usuario_id, tarefa)
-SELECT l.id, x.tarefa
-FROM (VALUES
-  ('Daniel', 'Regar todas as plantas da estufa A'),
-  ('Daniel', 'Correr'),
-  ('Tais',   'Verificar nível de adubo nos viveiros')
-) AS x(nome, tarefa)
-JOIN public.login l ON l.nome = x.nome
-ON CONFLICT DO NOTHING;
+Databases
 
-SELECT * FROM public.login;
-SELECT * FROM public.tarefa;
+Login/Group Roles
+
+Tablespaces
+
+✔️ 2. Agora clique em:
+
+Databases → cafeappdb_8cz2 → Schemas → public → Tables
+
+Não vai ter tabelas, aqui é o postgres remoto da render
+
+
+Copiar tudo do banco local para o da Render (backup/restore)
+
+Passo 1 – Fazer backup do banco local (CafeApp)
+
+No pgAdmin, no servidor local (PostgreSQL 17), clique com o botão direito em Database → CafeApp.
+
+Clique em Backup….
+
+Em Format, escolha Plain (ou Custom, se preferir, mas Plain é mais fácil para executar no Query Tool).
+
+Clique no ícone da pastinha ao lado de Filename
+(é esse 📁 no canto direito)
+
+Assim:
+
+Filename:   CafeApp_Backup    [📁]
+
+
+Quando você clicar no 📁, vai abrir a janela do Windows Explorer.
+
+Depois:
+
+Vá até a pasta onde quer salvar
+👉 exemplo: C:\Users\Daniel\Desktop
+
+No campo de nome do arquivo, escreva:
+👉 cafeapp_backup.sql
+
+Clique em Salvar.
+
+De volta ao pgAdmin, clique em Backup.
+
+Clique em Backup e espere terminar (sem erro).
+
+Esse arquivo .sql vai conter todos os CREATE TABLE, INSERT, etc
+
+PASSO 1 — Abra o arquivo cafeapp_backup.sql
+
+Abra no VS Code.
+
+Vá no arquivo gerado no backup copie tudo e cole no chatgpt para criar os códigos e ferar tabela no postgres remoto
+
+
+Conferir se você tem o psql
+
+Feche as janelas de Restore do pgAdmin.
+
+Abra o Prompt de Comando ou PowerShell.
+
+Digite:
+
+psql --version
+
+
+Se aparecer algo tipo psql (PostgreSQL) 17.x, está ok.
+
+Se der erro de comando não encontrado, use o caminho completo, por exemplo:
+
+"C:\Program Files\PostgreSQL\17\bin\psql.exe" --version
+
+
+(Ajuste o 17 se sua versão for outra.)
+
+Guarde esse caminho, vamos usar já já.
+
+1. Comando pronto pra você
+
+No Prompt de Comando (o mesmo que você abriu), cola tudo em uma linha só:
+
+"C:\Program Files\PostgreSQL\17\bin\psql.exe" "postgresql://cafeappdb_8cz2_user:OZUlAW7ag7mdgTwerY0N1UqbDGFyqkVL@dpg-d4njnpfpm1nc73e92tmg-a.oregon-postgres.render.com:5432/cafeappdb_8cz2?sslmode=require" -f "C:\Users\Daniel\Documents\Projetos\CafeApp\cafeapp_backup.sql"
+
+
+!!!!!!!!!!!!!!!!!!Se o nome da sua pasta de usuário ou o caminho do arquivo for diferente, só ajusta esse pedaço final:
+C:\Users\Bruno_Glácio\Documents\Projetos\CafeApp\cafeapp_backup.sql
+
+
+2. O que deve acontecer
+
+Vai aparecer um monte de linhas passando rápido (CREATE TABLE, COPY, ALTER TABLE…).
+
+Se tudo der certo, termina sem mensagem de erro (talvez só uns avisos).
+
+
+2. Criar as variáveis de ambiente na Render
+
+No painel da Render, no serviço CafeApp (backend):
+
+Desça até Environment → clique em Edit ou Add Environment Variable.
+
+Crie as variáveis abaixo (uma por linha), usando os dados da tela “Connections” do seu banco CafeAppDB:
+
+DB_HOST = dpg-d4njnpfpm1nc73e92tmg-a.oregon-postgres.render.com
+DB_PORT = 5432
+DB_USER = cafeappdb_8cz2_user
+DB_PASSWORD = OZUlAW7ag7mdgTwerY0N1UqbDGFyqkVL, está em render database
+DB_DATABASE = cafeappdb_8cz2
+
+JWT_SECRET = UmaSenhaBemSecretaParaToken_CafeApp
+Coloquei essa senha c@fe_25
+
+Importante:
+
+Não precisa definir PORT na Render.
+
+No seu server.js garanta que está assim:
+
+const PORT = process.env.PORT || 3001;
+
+
+A Render vai passar o PORT automaticamente.
+
+Depois de salvar as variáveis, clique em Manual Deploy → Clear cache & deploy para ele reconstruir usando esses valores.
 
 
 Checklist rápido (recomendado)

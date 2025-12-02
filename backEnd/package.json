@@ -4,7 +4,6 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "seed:login": "node security/seedLogin.js",
     "start": "node server.js"
   },
   "keywords": [],

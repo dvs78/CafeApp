@@ -6,6 +6,9 @@
     "start": "npm run start --prefix backEnd",
     "build": "npm install --prefix frontEnd && npm install --prefix backEnd && npm run build --prefix frontEnd"
   },
+  "engines": {
+    "node": "22.x"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/dvs78/CafeApp.git"

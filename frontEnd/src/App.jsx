@@ -11,11 +11,11 @@ import Login from "./pages/login/Login";
 import Toast from "./components/Toast";
 
 import axios from "axios";
-axios.defaults.baseURL = "http://localhost:3001/";
+// axios.defaults.baseURL = "http://localhost:3001/";
 
-// axios.defaults.baseURL = import.meta.env.DEV
-//   ? "http://localhost:3000/api"
-//   : "https://cafeapp-ial5.onrender.com";
+axios.defaults.baseURL = import.meta.env.DEV
+  ? "http://localhost:3001"
+  : "https://cafeapp-ial5.onrender.com";
 
 function App() {
   const { usuario, logout } = useAuth(); // vem do AuthContext
