@@ -112,7 +112,7 @@ function Realizado({
     if (!token || !usuario) return;
 
     axios
-      .get("http://localhost:3001/realizado", {
+      .get("/realizado", {
         headers: {
           Authorization: `Bearer ${token}`,
           "cliente-id": usuario.clienteId,
@@ -136,22 +136,22 @@ function Realizado({
     const clienteId = usuario.clienteId;
 
     axios
-      .get("http://localhost:3001/safras")
+      .get("/safras")
       .then((res) => setListaSafras(res.data))
       .catch((err) => console.error("Erro ao carregar safras:", err));
 
     axios
-      .get(`http://localhost:3001/lavouras/${clienteId}`)
+      .get(`/lavouras/${clienteId}`)
       .then((res) => setListaLavouras(res.data))
       .catch((err) => console.error("Erro ao carregar lavouras:", err));
 
     axios
-      .get("http://localhost:3001/produtos")
+      .get("/produtos")
       .then((res) => setListaProdutos(res.data))
       .catch((err) => console.error("Erro ao carregar produtos:", err));
 
     axios
-      .get("http://localhost:3001/servicos-lista")
+      .get("/servicos-lista")
       .then((res) => setListaServicos(res.data))
       .catch((err) =>
         console.error("Erro ao carregar lista de serviços:", err)
@@ -227,9 +227,10 @@ function Realizado({
 
     if (!editandoId) {
       axios
-        .post("http://localhost:3001/realizado", payload, {
+        .post("/realizado", payload, {
           headers: { Authorization: `Bearer ${token}` },
         })
+
         .then((res) => {
           setServicos((prev) => [res.data, ...prev]);
           limparFormularioDepoisDeSalvar();
@@ -241,9 +242,10 @@ function Realizado({
         });
     } else {
       axios
-        .put(`http://localhost:3001/realizado/${editandoId}`, payload, {
+        .put(`/realizado/${editandoId}`, payload, {
           headers: { Authorization: `Bearer ${token}` },
         })
+
         .then((res) => {
           setServicos((prev) =>
             prev.map((s) => (s.id === editandoId ? res.data : s))
@@ -290,9 +292,10 @@ function Realizado({
     if (!token) return;
 
     axios
-      .delete(`http://localhost:3001/realizado/${id}`, {
+      .delete(`/realizado/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
+
       .then(() => {
         setServicos((prev) => prev.filter((s) => s.id !== id));
         notificar("sucesso", "Serviço excluído.");
