@@ -717,6 +717,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Toast from "./components/Toast.jsx"; // ⬅️ seu container
 import axios from "axios";
 
+Tem que colocar
 axios.defaults.baseURL = "http://localhost:3000/api/";
 
 function App() {
