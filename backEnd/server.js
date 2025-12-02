@@ -13,10 +13,6 @@ import rotasCliente from "./routes/rotasCliente.routes.js";
 import { fileURLToPath } from "url";
 import path, { dirname } from "path";
 
-const __fileName = fileURLToPath(import.meta.url);
-const __dirname = dirname(__fileName);
-const caminhoDist = path.join(__dirname, "../front-end/dist");
-
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -30,6 +26,18 @@ app.use("/lavouras", rotasLavouras);
 app.use("/servicos-lista", rotasServicosLista);
 app.use("/produtos", rotasProdutos);
 app.use("/realizado", rotasRealizado);
+
+// 2) SÓ DEPOIS: estáticos do front
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const distPath = path.join(__dirname, "../frontEnd/dist");
+
+app.use(express.static(distPath));
+
+// 3) catch-all para rotas do React, só entra se NÃO começar com /api
+app.get(/^(?!\/).*/, (_req, res) => {
+  res.sendFile(path.join(distPath, "index.html"));
+});
 
 const PORT = process.env.PORT || 3001;
 

@@ -11,6 +11,7 @@ import Login from "./pages/login/Login";
 import Toast from "./components/Toast";
 
 import axios from "axios";
+axios.defaults.baseURL = "http://localhost:3001/";
 
 // axios.defaults.baseURL = import.meta.env.DEV
 //   ? "http://localhost:3000/api"
