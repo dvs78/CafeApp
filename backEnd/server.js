@@ -14,7 +14,17 @@ import { fileURLToPath } from "url";
 import path, { dirname } from "path";
 
 const app = express();
-app.use(cors());
+// app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:3001", "https://cafeapp-ial5.onrender.com"],
+    credentials: true,
+  })
+);
+// app.use(cors({
+//   origin: [ "http://localhost:5173", "https://tasklist-o2yv.onrender.com" ],
+//   credentials: true
+// }));
 app.use(express.json());
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
