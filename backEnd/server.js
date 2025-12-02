@@ -10,6 +10,13 @@ import rotasProdutos from "./routes/rotasProdutos.routes.js";
 import rotasLavouras from "./routes/rotasLavouras.routes.js";
 import rotasCliente from "./routes/rotasCliente.routes.js";
 
+import { fileURLToPath } from "url";
+import path, { dirname } from "path";
+
+const __fileName = fileURLToPath(import.meta.url);
+const __dirname = dirname(__fileName);
+const caminhoDist = path.join(__dirname, "../front-end/dist");
+
 const app = express();
 app.use(cors());
 app.use(express.json());

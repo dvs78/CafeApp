@@ -1,0 +1,21 @@
+{
+  "name": "cafeapp",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "npm run start --prefix backend",
+    "build": "npm install --prefix frontend && npm install --prefix backend && npm run build --prefix frontend"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dvs78/CafeApp.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dvs78/CafeApp/issues"
+  },
+  "homepage": "https://github.com/dvs78/CafeApp#readme",
+  "description": ""
+}
