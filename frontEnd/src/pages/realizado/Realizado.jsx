@@ -109,16 +109,23 @@ function Realizado({
     const token = localStorage.getItem("token");
     const usuario = JSON.parse(localStorage.getItem("usuario") || "null");
 
-    if (!token || !usuario) return;
+    console.log("TOKEN LOCALSTORAGE:", token);
+    console.log("USUARIO LOCALSTORAGE:", usuario);
+
+    if (!token || !usuario) {
+      console.warn("Sem token ou usuário → não buscou /realizado");
+      return;
+    }
 
     axios
       .get("/realizado", {
         headers: {
           Authorization: `Bearer ${token}`,
-          "cliente-id": usuario.clienteId,
+          "cliente-id": usuario.clienteId, // 👈 conferimos já já se é esse o nome certo
         },
       })
       .then((res) => {
+        console.log("RESPOSTA /realizado:", res.data);
         setServicos(res.data);
       })
       .catch((err) => {
