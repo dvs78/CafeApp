@@ -22,6 +22,7 @@ class DbClassRealizado extends DbClass {
   ];
 
   // Aceita só campos permitidos
+  // Aceita só campos permitidos
   sanitize(payload) {
     const allowed = [
       "safra",
@@ -43,9 +44,11 @@ class DbClassRealizado extends DbClass {
       }
     }
 
-    // normalizações
-    if (out.quantidade !== undefined) {
-      out.quantidade = Number(out.quantidade);
+    // Se vier quantidade como string, converte uma única vez aqui
+    if (out.quantidade !== undefined && typeof out.quantidade === "string") {
+      const texto = out.quantidade.trim().replace(/\./g, "").replace(",", ".");
+      const num = Number(texto);
+      out.quantidade = Number.isNaN(num) ? null : num;
     }
 
     return out;

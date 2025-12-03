@@ -1,5 +1,4 @@
-// src/pages/realizado/Realizado.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
@@ -18,22 +17,55 @@ import RealizadoLista from "./RealizadoLista";
 import ConfirmDialog from "../../components/ConfirmDialog";
 import { notificar } from "../../components/Toast";
 
-// FORMATA DATA
+// -----------------------------------------------------------------------------
+// HELPERS
+// -----------------------------------------------------------------------------
+
 function formatarData(iso) {
   if (!iso) return "";
   const data = new Date(iso);
-  return data.toLocaleDateString("pt-BR"); // 05/12/2025
+  return data.toLocaleDateString("pt-BR");
 }
 
+// CONVERTE "1.000,00" / "1000,00" / "1000.00" / "1000" → número 1000
 function limparQuantidade(valor) {
-  if (!valor) return null;
-  return valor.replace(/\./g, "").replace(",", ".");
+  if (valor === null || valor === undefined || valor === "") return null;
+
+  let texto = valor.toString().trim();
+
+  // remove separadores de milhar
+  texto = texto.replace(/\./g, "");
+
+  // vírgula passa a ser separador decimal
+  texto = texto.replace(",", ".");
+
+  const numero = Number(texto);
+  if (Number.isNaN(numero)) {
+    return null;
+  }
+
+  return numero; // <-- NUMBER de verdade
 }
 
-// normaliza qualquer valor para comparação segura
 function normalizar(v) {
   return (v ?? "").toString().trim().toLowerCase();
 }
+
+function getUsuarioLocalStorage() {
+  try {
+    return JSON.parse(localStorage.getItem("usuario") || "null");
+  } catch {
+    return null;
+  }
+}
+
+function getToken() {
+  return localStorage.getItem("token");
+}
+
+// -----------------------------------------------------------------------------
+// COMPONENTE
+// -----------------------------------------------------------------------------
 
 function Realizado({
   mostrarFiltros,
@@ -71,109 +103,126 @@ function Realizado({
   const [filtroLavoura, setFiltroLavoura] = useState("");
   const [filtroServico, setFiltroServico] = useState("");
 
-  const temFiltrosAtivos =
-    filtroMes ||
-    filtroAno ||
-    filtroTexto ||
-    filtroTipo ||
-    filtroSafra ||
-    filtroLavoura;
-
-  // ===================================================================
-  // CARREGAR REALIZADO AO ABRIR
-  // ===================================================================
-
+  // ---------------------------------------------------------------------------
+  // CONTROLE DO TÍTULO E BOTÃO DE FILTROS
+  // ---------------------------------------------------------------------------
   useEffect(() => {
-    // some o botão de filtro quando o formulário estiver aberto
     setOcultarBotaoFiltros(mostrarFormulario);
 
     if (mostrarFormulario) {
-      // se estiver editando, muda o título para "Editar serviço"
-      if (editandoId) {
-        setTituloCustom("Editar serviço");
-      } else {
-        // se for um lançamento novo
-        setTituloCustom("Novo lançamento");
-      }
+      setTituloCustom(editandoId ? "Editar serviço" : "Novo lançamento");
     } else {
-      // formulário fechado → volta para o título padrão "Serviços"
       setTituloCustom("");
     }
   }, [mostrarFormulario, editandoId, setOcultarBotaoFiltros, setTituloCustom]);
 
-  useEffect(() => {
-    return () => setTituloCustom(""); // cleanup ao desmontar Realizado
-  }, [setTituloCustom]);
+  useEffect(
+    () => () => {
+      setTituloCustom("");
+    },
+    [setTituloCustom]
+  );
 
+  // ---------------------------------------------------------------------------
+  // CARREGAR REALIZADO AO ABRIR
+  // ---------------------------------------------------------------------------
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const usuario = JSON.parse(localStorage.getItem("usuario") || "null");
-
-    console.log("TOKEN LOCALSTORAGE:", token);
-    console.log("USUARIO LOCALSTORAGE:", usuario);
+    const token = getToken();
+    const usuario = getUsuarioLocalStorage();
 
     if (!token || !usuario) {
       console.warn("Sem token ou usuário → não buscou /realizado");
       return;
     }
 
-    axios
-      .get("/realizado", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "cliente-id": usuario.clienteId, // 👈 conferimos já já se é esse o nome certo
-        },
-      })
-      .then((res) => {
-        console.log("RESPOSTA /realizado:", res.data);
+    const carregarServicos = async () => {
+      try {
+        const res = await axios.get("/realizado", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "cliente-id": usuario.clienteId,
+          },
+        });
         setServicos(res.data);
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error("Erro ao carregar serviços realizados:", err);
-      });
+        notificar("erro", "Erro ao carregar serviços realizados.");
+      }
+    };
+
+    carregarServicos();
   }, []);
 
-  // ===================================================================
+  // ---------------------------------------------------------------------------
   // CARREGAR LISTAS (SAFRAS, LAVOURAS, PRODUTOS, SERVIÇOS)
-  // ===================================================================
+  // ---------------------------------------------------------------------------
   useEffect(() => {
-    const usuario = JSON.parse(localStorage.getItem("usuario") || "null");
+    const usuario = getUsuarioLocalStorage();
     if (!usuario) return;
 
     const clienteId = usuario.clienteId;
 
-    axios
-      .get("/safras")
-      .then((res) => setListaSafras(res.data))
-      .catch((err) => console.error("Erro ao carregar safras:", err));
+    const carregarListas = async () => {
+      try {
+        const [safrasRes, lavourasRes, produtosRes, servicosRes] =
+          await Promise.all([
+            axios.get("/safras"),
+            axios.get(`/lavouras/${clienteId}`),
+            axios.get("/produtos"),
+            axios.get("/servicos-lista"),
+          ]);
 
-    axios
-      .get(`/lavouras/${clienteId}`)
-      .then((res) => setListaLavouras(res.data))
-      .catch((err) => console.error("Erro ao carregar lavouras:", err));
+        setListaSafras(safrasRes.data);
+        setListaLavouras(lavourasRes.data);
+        setListaProdutos(produtosRes.data);
+        setListaServicos(servicosRes.data);
+      } catch (err) {
+        console.error("Erro ao carregar listas auxiliares:", err);
+        notificar("erro", "Erro ao carregar listas auxiliares.");
+      }
+    };
 
-    axios
-      .get("/produtos")
-      .then((res) => setListaProdutos(res.data))
-      .catch((err) => console.error("Erro ao carregar produtos:", err));
-
-    axios
-      .get("/servicos-lista")
-      .then((res) => setListaServicos(res.data))
-      .catch((err) =>
-        console.error("Erro ao carregar lista de serviços:", err)
-      );
+    carregarListas();
   }, []);
 
-  // ===================================================================
-  // SALVAR (CRIAR / EDITAR)
-  // ===================================================================
-  // dentro de src/pages/realizado/Realizado.jsx
+  // ---------------------------------------------------------------------------
+  // FUNÇÕES DE FORMULÁRIO
+  // ---------------------------------------------------------------------------
 
+  // Limpa campos "rápidos", mantendo safra/lavoura/servico
+  function limparFormularioDepoisDeSalvar() {
+    setData("");
+    setStatus("");
+    setProduto("");
+    setUni("");
+    setQuantidade("");
+    setEditandoId(null);
+  }
+
+  // Limpa tudo e fecha o formulário
+  function resetarFormularioCompleto() {
+    setSafra("");
+    setLavoura("");
+    setServico("");
+    setData("");
+    setStatus("");
+    setProduto("");
+    setUni("");
+    setQuantidade("");
+    setEditandoId(null);
+  }
+
+  function fecharFormulario() {
+    resetarFormularioCompleto();
+    setMostrarFormulario(false);
+  }
+
+  // ---------------------------------------------------------------------------
+  // SALVAR (CRIAR / EDITAR)
+  // ---------------------------------------------------------------------------
   function handleSubmit(e) {
     e.preventDefault();
 
-    // 🔍 Validação manual usando o estado
     if (!safra || !lavoura || !servico || !data || !status) {
       notificar(
         "erro",
@@ -182,13 +231,11 @@ function Realizado({
       return;
     }
 
-    // ==============================================
-    // VERIFICA DUPLICIDADE
-    // ==============================================
-    const produtoAtualNorm = normalizar(produto);
+    // DUPLICIDADE (Safra + Lavoura + Serviço + Produto)
     const safraNorm = normalizar(safra);
     const lavouraNorm = normalizar(lavoura);
     const servicoNorm = normalizar(servico);
+    const produtoAtualNorm = normalizar(produto);
 
     const existeDuplicado = servicos.some((s) => {
       const produtoExistenteNorm = normalizar(s.produto);
@@ -207,7 +254,7 @@ function Realizado({
         "Este serviço já está lançado com a mesma Safra, Lavoura, Serviço e Produto."
       );
       setConfirmDuplicado(true);
-      return; // não tenta salvar no backend
+      return;
     }
 
     const token = localStorage.getItem("token");
@@ -218,6 +265,15 @@ function Realizado({
       return;
     }
 
+    const quantidadeNormalizada = limparQuantidade(quantidade);
+
+    console.log(
+      "Quantidade digitada:",
+      quantidade,
+      "→ enviada como número:",
+      quantidadeNormalizada
+    );
+
     const payload = {
       safra,
       lavoura,
@@ -226,83 +282,47 @@ function Realizado({
       status,
       produto: produto || null,
       unidade: uni || null,
-      quantidade: limparQuantidade(quantidade),
-
+      quantidade: quantidadeNormalizada, // <- número
       cliente_id: usuario.clienteId,
       usuario_id: usuario.id,
     };
 
-    if (!editandoId) {
-      axios
-        .post("/realizado", payload, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+    const headers = { Authorization: `Bearer ${token}` };
 
-        .then((res) => {
-          setServicos((prev) => [res.data, ...prev]);
-          limparFormularioDepoisDeSalvar();
-          notificar("sucesso", "Serviço lançado com sucesso!");
-        })
-        .catch((err) => {
-          console.error("Erro ao criar serviço realizado:", err);
-          notificar("erro", "Erro ao salvar serviço realizado.");
-        });
-    } else {
-      axios
-        .put(`/realizado/${editandoId}`, payload, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+    const request = editandoId
+      ? axios.put(`/realizado/${editandoId}`, payload, { headers })
+      : axios.post("/realizado", payload, { headers });
 
-        .then((res) => {
+    request
+      .then((res) => {
+        if (editandoId) {
           setServicos((prev) =>
             prev.map((s) => (s.id === editandoId ? res.data : s))
           );
-          limparFormularioDepoisDeSalvar();
           notificar("sucesso", "Serviço atualizado com sucesso!");
-        })
-        .catch((err) => {
-          console.error("Erro ao atualizar serviço realizado:", err);
-          notificar("erro", "Erro ao atualizar serviço realizado.");
-        });
-    }
+        } else {
+          setServicos((prev) => [res.data, ...prev]);
+          notificar("sucesso", "Serviço lançado com sucesso!");
+        }
+        limparFormularioDepoisDeSalvar();
+      })
+      .catch((err) => {
+        console.error("Erro ao salvar serviço realizado:", err);
+        notificar("erro", "Erro ao salvar serviço realizado.");
+      });
   }
 
-  // Limpa campos "rápidos", mantendo safra/lavoura/servico
-  function limparFormularioDepoisDeSalvar() {
-    setData("");
-    setStatus("");
-    setProduto("");
-    setUni("");
-    setQuantidade("");
-    setEditandoId(null);
-  }
-
-  // Limpa tudo e fecha o formulário (usado ao clicar no X do botão flutuante)
-  function fecharFormulario() {
-    setSafra("");
-    setLavoura("");
-    setServico("");
-    setData("");
-    setStatus("");
-    setProduto("");
-    setUni("");
-    setQuantidade("");
-    setEditandoId(null);
-    setMostrarFormulario(false);
-  }
-
-  // ===================================================================
+  // ---------------------------------------------------------------------------
   // EXCLUIR
-  // ===================================================================
+  // ---------------------------------------------------------------------------
   function handleExcluir(id) {
-    const token = localStorage.getItem("token");
+    const token = getToken();
     if (!token) return;
 
     axios
       .delete(`/realizado/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
-
       .then(() => {
         setServicos((prev) => prev.filter((s) => s.id !== id));
         notificar("sucesso", "Serviço excluído.");
@@ -313,18 +333,19 @@ function Realizado({
       });
   }
 
-  // ===================================================================
+  // ---------------------------------------------------------------------------
   // EDITAR
-  // ===================================================================
+  // ---------------------------------------------------------------------------
   function handleEditar(s) {
     setEditandoId(s.id);
     setSafra(s.safra || "");
     setLavoura(s.lavoura || "");
     setServico(s.servico || "");
-    // setData(s.data || "");
+
     // converte '2025-12-01T00:00:00.000Z' → '2025-12-01'
     const dataFormatada = s.data ? s.data.split("T")[0] : "";
     setData(dataFormatada);
+
     setStatus(s.status || "");
     setProduto(s.produto || "");
     setUni(s.unidade || "");
@@ -332,50 +353,101 @@ function Realizado({
     setMostrarFormulario(true);
   }
 
-  // ===================================================================
-  // FILTROS MANUAIS (card) – usados sempre como base
-  // ===================================================================
-  const servicosComFiltrosManuais = servicos.filter((s) => {
-    if (!s.data) return false;
-    const [ano, mes] = s.data.split("-");
+  // ---------------------------------------------------------------------------
+  // MEMO: FILTROS MANUAIS (card)
+  // ---------------------------------------------------------------------------
 
-    // ➕ novos filtros
-    if (filtroSafra && s.safra !== filtroSafra) return false;
-    if (filtroLavoura && s.lavoura !== filtroLavoura) return false;
+  const textoFiltroNormalizado = useMemo(
+    () => filtroTexto.trim().toLowerCase(),
+    [filtroTexto]
+  );
 
-    if (filtroMes && mes !== filtroMes) return false;
-    if (filtroAno && ano !== filtroAno) return false;
+  const tipoFiltroNormalizado = useMemo(
+    () => filtroTipo.trim().toLowerCase(),
+    [filtroTipo]
+  );
 
-    if (
-      filtroTexto &&
-      !s.servico?.toLowerCase().includes(filtroTexto.toLowerCase())
-    )
-      return false;
+  const servicosComFiltrosManuais = useMemo(() => {
+    return servicos.filter((s) => {
+      if (!s.data) return false;
 
-    if (filtroTipo && filtroTipo !== "") {
-      if (!s.servico?.toLowerCase().includes(filtroTipo.toLowerCase()))
+      // data pode vir como "YYYY-MM-DD..." (ISO)
+      const [ano, mes] = s.data.split("-");
+
+      if (filtroSafra && s.safra !== filtroSafra) return false;
+      if (filtroLavoura && s.lavoura !== filtroLavoura) return false;
+      if (filtroServico && s.servico !== filtroServico) return false;
+
+      if (filtroMes && mes !== filtroMes) return false;
+      if (filtroAno && ano !== filtroAno) return false;
+
+      if (
+        textoFiltroNormalizado &&
+        !s.servico?.toLowerCase().includes(textoFiltroNormalizado)
+      ) {
         return false;
+      }
+
+      if (
+        tipoFiltroNormalizado &&
+        !s.servico?.toLowerCase().includes(tipoFiltroNormalizado)
+      ) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [
+    servicos,
+    filtroSafra,
+    filtroLavoura,
+    filtroServico,
+    filtroMes,
+    filtroAno,
+    textoFiltroNormalizado,
+    tipoFiltroNormalizado,
+  ]);
+
+  const servicosFiltrados = useMemo(() => {
+    const temValoresFormulario = safra || lavoura || servico;
+
+    if (mostrarFormulario && temValoresFormulario) {
+      return servicosComFiltrosManuais.filter((s) => {
+        if (safra && s.safra !== safra) return false;
+        if (lavoura && s.lavoura !== lavoura) return false;
+        if (servico && s.servico !== servico) return false;
+        return true;
+      });
     }
 
-    return true;
-  });
+    return servicosComFiltrosManuais;
+  }, [servicosComFiltrosManuais, mostrarFormulario, safra, lavoura, servico]);
 
-  // ===================================================================
-  // ESCOLHA FINAL
-  // ===================================================================
-  const servicosFiltrados =
-    mostrarFormulario && (safra || lavoura || servico)
-      ? servicosComFiltrosManuais.filter((s) => {
-          if (safra && s.safra !== safra) return false;
-          if (lavoura && s.lavoura !== lavoura) return false;
-          if (servico && s.servico !== servico) return false;
-          return true;
-        })
-      : servicosComFiltrosManuais;
+  const temFiltrosAtivos = useMemo(
+    () =>
+      Boolean(
+        filtroMes ||
+          filtroAno ||
+          filtroTexto ||
+          filtroTipo ||
+          filtroSafra ||
+          filtroLavoura ||
+          filtroServico
+      ),
+    [
+      filtroMes,
+      filtroAno,
+      filtroTexto,
+      filtroTipo,
+      filtroSafra,
+      filtroLavoura,
+      filtroServico,
+    ]
+  );
 
-  // ===================================================================
+  // ---------------------------------------------------------------------------
   // EXPORTAÇÕES
-  // ===================================================================
+  // ---------------------------------------------------------------------------
   function exportarExcel() {
     const dados = servicosFiltrados.map((s) => ({
       Data: formatarData(s.data),
@@ -414,9 +486,9 @@ function Realizado({
     doc.save("servicos_cafe.pdf");
   }
 
-  // ===================================================================
+  // ---------------------------------------------------------------------------
   // RENDER
-  // ===================================================================
+  // ---------------------------------------------------------------------------
   return (
     <>
       <main className="app-main">
@@ -572,6 +644,7 @@ function Realizado({
                     setFiltroTipo("");
                     setFiltroSafra("");
                     setFiltroLavoura("");
+                    setFiltroServico("");
                   }}
                 >
                   Limpar filtros
@@ -595,8 +668,8 @@ function Realizado({
         open={confirmDuplicado}
         title="Lançamento duplicado"
         description="Já existe um serviço lançado com esta Safra, Lavoura, Serviço e Produto."
-        cancelLabel="Cancelar" // texto do único botão
-        onlyCancel // 👈 mostra apenas esse botão
+        cancelLabel="Cancelar"
+        onlyCancel
         onCancel={() => setConfirmDuplicado(false)}
         variant="danger"
       />

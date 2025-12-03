@@ -978,7 +978,11 @@ A Render vai passar o PORT automaticamente.
 
 Depois de salvar as variáveis, clique em Manual Deploy → Clear cache & deploy para ele reconstruir usando esses valores.
 
+O mairo problema estav em fazer o login e não armazenar o usuário
 
+
+
+Não fiz aqui para baixo
 Checklist rápido (recomendado)
 
 .gitignore
