@@ -42,7 +42,9 @@ router.post("/", async (req, res) => {
 // PUT /realizado/:id
 router.put("/:id", async (req, res) => {
   try {
+    console.log("PUT /realizado body:", req.body); // 👈 log 1
     const atualizado = await db.updateById(req.params.id, req.body);
+    console.log("PUT /realizado atualizado:", atualizado); // 👈 log 2
     if (!atualizado)
       return res.status(404).json({ erro: "Registro não encontrado" });
     res.json(atualizado);
