@@ -375,7 +375,7 @@ function Realizado({
 
   const servicosComFiltrosManuais = useMemo(() => {
     return servicos.filter((s) => {
-      if (!s.data) return false;
+      // if (!s.data) return false;
 
       // data pode vir como "YYYY-MM-DD..." (ISO)
       const [ano, mes] = s.data.split("-");
