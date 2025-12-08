@@ -347,11 +347,14 @@ function Realizado({
             prev.map((s) => (s.id === editandoId ? res.data : s))
           );
           notificar("sucesso", "Serviço atualizado com sucesso!");
+
+          // 🔥 FECHAR FORMULÁRIO QUANDO EDITAR
+          fecharFormulario();
         } else {
           setServicos((prev) => [res.data, ...prev]);
           notificar("sucesso", "Serviço lançado com sucesso!");
+          limparFormularioDepoisDeSalvar();
         }
-        limparFormularioDepoisDeSalvar();
       })
       .catch((err) => {
         console.error("Erro ao salvar serviço realizado:", err);
@@ -464,8 +467,14 @@ function Realizado({
   ]);
 
   const servicosFiltrados = useMemo(() => {
+    // Se estiver editando, mostra só o serviço selecionado
+    if (editandoId) {
+      return servicosComFiltrosManuais.filter((s) => s.id === editandoId);
+    }
+
+    // Se NÃO estiver editando, mostra a lista normal (com filtros)
     return servicosComFiltrosManuais;
-  }, [servicosComFiltrosManuais]);
+  }, [servicosComFiltrosManuais, editandoId]);
 
   const temFiltrosAtivos = useMemo(
     () =>
@@ -558,7 +567,7 @@ function Realizado({
             quantidade={quantidade}
             setQuantidade={setQuantidade}
             listaSafras={listaSafras}
-            listaLavouras={lavourasDaSafra} // ⬅️ usa só lavouras da safra
+            listaLavouras={listaLavouras} // ⬅️ usa só lavouras da safra
             listaProdutos={listaProdutos}
             listaServicos={listaServicos}
           />
@@ -572,23 +581,8 @@ function Realizado({
             </div>
 
             <div className="filtros-grid">
-              <div className="filtros-linha">
-                {/* SAFRA */}
-                <div className="filtro-campo">
-                  <div className="filtro-grupo-titulo">Safra</div>
-                  <select
-                    value={filtroSafra}
-                    onChange={(e) => setFiltroSafra(e.target.value)}
-                  >
-                    <option value="">Todas</option>
-                    {listaSafras.map((saf) => (
-                      <option key={saf.id} value={saf.nome}>
-                        {saf.nome}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
+              {/* LINHA 1: MÊS | ANO | LAVOURA */}
+              <div className="filtros-linha filtros-linha-3">
                 {/* MÊS */}
                 <div className="filtro-campo">
                   <div className="filtro-grupo-titulo">Mês</div>
@@ -625,9 +619,7 @@ function Realizado({
                     <option value="2026">2026</option>
                   </select>
                 </div>
-              </div>
 
-              <div className="filtros-linha">
                 {/* LAVOURA */}
                 <div className="filtro-campo">
                   <div className="filtro-grupo-titulo">Lavoura</div>
@@ -636,19 +628,18 @@ function Realizado({
                     onChange={(e) => setFiltroLavoura(e.target.value)}
                   >
                     <option value="">Todas</option>
-                    {lavourasDaSafra.map(
-                      (
-                        lav // ⬅️ usa só lavouras da safra
-                      ) => (
-                        <option key={lav.id} value={lav.nome}>
-                          {lav.nome}
-                        </option>
-                      )
-                    )}
+                    {lavourasDaSafra.map((lav) => (
+                      <option key={lav.id} value={lav.nome}>
+                        {lav.nome}
+                      </option>
+                    ))}
                   </select>
                 </div>
+              </div>
 
-                {/* SERVIÇOS */}
+              {/* LINHA 2: SERVIÇO | BUSCAR TEXTO */}
+              <div className="filtros-linha filtros-linha-2">
+                {/* SERVIÇO */}
                 <div className="filtro-campo">
                   <div className="filtro-grupo-titulo">Serviço</div>
                   <select
@@ -663,20 +654,20 @@ function Realizado({
                     ))}
                   </select>
                 </div>
-              </div>
 
-              {/* BUSCA TEXTO */}
-              <div className="filtro-grupo filtro-grupo-texto">
-                <div className="filtro-grupo-titulo">
-                  <FontAwesomeIcon icon={faSearch} /> Buscar texto
+                {/* BUSCAR TEXTO */}
+                <div className="filtro-campo filtro-campo-texto">
+                  <div className="filtro-grupo-titulo">
+                    <FontAwesomeIcon icon={faSearch} /> Buscar texto
+                  </div>
+                  <input
+                    className="input-busca"
+                    type="text"
+                    placeholder="Ex.: adubação, roçagem..."
+                    value={filtroTexto}
+                    onChange={(e) => setFiltroTexto(e.target.value)}
+                  />
                 </div>
-                <input
-                  className="input-busca"
-                  type="text"
-                  placeholder="Ex.: adubação, roçagem..."
-                  value={filtroTexto}
-                  onChange={(e) => setFiltroTexto(e.target.value)}
-                />
               </div>
             </div>
 

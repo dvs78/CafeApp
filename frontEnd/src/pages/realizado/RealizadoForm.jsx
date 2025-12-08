@@ -58,24 +58,8 @@ function RealizadoForm({
       </div>
 
       <form className="form-servico" onSubmit={onSubmit}>
-        {/* SAFRA | LAVOURA */}
+        {/* LAVOURA | SERVIÇO lado a lado */}
         <div className="form-row">
-          <div className="campo">
-            <label>Safra</label>
-            <select
-              value={safra}
-              onChange={(e) => setSafra(e.target.value)}
-              disabled={!!editandoId}
-            >
-              <option value="">Selecione a safra</option>
-              {listaSafras.map((s) => (
-                <option key={s.id} value={s.nome}>
-                  {s.nome}
-                </option>
-              ))}
-            </select>
-          </div>
-
           <div className="campo">
             <label>Lavoura</label>
             <select
@@ -91,10 +75,7 @@ function RealizadoForm({
               ))}
             </select>
           </div>
-        </div>
 
-        {/* SERVIÇO */}
-        <div className="form-row-full">
           <div className="campo">
             <label>Serviço</label>
             <select
