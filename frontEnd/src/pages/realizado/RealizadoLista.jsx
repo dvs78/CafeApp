@@ -15,8 +15,12 @@ import {
 // Formata a data corretamente, independente do formato recebido
 function formatarData(iso) {
   if (!iso) return "";
-  const data = new Date(iso);
-  return data.toLocaleDateString("pt-BR");
+
+  const str = iso.toString().slice(0, 10); // "YYYY-MM-DD"
+  const [ano, mes, dia] = str.split("-");
+  if (!ano || !mes || !dia) return "";
+
+  return `${dia}/${mes}/${ano}`;
 }
 
 // Não altera o valor, só o "jeito" de mostrar

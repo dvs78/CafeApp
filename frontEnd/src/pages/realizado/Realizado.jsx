@@ -21,10 +21,16 @@ import { notificar } from "../../components/Toast";
 // HELPERS
 // -----------------------------------------------------------------------------
 
+// recebe "2025-10-06" ou "2025-10-06T00:00:00.000Z"
+// e SEMPRE mostra "06/10/2025"
 function formatarData(iso) {
   if (!iso) return "";
-  const data = new Date(iso);
-  return data.toLocaleDateString("pt-BR");
+
+  const str = iso.toString().slice(0, 10); // garante "YYYY-MM-DD"
+  const [ano, mes, dia] = str.split("-");
+  if (!ano || !mes || !dia) return "";
+
+  return `${dia}/${mes}/${ano}`;
 }
 
 // CONVERTE "1.000,00" / "1000,00" / "1000.00" / "1000" → número 1000
