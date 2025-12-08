@@ -414,20 +414,23 @@ function Realizado({
     tipoFiltroNormalizado,
   ]);
 
+  // const servicosFiltrados = useMemo(() => {
+  //   const temValoresFormulario = safra || lavoura || servico;
+
+  //   if (mostrarFormulario && temValoresFormulario) {
+  //     return servicosComFiltrosManuais.filter((s) => {
+  //       if (safra && s.safra !== safra) return false;
+  //       if (lavoura && s.lavoura !== lavoura) return false;
+  //       if (servico && s.servico !== servico) return false;
+  //       return true;
+  //     });
+  //   }
+
+  //   return servicosComFiltrosManuais;
+  // }, [servicosComFiltrosManuais, mostrarFormulario, safra, lavoura, servico]);
   const servicosFiltrados = useMemo(() => {
-    const temValoresFormulario = safra || lavoura || servico;
-
-    if (mostrarFormulario && temValoresFormulario) {
-      return servicosComFiltrosManuais.filter((s) => {
-        if (safra && s.safra !== safra) return false;
-        if (lavoura && s.lavoura !== lavoura) return false;
-        if (servico && s.servico !== servico) return false;
-        return true;
-      });
-    }
-
     return servicosComFiltrosManuais;
-  }, [servicosComFiltrosManuais, mostrarFormulario, safra, lavoura, servico]);
+  }, [servicosComFiltrosManuais]);
 
   const temFiltrosAtivos = useMemo(
     () =>
