@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useLocation } from "react-router-dom";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
@@ -29,22 +30,18 @@ function formatarData(iso) {
 
 // CONVERTE "1.000,00" / "1000,00" / "1000.00" / "1000" → número 1000
 function limparQuantidade(valor) {
-  if (valor === null || valor === undefined || valor === "") return null;
+  if (!valor) return null;
 
-  let texto = valor.toString().trim();
+  let txt = valor.toString().trim();
 
-  // remove separadores de milhar
-  texto = texto.replace(/\./g, "");
+  // remove pontos de milhar
+  txt = txt.replace(/\./g, "");
 
-  // vírgula passa a ser separador decimal
-  texto = texto.replace(",", ".");
+  // vírgula decimal vira ponto
+  txt = txt.replace(",", ".");
 
-  const numero = Number(texto);
-  if (Number.isNaN(numero)) {
-    return null;
-  }
-
-  return numero; // NUMBER real
+  const num = Number(txt);
+  return Number.isNaN(num) ? null : num;
 }
 
 function normalizar(v) {
@@ -63,6 +60,24 @@ function getToken() {
   return localStorage.getItem("token");
 }
 
+/**
+ * PREENCHE O INPUT DE QUANTIDADE NO EDITAR
+ */
+function formatarQuantidadeParaInput(valor) {
+  if (valor === null || valor === undefined || valor === "") return "";
+
+  const numero = Number(valor);
+  if (Number.isNaN(numero)) return "";
+
+  // 1000.5 -> "1000,50" (sem ponto de milhar)
+  return numero
+    .toLocaleString("pt-BR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+    .replace(/\./g, ""); // remove pontos de milhar no input
+}
+
 // -----------------------------------------------------------------------------
 // COMPONENTE
 // -----------------------------------------------------------------------------
@@ -72,8 +87,13 @@ function Realizado({
   setOcultarBotaoFiltros,
   setTituloCustom,
 }) {
+  const location = useLocation();
+
+  // safra vinda da tela Home (via navigate)
+  const safraInicial = location.state?.safraSelecionada || "";
+
   // CAMPOS DO FORM
-  const [safra, setSafra] = useState("");
+  const [safra, setSafra] = useState(safraInicial); // ⬅️ começa com safraInicial
   const [lavoura, setLavoura] = useState("");
   const [servico, setServico] = useState("");
   const [data, setData] = useState("");
@@ -99,7 +119,7 @@ function Realizado({
   const [filtroAno, setFiltroAno] = useState("");
   const [filtroTexto, setFiltroTexto] = useState("");
   const [filtroTipo, setFiltroTipo] = useState("");
-  const [filtroSafra, setFiltroSafra] = useState("");
+  const [filtroSafra, setFiltroSafra] = useState(safraInicial); // ⬅️ já começa filtrando pela safra escolhida
   const [filtroLavoura, setFiltroLavoura] = useState("");
   const [filtroServico, setFiltroServico] = useState("");
 
@@ -109,12 +129,15 @@ function Realizado({
   useEffect(() => {
     setOcultarBotaoFiltros(mostrarFormulario);
 
-    if (mostrarFormulario) {
-      setTituloCustom(editandoId ? "Editar serviço" : "Novo lançamento");
-    } else {
-      setTituloCustom("");
-    }
-  }, [mostrarFormulario, editandoId, setOcultarBotaoFiltros, setTituloCustom]);
+    const titulo = filtroSafra || "Serviços";
+    setTituloCustom(titulo);
+  }, [
+    mostrarFormulario,
+    editandoId,
+    filtroSafra,
+    setOcultarBotaoFiltros,
+    setTituloCustom,
+  ]);
 
   useEffect(
     () => () => {
@@ -186,6 +209,31 @@ function Realizado({
   }, []);
 
   // ---------------------------------------------------------------------------
+  // LAVOURAS DA SAFRA ESCOLHIDA
+  // ---------------------------------------------------------------------------
+  /**
+   * Mostra apenas lavouras que tenham algum lançamento na safra escolhida.
+   * Se ainda não houver lançamentos para essa safra, mostra todas as lavouras do cliente.
+   */
+  const lavourasDaSafra = useMemo(() => {
+    if (!safra) return listaLavouras;
+
+    const nomesUsados = new Set(
+      servicos
+        .filter((s) => s.safra === safra)
+        .map((s) => s.lavoura)
+        .filter(Boolean)
+    );
+
+    // se ainda não tem nenhum lançamento nessa safra → mostra todas
+    if (nomesUsados.size === 0) {
+      return listaLavouras;
+    }
+
+    return listaLavouras.filter((lav) => nomesUsados.has(lav.nome));
+  }, [safra, servicos, listaLavouras]);
+
+  // ---------------------------------------------------------------------------
   // FUNÇÕES DE FORMULÁRIO
   // ---------------------------------------------------------------------------
 
@@ -199,7 +247,8 @@ function Realizado({
   }
 
   function resetarFormularioCompleto() {
-    setSafra("");
+    // mantemos a safra selecionada, não limpamos
+    // setSafra("");
     setLavoura("");
     setServico("");
     setData("");
@@ -336,18 +385,19 @@ function Realizado({
   // ---------------------------------------------------------------------------
   function handleEditar(s) {
     setEditandoId(s.id);
-    setSafra(s.safra || "");
+    setSafra(s.safra || safraInicial || "");
     setLavoura(s.lavoura || "");
     setServico(s.servico || "");
 
-    // converte '2025-12-01T00:00:00.000Z' → '2025-12-01'
     const dataFormatada = s.data ? s.data.split("T")[0] : "";
     setData(dataFormatada);
 
     setStatus(s.status || "");
     setProduto(s.produto || "");
     setUni(s.unidade || "");
-    setQuantidade(String(s.quantidade ?? ""));
+
+    setQuantidade(formatarQuantidadeParaInput(s.quantidade));
+
     setMostrarFormulario(true);
   }
 
@@ -367,7 +417,6 @@ function Realizado({
 
   const servicosComFiltrosManuais = useMemo(() => {
     return servicos.filter((s) => {
-      // data pode vir como "YYYY-MM-DD..." ou "YYYY-MM-DDT..."
       const dataIso = s.data || "";
       const [ano, mes] = dataIso.split("-");
 
@@ -384,6 +433,7 @@ function Realizado({
     ${s.lavoura ?? ""} 
     ${s.servico ?? ""} 
     ${s.produto ?? ""}
+    ${s.status ?? ""}
   `
           .toString()
           .toLowerCase();
@@ -413,8 +463,6 @@ function Realizado({
     tipoFiltroNormalizado,
   ]);
 
-  // 🔴 ANTES: aqui refiltrava de novo com base nos campos do formulário.
-  // ✅ AGORA: a lista final é SOMENTE o resultado dos filtros manuais.
   const servicosFiltrados = useMemo(() => {
     return servicosComFiltrosManuais;
   }, [servicosComFiltrosManuais]);
@@ -510,7 +558,7 @@ function Realizado({
             quantidade={quantidade}
             setQuantidade={setQuantidade}
             listaSafras={listaSafras}
-            listaLavouras={listaLavouras}
+            listaLavouras={lavourasDaSafra} // ⬅️ usa só lavouras da safra
             listaProdutos={listaProdutos}
             listaServicos={listaServicos}
           />
@@ -588,11 +636,15 @@ function Realizado({
                     onChange={(e) => setFiltroLavoura(e.target.value)}
                   >
                     <option value="">Todas</option>
-                    {listaLavouras.map((lav) => (
-                      <option key={lav.id} value={lav.nome}>
-                        {lav.nome}
-                      </option>
-                    ))}
+                    {lavourasDaSafra.map(
+                      (
+                        lav // ⬅️ usa só lavouras da safra
+                      ) => (
+                        <option key={lav.id} value={lav.nome}>
+                          {lav.nome}
+                        </option>
+                      )
+                    )}
                   </select>
                 </div>
 
@@ -638,7 +690,7 @@ function Realizado({
                     setFiltroAno("");
                     setFiltroTexto("");
                     setFiltroTipo("");
-                    setFiltroSafra("");
+                    setFiltroSafra(safraInicial); // ⬅️ volta pra safra da Home ao limpar
                     setFiltroLavoura("");
                     setFiltroServico("");
                   }}
