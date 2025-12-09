@@ -37,9 +37,10 @@ function Header({
 
     const buscarCliente = async () => {
       try {
-        const res = await axios.get(
-          `http://localhost:3001/clientes/${usuario.clienteId}`
-        );
+        const res = await axios.get(`/clientes/${usuario.clienteId}`);
+        // const res = await axios.get(
+        //   `http://localhost:3001/clientes/${usuario.clienteId}`
+        // );
 
         // Pode vir como objeto OU como array de objetos
         const data = Array.isArray(res.data) ? res.data[0] : res.data;
