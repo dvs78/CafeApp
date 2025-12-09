@@ -2,7 +2,7 @@
 import DbClass from "./DbClass.routes.js";
 
 class DbClassSafraLista extends DbClass {
-  tabela = "safras";
+  tabela = "safras-lista";
   idCol = "id";
   cols = ["id", "nome", "ativo"];
 
