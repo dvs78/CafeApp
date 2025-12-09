@@ -5,7 +5,9 @@ const router = express.Router();
 
 router.get("/", async (req, res) => {
   try {
-    const { rows } = await pool.query("SELECT * FROM safras ORDER BY nome ASC");
+    const { rows } = await pool.query(
+      "SELECT * FROM safras_lista ORDER BY nome ASC"
+    );
     res.json(rows);
   } catch (err) {
     console.error(err);
