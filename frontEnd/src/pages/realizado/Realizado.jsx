@@ -189,7 +189,7 @@ function Realizado({
       try {
         const [safrasRes, lavourasRes, produtosRes, servicosRes] =
           await Promise.all([
-            axios.get("/safras"),
+            axios.get("/safras-lista"),
             axios.get(`/lavouras/${clienteId}`),
             axios.get("/produtos"),
             axios.get("/servicos-lista"),
@@ -207,6 +207,30 @@ function Realizado({
 
     carregarListas();
   }, []);
+
+  // ---------------------------------------------------------------------------
+  // QUANDO ESTIVER PREENCHENDO O FORMULÁRIO, USAR OS CAMPOS COMO FILTRO
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    if (!mostrarFormulario) return;
+
+    // Safra do formulário sempre vira filtro
+    setFiltroSafra(safra || safraInicial);
+
+    // Só filtra por lavoura/serviço se tiver algo digitado
+    setFiltroLavoura(lavoura || "");
+    setFiltroServico(servico || "");
+  }, [mostrarFormulario, safra, lavoura, servico, safraInicial]);
+
+  function fecharFormulario() {
+    resetarFormularioCompleto();
+    setMostrarFormulario(false);
+
+    // volta filtros para "modo padrão"
+    setFiltroLavoura("");
+    setFiltroServico("");
+    setFiltroSafra(safraInicial); // mantém a safra escolhida na Home
+  }
 
   // ---------------------------------------------------------------------------
   // LAVOURAS DA SAFRA ESCOLHIDA
@@ -570,6 +594,7 @@ function Realizado({
             listaLavouras={listaLavouras} // ⬅️ usa só lavouras da safra
             listaProdutos={listaProdutos}
             listaServicos={listaServicos}
+            onCancelar={resetarFormularioCompleto}
           />
         )}
 

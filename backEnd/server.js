@@ -5,7 +5,7 @@ import "dotenv/config";
 import rotaslogin from "./routes/rotasLogin.routes.js";
 import rotasServicosLista from "./routes/rotasServicosLista.routes.js";
 import rotasRealizado from "./routes/rotasRealizado.routes.js";
-import rotasSafras from "./routes/rotasSafras.routes.js";
+import rotasSafras from "./routes/rotasSafrasLista.routes.js";
 import rotasProdutos from "./routes/rotasProdutos.routes.js";
 import rotasLavouras from "./routes/rotasLavouras.routes.js";
 import rotasCliente from "./routes/rotasCliente.routes.js";
@@ -28,7 +28,7 @@ app.get("/health", (_req, res) => res.json({ ok: true }));
 
 app.use("/login", rotaslogin);
 app.use("/clientes", rotasCliente);
-app.use("/safras", rotasSafras);
+app.use("/safras-lista", rotasSafras);
 app.use("/lavouras", rotasLavouras);
 app.use("/servicos-lista", rotasServicosLista);
 app.use("/produtos", rotasProdutos);

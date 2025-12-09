@@ -22,7 +22,7 @@ function Home({ usuario }) {
       try {
         setCarregandoSafras(true);
         setErroSafras("");
-        const res = await axios.get("/safras");
+        const res = await axios.get("/safras-lista");
         // opcional: só safras ativas
         const lista = (res.data || []).filter((s) => s.ativo !== false);
         setSafras(lista);

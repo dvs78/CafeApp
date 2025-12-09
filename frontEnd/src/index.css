@@ -280,8 +280,7 @@ select:focus {
 /* Botão principal */
 .btn-primario {
   padding: 10px 20px;
-  background: var(--verde-folha);
-  color: #fff;
+  width: 50%;
   border: none;
   border-radius: 999px;
   cursor: pointer;
@@ -294,6 +293,11 @@ select:focus {
   transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
 }
 
+.btn-primario {
+  background: var(--verde-folha);
+  color: #fff;
+}
+
 .btn-primario:hover {
   background: var(--verde-oliva);
   transform: translateY(-1px);
@@ -301,6 +305,37 @@ select:focus {
 }
 
 .btn-primario:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.btn-secundario {
+  padding: 10px 20px;
+  width: 50%;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+}
+
+.btn-secundario {
+  background: gray;
+  color: #fff;
+}
+
+.btn-secundario:hover {
+  background: rgba(128, 128, 128, 0.7);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(128, 128, 128, 0.35);
+}
+
+.btn-secundario:active {
   transform: translateY(0);
   box-shadow: none;
 }
@@ -908,4 +943,13 @@ select:focus {
   .form-row {
     grid-template-columns: 1fr;
   }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: center;
+
+  gap: 0.75rem;
+
+  margin-top: 1rem;
 }

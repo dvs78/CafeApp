@@ -1,7 +1,7 @@
 // backEnd/routes/DbClassSafra.routes.js
 import DbClass from "./DbClass.routes.js";
 
-class DbClassSafra extends DbClass {
+class DbClassSafraLista extends DbClass {
   tabela = "safras";
   idCol = "id";
   cols = ["id", "nome", "ativo"];
@@ -18,4 +18,4 @@ class DbClassSafra extends DbClass {
   }
 }
 
-export default DbClassSafra;
+export default DbClassSafraLista;

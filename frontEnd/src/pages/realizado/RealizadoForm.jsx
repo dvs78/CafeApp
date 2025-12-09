@@ -31,6 +31,7 @@ function RealizadoForm({
   onSubmit,
   editandoId,
   safra,
+  onCancel,
   setSafra,
   lavoura,
   setLavoura,
@@ -46,10 +47,10 @@ function RealizadoForm({
   setUni,
   quantidade,
   setQuantidade,
-  listaSafras,
   listaLavouras,
   listaProdutos,
   listaServicos,
+  onCancelar,
 }) {
   return (
     <section className="card card-form anima-card">
@@ -156,11 +157,17 @@ function RealizadoForm({
             />
           </div>
         </div>
+        {/* AÇÕES DO FORMULÁRIO */}
+        <div className="form-actions">
+          <button type="submit" className="btn-primario">
+            {/* <FontAwesomeIcon icon={faSave} /> */}
+            {editandoId ? "Salvar alterações" : "Lançar serviço"}
+          </button>
 
-        <button type="submit" className="btn-primario">
-          <FontAwesomeIcon icon={faSave} />
-          {editandoId ? "Salvar alterações" : "Lançar serviço"}
-        </button>
+          <button type="button" className="btn-secundario" onClick={onCancelar}>
+            Cancelar
+          </button>
+        </div>
       </form>
     </section>
   );
