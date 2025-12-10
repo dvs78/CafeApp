@@ -982,6 +982,78 @@ O mairo problema estav em fazer o login e não armazenar o usuário
 
 
 
+AGENDADOR DE TAREFAS
+
+Preciso usar o Agendador de tarefas do windows para rodar o código backupExcel.py a cada 1 hora, entre as 6 da manhã a 18 horas
+1 .Descobrir o caminho do Python
+Abra o Prompt de Comando
+Digite: where python
+
+C:\Users\Daniel\AppData\Local\Programs\Python\Python313\python.exe
+C:\Users\Daniel\AppData\Local\Microsoft\WindowsApps\python.exe
+
+
+2. Criar a tarefa
+No painel da direita, clique em Criar Tarefa… (não “Criar Tarefa Básica”).
+Aba Geral:
+Nome: Backup Excel CafeApp
+Descrição (opcional): Roda o backupExcel.py a cada 1 hora entre 06:00 e 18:00.
+Marque: executar somente quando o usuário estiver conectado (ou “independente da conexão”, se preferir).
+Opcional, mas recomendado: Executar com privilégios mais altos.
+
+
+3. Configurar o gatilho (Trigger)
+Vá para a aba Disparadores.
+Clique em Novo….
+Em Iniciar a tarefa, deixe Em um agendamento.
+Em Configurações, selecione Diariamente.
+Em Início coloque a data de hoje e Hora: 06:00:00.
+Marque: repetir a tarefa a cada: selecione 1 hora.
+Por uma duração de: selecione 12 horas (isso vai de 06:00 até 18:00).
+Deixe Habilitado marcado.
+Clique em OK.
+Esse gatilho fará a tarefa rodar:
+Primeira vez às 06:00
+Depois 07:00, 08:00, … até 18:00.
+
+4. Configurar a ação (rodar o script)
+Vá para a aba Ações.
+Clique em Novo….
+Em Ação, deixe Iniciar um programa.
+Em Programa/script, coloque o caminho do Python, por exemplo:
+C:\Users\Daniel\AppData\Local\Programs\Python\Python313\python.exe
+
+Em Adicionar argumentos (opcional) coloque o caminho do script entre aspas:, copie o caminho
+"C:\Users\Daniel\Documents\Projetos\CafeApp\backupExcel.py"
+
+Em Iniciar em (opcional) coloque apenas a pasta do projeto (sem aspas):
+C:\Users\Daniel\Documents\Projetos\CafeApp
+
+
+Clique me Ok
+
+5. (Opcional) Ajustes em Condições e Configurações
+Aba Configurações (recomendado):
+Marque Executar a tarefa o mais cedo possível após uma inicialização agendada ter sido perdida.
+Assim, se o PC estiver desligado às 10:00, quando ligar de novo ele tenta rodar o backup.
+
+Clique me Ok
+
+
+6. Testar a tarefa
+No painel central, localize a tarefa Backup Excel CafeApp.
+Clique com o botão direito e escolha Executar.
+Verifique se: O script roda sem erro;
+Os arquivos de backup foram gerados/atualizados como você espera.
+Se rodou manualmente sem erro, o agendamento horário entre 06:00 e 18:00 está pronto.
+
+
+FAZER BACKUP SQL DAS TABELAS NO RENDER
+
+Fiz um script que está no backend, syncRemoteToLocal.js
+Faz backup e update
+
+
 Não fiz aqui para baixo
 Checklist rápido (recomendado)
 
