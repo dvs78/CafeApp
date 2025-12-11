@@ -1,0 +1,295 @@
+/* ===============================
+   LAYOUT GERAL
+=============================== */
+.poslogin-wrapper {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding-top: 60px;
+  padding-bottom: 60px;
+  background: radial-gradient(circle at top left, #f7edd8, var(--bege-claro));
+  position: relative;
+}
+
+/* CARD CENTRAL */
+.poslogin-card {
+  background: #ffffff;
+  width: min(600px, 95%);
+  padding: 32px 40px;
+  border-radius: 18px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  animation: fadeIn 0.35s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* TÍTULOS */
+.titulo-ola {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.subtitulo {
+  margin-bottom: 24px;
+  color: #555;
+}
+
+/* STEPS */
+.step-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 18px 0 8px 0;
+}
+
+.step-number {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--verde-folha);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.step-desc {
+  margin-top: -2px;
+  margin-bottom: 14px;
+  color: #666;
+  font-size: 0.85rem;
+}
+
+/* ===============================
+   FAZENDAS
+=============================== */
+.fazendas-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.fazenda-card {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 14px 18px;
+  background: #ffffff;
+  border: 2px solid #e5e5e5;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.fazenda-card:hover {
+  border-color: var(--verde-folha);
+}
+
+.fazenda-card.ativo {
+  background: #e9f4ec;
+  border-color: var(--verde-folha);
+  box-shadow: 0 0 6px rgba(58, 90, 64, 0.25);
+}
+
+.card-title {
+  font-size: 0.98rem;
+  font-weight: 500;
+  color: #223322;
+}
+
+/* DIVISOR */
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 26px 0 14px;
+}
+
+.divider span {
+  margin: 0 10px;
+  font-weight: 600;
+  color: #444;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex-grow: 1;
+  height: 1px;
+  background: #d2d2d2;
+}
+
+/* ===============================
+   SAFRAS
+=============================== */
+.safras-grid {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.safra-card {
+  padding: 8px 14px;
+  background: #ffffff;
+  border: 2px solid #e5e5e5;
+  border-radius: 999px;
+  cursor: pointer;
+  width: auto;
+  min-width: 110px;
+  transition: 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.safra-card:hover {
+  border-color: var(--verde-folha);
+}
+
+.safra-card.ativo {
+  background: #e9f4ec;
+  border-color: var(--verde-folha);
+  box-shadow: 0 0 6px rgba(58, 90, 64, 0.25);
+}
+
+.select-value {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #223322;
+}
+
+/* BOTÃO CONTINUAR */
+.btn-continuar {
+  margin-top: 28px;
+  width: 100%;
+  padding: 12px 0;
+  background: var(--verde-folha);
+  border: none;
+  color: white;
+  font-weight: 600;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.btn-continuar:hover {
+  background: #2f4c33;
+}
+
+/* LOGOUT */
+.logout-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: #ffffff;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 50px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  color: #444;
+  transition: 0.25s ease;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+}
+
+.logout-btn:hover {
+  background: #f0f0f0;
+  transform: translateY(-1px);
+}
+
+/* ===============================
+   RESPONSIVO
+=============================== */
+@media (max-width: 768px) {
+  .poslogin-wrapper {
+    padding-top: 32px;
+    padding-bottom: 32px;
+  }
+
+  .poslogin-card {
+    width: 94%;
+    padding: 20px 18px;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  }
+
+  .titulo-ola {
+    font-size: 1.3rem;
+    margin-bottom: 4px;
+  }
+
+  .subtitulo {
+    font-size: 0.9rem;
+    margin-bottom: 18px;
+  }
+
+  .fazenda-card {
+    padding: 10px 12px;
+    border-radius: 10px;
+  }
+
+  .card-title {
+    font-size: 0.95rem;
+  }
+
+  .safra-card {
+    padding: 7px 12px;
+    min-width: 100px;
+    border-radius: 999px;
+  }
+
+  .btn-continuar {
+    margin-top: 22px;
+    padding: 10px 0;
+    border-radius: 18px;
+    font-size: 0.95rem;
+  }
+
+  .logout-btn {
+    top: 14px;
+    right: 14px;
+    padding: 8px 11px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .poslogin-card {
+    width: 96%;
+    padding: 18px 14px;
+  }
+
+  .titulo-ola {
+    font-size: 1.2rem;
+  }
+
+  .subtitulo {
+    font-size: 0.85rem;
+  }
+
+  .card-title {
+    font-size: 0.9rem;
+  }
+
+  .safra-card {
+    padding: 6px 10px;
+    min-width: 95px;
+  }
+
+  .btn-continuar {
+    margin-top: 18px;
+    font-size: 0.9rem;
+  }
+}

@@ -35,7 +35,7 @@ function Login() {
       login(token, usuario);
 
       // Vai para a home
-      navigate("/home");
+      navigate("/poslogin");
     } catch (err) {
       console.error(err);
 

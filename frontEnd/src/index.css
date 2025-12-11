@@ -81,6 +81,41 @@ body {
   gap: 7px;
 }
 
+/* container geral do header já existe, só garantindo */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* novo bloco central */
+.header-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.header-contexto {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: #2b3d2b;
+}
+
+.header-contexto-fazenda {
+  font-weight: 600;
+}
+
+.header-contexto-safra {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #e9f4ec;
+  border: 1px solid #c9d6c9;
+  font-weight: 500;
+}
+
 /* ============================
    REGIÕES DO HEADER
 ============================ */

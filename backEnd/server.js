@@ -9,6 +9,7 @@ import rotasSafras from "./routes/rotasSafrasLista.routes.js";
 import rotasProdutos from "./routes/rotasProdutos.routes.js";
 import rotasLavouras from "./routes/rotasLavouras.routes.js";
 import rotasCliente from "./routes/rotasCliente.routes.js";
+import rotasFazendasUsuario from "./routes/rotasFazendasUsuario.routes.js";
 
 import { fileURLToPath } from "url";
 import path, { dirname } from "path";
@@ -27,6 +28,7 @@ app.use(express.json());
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
 app.use("/login", rotaslogin);
+app.use("/fazendas-usuario", rotasFazendasUsuario);
 app.use("/clientes", rotasCliente);
 app.use("/safras-lista", rotasSafras);
 app.use("/lavouras", rotasLavouras);
