@@ -1,13 +1,19 @@
 /* ===============================
    LAYOUT GERAL
 =============================== */
+
+button {
+  font-family: "Montserrat", sans-serif;
+}
+
 .poslogin-wrapper {
   min-height: 100vh;
   display: flex;
   justify-content: center;
   padding-top: 60px;
   padding-bottom: 60px;
-  background: radial-gradient(circle at top left, #f7edd8, var(--bege-claro));
+  /* background: radial-gradient(circle at top left, #f7edd8, var(--bege-claro)); */
+  background: white;
   position: relative;
 }
 
@@ -172,6 +178,7 @@
 
 /* BOTÃO CONTINUAR */
 .btn-continuar {
+  font-family: "Montserrat", sans-serif;
   margin-top: 28px;
   width: 100%;
   padding: 12px 0;
@@ -180,12 +187,25 @@
   color: white;
   font-weight: 600;
   border-radius: 20px;
+  font-size: 15px;
   cursor: pointer;
-  transition: 0.25s ease;
+  transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+}
+
+.btn-continuar {
+  background: var(--verde-folha);
+  color: #fff;
 }
 
 .btn-continuar:hover {
-  background: #2f4c33;
+  background: var(--verde-oliva);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(58, 90, 64, 0.35);
+}
+
+.btn-continuar:active {
+  transform: translateY(0);
+  box-shadow: none;
 }
 
 /* LOGOUT */
@@ -193,20 +213,47 @@
   position: absolute;
   top: 20px;
   right: 20px;
+
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+
   background: #ffffff;
-  border: none;
-  padding: 10px 14px;
-  border-radius: 50px;
+  border: 2px solid transparent;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
   cursor: pointer;
-  font-size: 1.1rem;
-  color: #444;
-  transition: 0.25s ease;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+  font-size: 1.05rem;
+  color: #223322;
+
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: border-color 0.25s ease, background 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
+/* HOVER — igual safra */
 .logout-btn:hover {
-  background: #f0f0f0;
-  transform: translateY(-1px);
+  border-color: var(--verde-folha);
+  background: #e9f4ec;
+  box-shadow: 0 0 6px rgba(58, 90, 64, 0.25);
+}
+
+/* Clique discreto */
+.logout-btn:active {
+  transform: scale(0.95);
+}
+
+@media (max-width: 768px) {
+  .logout-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+    top: 14px;
+    right: 14px;
+  }
 }
 
 /* ===============================
@@ -286,10 +333,5 @@
   .safra-card {
     padding: 6px 10px;
     min-width: 95px;
-  }
-
-  .btn-continuar {
-    margin-top: 18px;
-    font-size: 0.9rem;
   }
 }

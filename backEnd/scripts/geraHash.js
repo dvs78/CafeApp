@@ -1,28 +1,56 @@
-// // backEnd/geraHash.js
 // import bcrypt from "bcrypt";
 
-// async function gerarHashes() {
-//   const senhaDaniel = "11225"; // ex.: C@f3#2025!Daniel
-//   const senhaCarol = "12345";
-//   const senhaBruna = "12345";
+// const senha = process.argv[2];
 
-//   const hashDaniel = await bcrypt.hash(senhaDaniel, 10);
-//   const hashCarol = await bcrypt.hash(senhaCarol, 10);
-//   const hashBruna = await bcrypt.hash(senhaBruna, 10);
-
-//   console.log("Hash Daniel:", hashDaniel);
-//   console.log("Hash Carol :", hashCarol);
-//   console.log("Hash Bruna :", hashCarol);
+// if (!senha) {
+//   console.error("❌ Informe a senha:");
+//   console.error("👉 node gerarHash.js MINHA_SENHA");
+//   process.exit(1);
 // }
 
-// gerarHashes();
+// const saltRounds = 10;
+
+// const hash = await bcrypt.hash(senha, saltRounds);
+
+// console.log("✅ Senha:", senha);
+// console.log("🔐 Hash bcrypt:");
+// console.log(hash);
+
+// Rode no terminal, coloque a senha no final
+// ex senha 11111
+// node .\scripts\geraHash.js 11111
+
+// Script Sql
+// UPDATE usuarios
+// SET senha = '<HASH_GERADO>'
+// WHERE email = 'dvs.veiga78@gmail.com';
 
 import bcrypt from "bcrypt";
+import pool from "../routes/connect.routes.js";
 
-const gerar = async () => {
-  const senhaPura = "12345";
-  const hash = await bcrypt.hash(senhaPura, 10);
-  console.log("HASH NOVO:", hash);
-};
+const email = process.argv[2];
+const senha = process.argv[3];
 
-gerar();
+if (!email || !senha) {
+  console.error("❌ Uso:");
+  console.error("👉 node resetSenhaDev.js email senha");
+  process.exit(1);
+}
+
+const hash = await bcrypt.hash(senha, 10);
+
+await pool.query("UPDATE usuarios SET senha = $1 WHERE email = $2", [
+  hash,
+  email,
+]);
+
+console.log("✅ Senha atualizada com sucesso");
+console.log("📧 Email:", email);
+console.log("🔑 Nova senha:", senha);
+
+process.exit(0);
+
+// Rode no terminal, coloque o email e senha no final
+// Acho que atualiza no banco local
+// node scripts/geraHash.js dvs.veiga78@gmail.com 00000
+// node scripts/geraHash.js contato@agrocoffe.com.br 00000
