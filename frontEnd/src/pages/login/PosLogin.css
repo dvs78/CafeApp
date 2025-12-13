@@ -216,10 +216,10 @@ button {
 
   width: 44px;
   height: 44px;
-  border-radius: 50%;
 
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
   background: #ffffff;
-  border: 2px solid transparent;
 
   display: flex;
   align-items: center;
@@ -227,23 +227,21 @@ button {
 
   cursor: pointer;
   font-size: 1.05rem;
-  color: #223322;
 
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transition: border-color 0.25s ease, background 0.25s ease,
-    box-shadow 0.25s ease;
+  transition: transform 0.12s ease, box-shadow 0.15s ease,
+    border-color 0.15s ease;
 }
 
-/* HOVER — igual safra */
 .logout-btn:hover {
-  border-color: var(--verde-folha);
-  background: #e9f4ec;
-  box-shadow: 0 0 6px rgba(58, 90, 64, 0.25);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
+  /* border-color: rgba(58, 90, 64, 0.22); */
+  background: rgba(58, 90, 64, 0.3);
 }
 
-/* Clique discreto */
 .logout-btn:active {
-  transform: scale(0.95);
+  border-color: rgba(58, 90, 64, 0.28);
+  background: rgba(58, 90, 64, 0.3);
 }
 
 @media (max-width: 768px) {

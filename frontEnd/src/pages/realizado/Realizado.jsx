@@ -1,7 +1,8 @@
 import "./Realizado.css";
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+// import axios from "axios";
+import api from "../../services/api";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 
@@ -104,7 +105,7 @@ function Realizado({
   useEffect(() => {
     if (!token || !usuario) return;
 
-    axios
+    api
       .get("/realizado", {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -119,9 +120,9 @@ function Realizado({
     if (!usuario) return;
 
     Promise.all([
-      axios.get(`/lavouras/${usuario.clienteId}`),
-      axios.get("/produtos"),
-      axios.get("/servicos-lista"),
+      api.get(`/lavouras/${usuario.clienteId}`),
+      api.get("/produtos"),
+      api.get("/servicos-lista"),
     ])
       .then(([l, p, s]) => {
         setListaLavouras(l.data);
@@ -220,10 +221,10 @@ function Realizado({
     };
 
     const req = editandoId
-      ? axios.put(`/realizado/${editandoId}`, payload, {
+      ? api.put(`/realizado/${editandoId}`, payload, {
           headers: { Authorization: `Bearer ${token}` },
         })
-      : axios.post("/realizado", payload, {
+      : api.post("/realizado", payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -258,7 +259,7 @@ function Realizado({
   function handleExcluir(id) {
     if (!token) return;
 
-    axios
+    api
       .delete(`/realizado/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -337,95 +338,9 @@ function Realizado({
 
       {!mostrarFormulario && mostrarFiltros && (
         <section className="card filtros-card anima-card">
-          <div className="filtros-header">
-            <h2>Filtros</h2>
-          </div>
+          <header className="filtros-topo">
+            <h2 className="filtros-title">Filtros</h2>
 
-          <div className="filtros-grid">
-            <div className="filtros-linha filtros-linha-3">
-              <div className="filtro-campo">
-                <div className="filtro-grupo-titulo">Mês</div>
-                <select
-                  value={filtroMes}
-                  onChange={(e) => setFiltroMes(e.target.value)}
-                >
-                  <option value="">Todos</option>
-                  <option value="01">Janeiro</option>
-                  <option value="02">Fevereiro</option>
-                  <option value="03">Março</option>
-                  <option value="04">Abril</option>
-                  <option value="05">Maio</option>
-                  <option value="06">Junho</option>
-                  <option value="07">Julho</option>
-                  <option value="08">Agosto</option>
-                  <option value="09">Setembro</option>
-                  <option value="10">Outubro</option>
-                  <option value="11">Novembro</option>
-                  <option value="12">Dezembro</option>
-                </select>
-              </div>
-
-              <div className="filtro-campo">
-                <div className="filtro-grupo-titulo">Ano</div>
-                <select
-                  value={filtroAno}
-                  onChange={(e) => setFiltroAno(e.target.value)}
-                >
-                  <option value="">Todos</option>
-                  <option value="2024">2024</option>
-                  <option value="2025">2025</option>
-                  <option value="2026">2026</option>
-                </select>
-              </div>
-
-              <div className="filtro-campo">
-                <div className="filtro-grupo-titulo">Lavoura</div>
-                <select
-                  value={filtroLavoura}
-                  onChange={(e) => setFiltroLavoura(e.target.value)}
-                >
-                  <option value="">Todas</option>
-                  {lavourasDaSafra.map((lav) => (
-                    <option key={lav.id} value={lav.nome}>
-                      {lav.nome}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="filtros-linha filtros-linha-2">
-              <div className="filtro-campo">
-                <div className="filtro-grupo-titulo">Serviço</div>
-                <select
-                  value={filtroServico}
-                  onChange={(e) => setFiltroServico(e.target.value)}
-                >
-                  <option value="">Todos</option>
-                  {listaServicos.map((srv) => (
-                    <option key={srv.id} value={srv.nome}>
-                      {srv.nome}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="filtro-campo filtro-campo-texto">
-                <div className="filtro-grupo-titulo">
-                  <FontAwesomeIcon icon={faSearch} /> Buscar texto
-                </div>
-                <input
-                  className="input-busca"
-                  type="text"
-                  placeholder="Ex.: adubação, roçagem..."
-                  value={filtroTexto}
-                  onChange={(e) => setFiltroTexto(e.target.value)}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="filtros-acoes">
             <button
               className="btn-limpar-filtros"
               type="button"
@@ -439,6 +354,66 @@ function Realizado({
             >
               Limpar filtros
             </button>
+          </header>
+
+          <div className="filtros-grid-2">
+            <div className="login-campo filtro-mes">
+              <label className="login-label">Mês</label>
+              <select
+                className="login-input"
+                value={filtroMes}
+                onChange={(e) => setFiltroMes(e.target.value)}
+              >
+                <option value="">Todos</option>
+                {/* ... */}
+              </select>
+            </div>
+
+            <div className="login-campo filtro-ano">
+              <label className="login-label">Ano</label>
+              <select
+                className="login-input"
+                value={filtroAno}
+                onChange={(e) => setFiltroAno(e.target.value)}
+              >
+                <option value="">Todos</option>
+                {/* ... */}
+              </select>
+            </div>
+
+            <div className="login-campo filtro-lavoura">
+              <label className="login-label">Lavoura</label>
+              <select
+                className="login-input"
+                value={filtroLavoura}
+                onChange={(e) => setFiltroLavoura(e.target.value)}
+              >
+                <option value="">Todas</option>
+                {/* ... */}
+              </select>
+            </div>
+
+            <div className="login-campo filtro-servico">
+              <label className="login-label">Serviço</label>
+              <select
+                className="login-input"
+                value={filtroServico}
+                onChange={(e) => setFiltroServico(e.target.value)}
+              >
+                <option value="">Todos</option>
+                {/* ... */}
+              </select>
+            </div>
+
+            <div className="login-campo filtro-buscar">
+              <label className="login-label">Buscar texto</label>
+              <input
+                className="login-input"
+                placeholder="Ex.: adubação, roçagem..."
+                value={filtroTexto}
+                onChange={(e) => setFiltroTexto(e.target.value)}
+              />
+            </div>
           </div>
         </section>
       )}

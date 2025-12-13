@@ -1,4 +1,3 @@
-// src/App.jsx
 import { useState } from "react";
 import {
   BrowserRouter,
@@ -8,7 +7,6 @@ import {
   useLocation,
 } from "react-router-dom";
 
-import axios from "axios";
 import { toast } from "react-toastify";
 
 import { useAuth } from "./context/AuthContext";
@@ -21,9 +19,9 @@ import Login from "./pages/login/Login";
 import PosLogin from "./pages/login/PosLogin";
 import Toast from "./components/Toast";
 
-axios.defaults.baseURL = import.meta.env.DEV
-  ? "http://localhost:3001"
-  : "https://cafeapp-ial5.onrender.com";
+// axios.defaults.baseURL = import.meta.env.DEV
+//   ? "http://localhost:3001"
+//   : "https://cafeapp-ial5.onrender.com";
 
 const TOAST_WORKSPACE = "toast-workspace-required";
 
@@ -36,7 +34,6 @@ function RequireAuth({ children }) {
 function RequireWorkspace({ children }) {
   const { workspace } = useAuth();
 
-  // Fonte única: AuthContext OU localStorage ctx_*
   const fazenda =
     workspace?.fazenda || localStorage.getItem("ctx_fazenda") || "";
   const safra = workspace?.safra || localStorage.getItem("ctx_safra") || "";
@@ -52,6 +49,17 @@ function RequireWorkspace({ children }) {
     return <Navigate to="/poslogin" replace />;
   }
 
+  return children;
+}
+
+function RedirectIfWorkspace({ children }) {
+  const { workspace } = useAuth();
+
+  const fazenda =
+    workspace?.fazenda || localStorage.getItem("ctx_fazenda") || "";
+  const safra = workspace?.safra || localStorage.getItem("ctx_safra") || "";
+
+  if (fazenda && safra) return <Navigate to="/home" replace />;
   return children;
 }
 
@@ -72,6 +80,7 @@ function AppInner() {
 
       {usuario && !telaAuth && (
         <Header
+          usuario={usuario} // ✅ ADICIONE ISTO
           mostrarFiltros={mostrarFiltros}
           onToggleFiltros={() => setMostrarFiltros((prev) => !prev)}
           onLogout={logout}
@@ -82,13 +91,18 @@ function AppInner() {
 
       <div className="app-container">
         <Routes>
+          {/* 1) Sempre abrir em /login */}
+          <Route path="/" element={<Navigate to="/login" replace />} />
+
           <Route path="/login" element={<Login />} />
 
           <Route
             path="/poslogin"
             element={
               <RequireAuth>
-                <PosLogin />
+                <RedirectIfWorkspace>
+                  <PosLogin />
+                </RedirectIfWorkspace>
               </RequireAuth>
             }
           />
@@ -130,6 +144,7 @@ function AppInner() {
             }
           />
 
+          {/* 2) Sempre por último */}
           <Route
             path="*"
             element={<Navigate to={usuario ? "/home" : "/login"} replace />}

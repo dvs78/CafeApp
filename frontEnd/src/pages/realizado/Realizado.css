@@ -1,4 +1,4 @@
-/* =========================================================
+REALIZAO/* =========================================================
    REALIZADO — estilos apenas da página (sem mexer no layout global)
    ========================================================= */
 
@@ -6,7 +6,10 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding-top: 10px;
+  /* empurra o conteúdo para baixo do header */
+  padding-top: calc(var(--header-h) + 12px);
+  padding-bottom: 10px;
+  --page-pad-x: clamp(12px, 7%, 100px);
 }
 
 /* =========================================================
@@ -23,8 +26,6 @@
 
 .card-badge {
   font-size: 0.75rem;
-  background: var(--verde-oliva);
-  color: #f2e8cf;
   padding: 4px 10px;
   border-radius: 999px;
   display: inline-flex;
@@ -42,10 +43,6 @@
 /* =========================================================
    FILTROS
    ========================================================= */
-
-.filtros-card {
-  border-left-color: var(--marrom-cafe);
-}
 
 .filtros-header {
   margin-bottom: 12px;
@@ -124,25 +121,175 @@
   color: var(--verde-oliva);
 }
 
+/* CARD dos filtros */
+.filtros-card {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 20px 22px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+
+  margin-left: var(--page-pad-x);
+  margin-right: var(--page-pad-x);
+  margin-bottom: 20px; /* 👈 AQUI está o espaço que faltava */
+}
+
+/* Título no mesmo peso do login */
+.filtros-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 14px;
+  color: #111;
+}
+
+/* Grid dos filtros */
+.filtros-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px 16px;
+}
+
+/* Busca ocupa mais espaço */
+.filtros-busca {
+  grid-column: span 2;
+}
+
+/* Ações */
+.filtros-acoes {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+/* Botão limpar no mesmo “peso visual” do app */
+.btn-limpar-filtros {
+  background: none;
+  border: none;
+  font-family: "Montserrat", sans-serif;
+  color: var(--verde-folha);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 6px 4px;
+}
+
+.btn-limpar-filtros:hover {
+  color: var(--verde-oliva);
+  text-decoration: underline;
+}
+
+/* topo: "Filtros" + "Limpar filtros" lado a lado */
+.filtros-topo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+/* título */
+.filtros-title {
+  margin: 0;
+}
+
+/* grade estável por ÁREAS (não depende de ordem) */
+.filtros-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(220px, 1fr));
+  grid-template-areas:
+    "lavoura mes ano"
+    "servico buscar buscar";
+  gap: 14px 16px;
+}
+
+.filtro-lavoura {
+  grid-area: lavoura;
+}
+.filtro-mes {
+  grid-area: mes;
+}
+.filtro-ano {
+  grid-area: ano;
+}
+.filtro-servico {
+  grid-area: servico;
+}
+.filtro-buscar {
+  grid-area: buscar;
+}
+
+/* responsivo */
+@media (max-width: 900px) {
+  .filtros-grid-2 {
+    grid-template-columns: repeat(2, minmax(200px, 1fr));
+    grid-template-areas:
+      "lavoura lavoura"
+      "mes ano"
+      "servico buscar";
+  }
+}
+
+@media (max-width: 600px) {
+  .filtros-grid-2 {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "lavoura"
+      "mes"
+      "ano"
+      "servico"
+      "buscar";
+  }
+}
+
 /* =========================================================
    LISTA
-   ========================================================= */
+========================================================= */
 
 .lista-servicos {
   list-style: none;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 0;
-  margin: 0;
 }
-
 .servico-item {
-  border: 1px solid rgba(169, 132, 103, 0.35);
+  background: linear-gradient(
+    90deg,
+    var(--verde-oliva) 0%,
+    var(--verde-oliva) 55%,
+    #ffffff 100%
+  );
+
   border-radius: 14px;
   padding: 14px 16px;
-  background: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease,
+    transform 0.15s ease, border-color 0.2s ease;
+}
+
+.servico-linhas span {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 400;
+  color: white;
+}
+
+.servico-item:hover .servico-linhas span {
+  color: black;
+}
+
+.servico-item:hover {
+  background: linear-gradient(
+    90deg,
+    #ffffff 0%,
+    #ffffff 15%,
+    rgba(88, 129, 87, 0.5) 75%,
+    rgba(88, 129, 87, 0.7) 100%
+  );
+
+  border: 1px solid rgba(58, 90, 64, 0.35);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.18);
+  transform: translateY(-2px);
+  cursor: pointer;
 }
 
 .servico-item.compacto {
@@ -203,25 +350,41 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 3px 10px;
+
+  padding: 4px 12px;
   border-radius: 999px;
+
   font-size: 0.78rem;
   font-weight: 700;
   text-transform: capitalize;
+
   white-space: nowrap;
   width: fit-content;
-  background: #d1fae5;
-  color: #065f46;
+
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.status-badge.realizado {
+  background: var(--verde-oliva);
+  color: white;
+  font-weight: 500;
+  border-color: var(--verde-oliva);
 }
 
 .status-badge.pendente {
-  background: #fef3c7;
-  color: #92400e;
+  background: #92400e;
+  font-weight: 500;
+
+  border-color: #92400e;
+  color: black;
 }
 
 .status-badge.cancelado {
-  background: #e5e7eb;
-  color: #111827;
+  background: gray;
+  font-weight: 500;
+
+  border-color: gray;
+  color: black;
 }
 
 /* Botões editar/excluir */
@@ -300,6 +463,7 @@
   box-shadow: 0 10px 22px rgba(0, 0, 0, 0.28);
   transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
   z-index: 1200; /* acima da lista */
+  right: clamp(12px, 7%, 32px);
 }
 
 .fab:hover {
@@ -343,4 +507,31 @@
   .linha-2 span:nth-child(3) {
     grid-column: auto;
   }
+}
+
+/* largura máxima do conteúdo da página (ajuste se quiser) */
+:root {
+  --page-max: 1200px;
+}
+
+/* garante padding lateral no “miolo” mesmo se algum bloco usar 100vw */
+.realizado-page {
+  padding-left: var(--page-pad-x);
+  padding-right: var(--page-pad-x);
+}
+
+/* FILTROS: fica centralizado e nunca encosta na tela */
+.filtros-card {
+  width: 100%;
+  max-width: var(--page-max);
+  margin: 0 auto 20px; /* auto centraliza + 20px abaixo */
+}
+
+/* LISTA: mesmo alinhamento do filtro */
+.lista-servicos {
+  width: 100%;
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding-left: 0;
+  padding-right: 0;
 }

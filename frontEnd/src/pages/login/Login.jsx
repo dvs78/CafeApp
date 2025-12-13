@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+// import axios from "axios";
+import api from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
 import { toast } from "react-toastify";
 import "./Login.css";
@@ -20,7 +21,8 @@ function Login() {
     }
 
     try {
-      const res = await axios.post("/login", { email, senha });
+      // const res = await axios.post("/login", { email, senha });
+      const res = await api.post("/login", { email, senha });
 
       login(res.data.token, res.data.usuario);
       navigate("/poslogin");

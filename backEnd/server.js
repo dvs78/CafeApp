@@ -17,12 +17,6 @@ import path, { dirname } from "path";
 const app = express();
 app.use(cors());
 
-// app.use(
-//   cors({
-//     origin: ["http://localhost:5173", "https://cafeapp-ial5.onrender.com"],
-//     credentials: true,
-//   })
-// );
 app.use(express.json());
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
@@ -43,8 +37,14 @@ const distPath = path.join(__dirname, "../frontEnd/dist");
 
 app.use(express.static(distPath));
 
-// 3) catch-all para rotas do React, só entra se NÃO começar com /api
-app.get(/^(?!\/).*/, (_req, res) => {
+// Essa rota sempre no final
+// app.get(/.*/, (_req, res) => {
+//   res.sendFile(path.join(distPath, "index.html"));
+// });
+
+app.get(/.*/, (req, res, next) => {
+  const aceitaHtml = req.headers.accept?.includes("text/html");
+  if (!aceitaHtml) return next();
   res.sendFile(path.join(distPath, "index.html"));
 });
 
