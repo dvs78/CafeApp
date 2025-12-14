@@ -229,6 +229,14 @@ function Realizado({
     return base;
   }, [servicos, safra, fazenda, usuario]);
 
+  function limparFiltros() {
+    setFiltroMes("");
+    setFiltroAno("");
+    setFiltroTexto("");
+    setFiltroLavoura("");
+    setFiltroServico("");
+  }
+
   // ------------------------------
   // OPÇÕES DOS SELECTS (usando dados do contexto)
   // ------------------------------
@@ -505,13 +513,7 @@ function Realizado({
             <button
               className="btn-limpar-filtros"
               type="button"
-              onClick={() => {
-                setFiltroMes("");
-                setFiltroAno("");
-                setFiltroTexto("");
-                setFiltroLavoura("");
-                setFiltroServico("");
-              }}
+              onClick={limparFiltros}
             >
               Limpar filtros
             </button>
@@ -616,7 +618,16 @@ function Realizado({
       <button
         className="fab"
         type="button"
-        onClick={() => setMostrarFormulario((v) => !v)}
+        onClick={() => {
+          if (mostrarFormulario) {
+            // clicou no X
+            fecharFormulario(); // fecha e limpa os campos do form
+            limparFiltros(); // limpa os filtros do card
+          } else {
+            // clicou no +
+            setMostrarFormulario(true);
+          }
+        }}
       >
         <FontAwesomeIcon icon={mostrarFormulario ? faTimes : faPlus} />
       </button>
