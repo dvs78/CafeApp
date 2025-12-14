@@ -1,13 +1,12 @@
 import "./Realizado.css";
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-// import axios from "axios";
 import api from "../../services/api";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSearch, faPlus, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faTimes } from "@fortawesome/free-solid-svg-icons";
 
 import RealizadoForm from "./RealizadoForm";
 import RealizadoLista from "./RealizadoLista";
@@ -15,20 +14,25 @@ import ConfirmDialog from "../../components/ConfirmDialog";
 import { notificar } from "../../components/Toast";
 import { useAuth } from "../../context/AuthContext";
 
+// ------------------------------
 // HELPERS
+// ------------------------------
 function formatarData(iso) {
   if (!iso) return "";
   return new Date(iso).toLocaleDateString("pt-BR");
 }
+
 function limparQuantidade(valor) {
   if (!valor) return null;
   const txt = valor.toString().replace(/\./g, "").replace(",", ".");
   const num = Number(txt);
   return Number.isNaN(num) ? null : num;
 }
+
 function normalizar(v) {
   return (v ?? "").toString().trim().toLowerCase();
 }
+
 function formatarQuantidadeParaInput(valor) {
   if (valor === null || valor === undefined) return "";
   const n = Number(valor);
@@ -36,6 +40,19 @@ function formatarQuantidadeParaInput(valor) {
   return n
     .toLocaleString("pt-BR", { minimumFractionDigits: 2 })
     .replace(/\./g, "");
+}
+
+/**
+ * BUGFIX: data vem como ISO tipo "2025-11-18T03:00:00.000Z"
+ * NÃO pode fazer split("-") esperando só YYYY-MM-DD.
+ */
+function extrairAnoMes(dataISO) {
+  if (!dataISO) return { ano: "", mes: "" };
+  const d = new Date(dataISO);
+  if (Number.isNaN(d.getTime())) return { ano: "", mes: "" };
+  const ano = String(d.getFullYear());
+  const mes = String(d.getMonth() + 1).padStart(2, "0");
+  return { ano, mes };
 }
 
 function Realizado({
@@ -51,7 +68,9 @@ function Realizado({
     workspace?.fazenda || localStorage.getItem("ctx_fazenda") || "";
   const safra = workspace?.safra || localStorage.getItem("ctx_safra") || "";
 
+  // ------------------------------
   // PROTEÇÃO
+  // ------------------------------
   useEffect(() => {
     if (!usuario || !token) {
       navigate("/login");
@@ -63,7 +82,9 @@ function Realizado({
     }
   }, [usuario, token, fazenda, safra, navigate]);
 
+  // ------------------------------
   // CAMPOS FORM
+  // ------------------------------
   const [lavoura, setLavoura] = useState("");
   const [servico, setServico] = useState("");
   const [data, setData] = useState("");
@@ -75,47 +96,63 @@ function Realizado({
 
   const [confirmDuplicado, setConfirmDuplicado] = useState(false);
 
+  // ------------------------------
   // LISTAS
+  // ------------------------------
   const [servicos, setServicos] = useState([]);
   const [listaLavouras, setListaLavouras] = useState([]);
   const [listaProdutos, setListaProdutos] = useState([]);
   const [listaServicos, setListaServicos] = useState([]);
 
+  // ------------------------------
   // UI
+  // ------------------------------
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
 
+  // ------------------------------
   // FILTROS
+  // ------------------------------
   const [filtroMes, setFiltroMes] = useState("");
   const [filtroAno, setFiltroAno] = useState("");
   const [filtroTexto, setFiltroTexto] = useState("");
   const [filtroLavoura, setFiltroLavoura] = useState("");
   const [filtroServico, setFiltroServico] = useState("");
 
+  // ------------------------------
   // HEADER
+  // ------------------------------
   useEffect(() => {
     setOcultarBotaoFiltros(mostrarFormulario);
-
-    // aqui recomendo não “poluir” o título com fazenda/safra, porque já está no header-contexto
     setTituloCustom("Serviços");
-
     return () => setTituloCustom("");
   }, [mostrarFormulario, setOcultarBotaoFiltros, setTituloCustom]);
 
-  // CARREGAR DADOS
+  // ------------------------------
+  // CARREGAR DADOS (Realizado)
+  // ------------------------------
   useEffect(() => {
     if (!token || !usuario) return;
 
     api
       .get("/realizado", {
+        // mantém seus params (se o backend usar)
+        params: {
+          clienteId: usuario.clienteId,
+          fazenda,
+          safra,
+        },
         headers: {
           Authorization: `Bearer ${token}`,
           "cliente-id": usuario.clienteId,
         },
       })
-      .then((res) => setServicos(res.data))
+      .then((res) => setServicos(Array.isArray(res.data) ? res.data : []))
       .catch(() => notificar("erro", "Erro ao carregar serviços."));
-  }, [token, usuario]);
+  }, [token, usuario, fazenda, safra]);
 
+  // ------------------------------
+  // CARREGAR LISTAS AUXILIARES
+  // ------------------------------
   useEffect(() => {
     if (!usuario) return;
 
@@ -125,59 +162,177 @@ function Realizado({
       api.get("/servicos-lista"),
     ])
       .then(([l, p, s]) => {
-        setListaLavouras(l.data);
-        setListaProdutos(p.data);
-        setListaServicos(s.data);
+        setListaLavouras(Array.isArray(l.data) ? l.data : []);
+        setListaProdutos(Array.isArray(p.data) ? p.data : []);
+        setListaServicos(Array.isArray(s.data) ? s.data : []);
       })
       .catch(() => notificar("erro", "Erro ao carregar listas."));
   }, [usuario]);
 
-  // Lavouras “relevantes” da safra
+  // ------------------------------
+  // Lavouras “relevantes” da safra (para o FORM)
+  // ------------------------------
   const lavourasDaSafra = useMemo(() => {
     if (!safra) return listaLavouras;
 
     const nomesUsados = new Set(
-      servicos
-        .filter((s) => s.safra === safra)
-        .map((s) => s.lavoura)
+      (servicos || [])
+        .filter((s) => s?.safra === safra)
+        .map((s) => s?.lavoura)
         .filter(Boolean)
     );
 
     if (nomesUsados.size === 0) return listaLavouras;
-    return listaLavouras.filter((lav) => nomesUsados.has(lav.nome));
+
+    // listaLavouras do seu backend parece ter { nome: "..." }
+    return (listaLavouras || []).filter((lav) => nomesUsados.has(lav?.nome));
   }, [safra, servicos, listaLavouras]);
 
-  // FILTRAGEM
+  // ------------------------------
+  // BASE DO CONTEXTO (cliente + safra + fazenda) — sem “zerar” se campo não existir
+  // ------------------------------
+  const servicosDoContexto = useMemo(() => {
+    const lista = Array.isArray(servicos) ? servicos : [];
+
+    // 1) safra (sempre tem no objeto, pelo seu JSON)
+    let base = safra ? lista.filter((s) => s?.safra === safra) : lista;
+
+    // 2) cliente (no seu JSON vem como "cliente_id")
+    base = base.filter((s) => {
+      const cid = s?.cliente_id ?? s?.clienteId ?? s?.cliente;
+      return cid ? String(cid) === String(usuario?.clienteId) : true;
+    });
+
+    // 3) fazenda: só filtra se existir campo de fazenda em algum item
+    const temFazendaNoObjeto = base.some(
+      (s) =>
+        s?.fazenda !== undefined ||
+        s?.fazenda_nome !== undefined ||
+        s?.nome_fazenda !== undefined ||
+        s?.fazendaId !== undefined ||
+        s?.fazenda_id !== undefined
+    );
+
+    if (fazenda && temFazendaNoObjeto) {
+      base = base.filter((s) => {
+        const f =
+          s?.fazenda ??
+          s?.fazenda_nome ??
+          s?.nome_fazenda ??
+          s?.fazendaId ??
+          s?.fazenda_id;
+
+        return String(f ?? "") === String(fazenda);
+      });
+    }
+
+    return base;
+  }, [servicos, safra, fazenda, usuario]);
+
+  // ------------------------------
+  // OPÇÕES DOS SELECTS (usando dados do contexto)
+  // ------------------------------
+  const opcoesMes = useMemo(() => {
+    const set = new Set();
+    servicosDoContexto.forEach((s) => {
+      const { mes } = extrairAnoMes(s?.data);
+      if (mes) set.add(mes);
+    });
+    return Array.from(set).sort();
+  }, [servicosDoContexto]);
+
+  const opcoesAno = useMemo(() => {
+    const set = new Set();
+    servicosDoContexto.forEach((s) => {
+      const { ano } = extrairAnoMes(s?.data);
+      if (ano) set.add(ano);
+    });
+    return Array.from(set).sort((a, b) => Number(b) - Number(a));
+  }, [servicosDoContexto]);
+
+  const opcoesLavoura = useMemo(() => {
+    // preferir lavourasDaSafra (do BD)
+    const nomes = (lavourasDaSafra || []).map((l) => l?.nome).filter(Boolean);
+    if (nomes.length)
+      return [...new Set(nomes)].sort((a, b) => a.localeCompare(b));
+
+    // fallback: tirar dos lançamentos
+    const set = new Set();
+    servicosDoContexto.forEach((s) => s?.lavoura && set.add(s.lavoura));
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [lavourasDaSafra, servicosDoContexto]);
+
+  const opcoesServico = useMemo(() => {
+    const set = new Set();
+    servicosDoContexto.forEach((s) => s?.servico && set.add(s.servico));
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [servicosDoContexto]);
+
+  const filtroPreviewLavoura = mostrarFormulario ? lavoura : "";
+  const filtroPreviewServico = mostrarFormulario ? servico : "";
+
+  // ------------------------------
+  // FILTRAGEM FINAL (agora com data correta)
+  // ------------------------------
+  // ------------------------------
+  // FILTRAGEM + ORDENAÇÃO (data desc)
+  // ------------------------------
   const servicosFiltrados = useMemo(() => {
-    return servicos.filter((s) => {
-      if (safra && s.safra !== safra) return false;
+    // 1) base (use o contexto se quiser; se preferir, pode usar servicos direto)
+    const base = Array.isArray(servicosDoContexto) ? servicosDoContexto : [];
 
-      if (filtroLavoura && s.lavoura !== filtroLavoura) return false;
-      if (filtroServico && s.servico !== filtroServico) return false;
+    // 2) filtra primeiro (pelos seus filtros reais + preview)
+    const filtrado = base.filter((s) => {
+      // filtros do card
+      if (filtroLavoura && s?.lavoura !== filtroLavoura) return false;
+      if (filtroServico && s?.servico !== filtroServico) return false;
 
-      const [ano, mes] = (s.data || "").split("-");
+      // preview automático do formulário
+      if (filtroPreviewLavoura && s?.lavoura !== filtroPreviewLavoura)
+        return false;
+      if (filtroPreviewServico && s?.servico !== filtroPreviewServico)
+        return false;
+
+      // mês/ano (corrigido para ISO completo)
+      const { ano, mes } = extrairAnoMes(s?.data);
       if (filtroMes && mes !== filtroMes) return false;
       if (filtroAno && ano !== filtroAno) return false;
 
+      // texto
       if (filtroTexto) {
-        const texto =
-          `${s.lavoura} ${s.servico} ${s.produto} ${s.status}`.toLowerCase();
-        if (!texto.includes(filtroTexto.toLowerCase())) return false;
+        const texto = normalizar(
+          `${s?.lavoura} ${s?.servico} ${s?.produto} ${s?.status}`
+        );
+        if (!texto.includes(normalizar(filtroTexto))) return false;
       }
 
       return true;
     });
+
+    // 3) ordena depois (mais nova -> mais antiga)
+    return filtrado.sort((a, b) => {
+      const tb = new Date(b?.data || 0).getTime();
+      const ta = new Date(a?.data || 0).getTime();
+
+      if (tb !== ta) return tb - ta;
+
+      // desempate estável (opcional)
+      return (b?.id ?? 0) - (a?.id ?? 0);
+    });
   }, [
-    servicos,
-    safra,
+    servicosDoContexto,
+    filtroLavoura,
+    filtroServico,
+    filtroPreviewLavoura,
+    filtroPreviewServico,
     filtroMes,
     filtroAno,
     filtroTexto,
-    filtroLavoura,
-    filtroServico,
   ]);
 
+  // ------------------------------
   // CRUD
+  // ------------------------------
   function handleSubmit(e) {
     e.preventDefault();
 
@@ -188,13 +343,13 @@ function Realizado({
 
     if (!usuario || !token) return;
 
-    const existeDuplicado = servicos.some((s) => {
+    const existeDuplicado = (servicos || []).some((s) => {
       return (
-        s.id !== editandoId &&
-        normalizar(s.safra) === normalizar(safra) &&
-        normalizar(s.lavoura) === normalizar(lavoura) &&
-        normalizar(s.servico) === normalizar(servico) &&
-        normalizar(s.produto) === normalizar(produto)
+        s?.id !== editandoId &&
+        normalizar(s?.safra) === normalizar(safra) &&
+        normalizar(s?.lavoura) === normalizar(lavoura) &&
+        normalizar(s?.servico) === normalizar(servico) &&
+        normalizar(s?.produto) === normalizar(produto)
       );
     });
 
@@ -218,6 +373,8 @@ function Realizado({
       quantidade: limparQuantidade(quantidade),
       cliente_id: usuario.clienteId,
       usuario_id: usuario.id,
+      // Se você tiver campo fazenda no backend, vale mandar também:
+      // fazenda,
     };
 
     const req = editandoId
@@ -282,7 +439,9 @@ function Realizado({
     setQuantidade("");
   }
 
+  // ------------------------------
   // EXPORTAÇÃO
+  // ------------------------------
   function exportarExcel() {
     const ws = XLSX.utils.json_to_sheet(servicosFiltrados);
     const wb = XLSX.utils.book_new();
@@ -307,7 +466,9 @@ function Realizado({
     doc.save("servicos.pdf");
   }
 
-  // RENDER (SEM main.app-main aqui)
+  // ------------------------------
+  // RENDER (SEM mexer em CSS)
+  // ------------------------------
   return (
     <div className="realizado-page">
       {mostrarFormulario && (
@@ -357,6 +518,22 @@ function Realizado({
           </header>
 
           <div className="filtros-grid-2">
+            <div className="login-campo filtro-lavoura">
+              <label className="login-label">Lavoura</label>
+              <select
+                className="login-input"
+                value={filtroLavoura}
+                onChange={(e) => setFiltroLavoura(e.target.value)}
+              >
+                <option value="">Todas</option>
+                {opcoesLavoura.map((nome) => (
+                  <option key={nome} value={nome}>
+                    {nome}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <div className="login-campo filtro-mes">
               <label className="login-label">Mês</label>
               <select
@@ -365,7 +542,11 @@ function Realizado({
                 onChange={(e) => setFiltroMes(e.target.value)}
               >
                 <option value="">Todos</option>
-                {/* ... */}
+                {opcoesMes.map((m) => (
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -377,19 +558,11 @@ function Realizado({
                 onChange={(e) => setFiltroAno(e.target.value)}
               >
                 <option value="">Todos</option>
-                {/* ... */}
-              </select>
-            </div>
-
-            <div className="login-campo filtro-lavoura">
-              <label className="login-label">Lavoura</label>
-              <select
-                className="login-input"
-                value={filtroLavoura}
-                onChange={(e) => setFiltroLavoura(e.target.value)}
-              >
-                <option value="">Todas</option>
-                {/* ... */}
+                {opcoesAno.map((a) => (
+                  <option key={a} value={a}>
+                    {a}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -401,7 +574,11 @@ function Realizado({
                 onChange={(e) => setFiltroServico(e.target.value)}
               >
                 <option value="">Todos</option>
-                {/* ... */}
+                {opcoesServico.map((nome) => (
+                  <option key={nome} value={nome}>
+                    {nome}
+                  </option>
+                ))}
               </select>
             </div>
 

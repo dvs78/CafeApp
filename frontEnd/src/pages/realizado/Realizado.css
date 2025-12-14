@@ -6,10 +6,12 @@ REALIZAO/* =========================================================
   display: flex;
   flex-direction: column;
   gap: 16px;
-  /* empurra o conteúdo para baixo do header */
-  padding-top: calc(var(--header-h) + 12px);
+
+  /* NÃO precisa disso com header sticky */
+  padding-top: 0;
   padding-bottom: 10px;
-  --page-pad-x: clamp(12px, 7%, 100px);
+
+  /* NÃO crie page-pad-x aqui, porque o app-main já tem padding */
 }
 
 /* =========================================================
@@ -41,18 +43,154 @@ REALIZAO/* =========================================================
 }
 
 /* =========================================================
+   FORMULÁRIO — mesmo padrão visual dos filtros/login-input
+   ========================================================= */
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: 14px 16px;
+}
+
+.form-row-3 {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 14px 16px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-primario,
+.btn-secundario {
+  font-family: "Montserrat", sans-serif;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.15s ease, background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.btn-primario {
+  background: var(--verde-folha);
+  color: #fff;
+}
+
+.btn-primario:hover {
+  background: var(--verde-oliva);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
+}
+
+.btn-secundario {
+  background: #fff;
+  color: var(--verde-folha);
+  border-color: rgba(58, 90, 64, 0.25);
+}
+
+.btn-secundario:hover {
+  border-color: var(--verde-folha);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 900px) {
+  .form-row-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================
+   FORMULÁRIO — ficar igual ao card de filtros
+   ========================================================= */
+
+.card-form {
+  width: 100%;
+  max-width: var(--page-max);
+  margin: 0 auto 20px;
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 20px 22px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+/* grid do form baseado no grid-2 dos filtros */
+.form-grid {
+  grid-template-areas:
+    "lavoura servico servico"
+    "data status status"
+    "produto produto produto"
+    "unidade quantidade quantidade";
+}
+
+/* mapeia áreas */
+.form-lavoura {
+  grid-area: lavoura;
+}
+.form-servico {
+  grid-area: servico;
+}
+.form-data {
+  grid-area: data;
+}
+.form-status {
+  grid-area: status;
+}
+.form-produto {
+  grid-area: produto;
+}
+.form-unidade {
+  grid-area: unidade;
+}
+.form-quantidade {
+  grid-area: quantidade;
+}
+
+/* responsivo seguindo seu padrão */
+@media (max-width: 900px) {
+  .form-grid {
+    grid-template-columns: repeat(2, minmax(200px, 1fr));
+    grid-template-areas:
+      "lavoura servico"
+      "data status"
+      "produto produto"
+      "unidade quantidade";
+  }
+}
+
+@media (max-width: 600px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "lavoura"
+      "servico"
+      "data"
+      "status"
+      "produto"
+      "unidade"
+      "quantidade";
+  }
+}
+
+/* =========================================================
    FILTROS
    ========================================================= */
 
 .filtros-header {
   margin-bottom: 12px;
-}
-
-.filtros-header h2 {
-  color: var(--marrom-cafe);
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
 .filtros-grid {
@@ -73,33 +211,6 @@ REALIZAO/* =========================================================
   gap: 6px;
 }
 
-.filtro-grupo-titulo {
-  font-size: 12px;
-  color: var(--marrom-cafe);
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-
-.filtro-campo select,
-.filtro-campo input {
-  width: 100%;
-  padding: 10px 12px;
-  border: 2px solid #e5e5e5;
-  border-radius: 12px;
-  font-size: 0.95rem;
-  background: #fff;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease,
-    transform 0.1s ease;
-}
-
-.filtro-campo select:focus,
-.filtro-campo input:focus {
-  border-color: var(--verde-folha);
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(58, 90, 64, 0.22);
-  transform: translateY(-1px);
-}
-
 .filtros-acoes {
   display: flex;
   justify-content: flex-end;
@@ -107,21 +218,30 @@ REALIZAO/* =========================================================
 }
 
 .btn-limpar-filtros {
+  font-family: "Montserrat", sans-serif;
   background: none;
   border: none;
-  color: var(--verde-folha);
-  font-weight: 700;
+  color: black;
+  font-weight: 600;
   font-size: 0.85rem;
   cursor: pointer;
-  text-decoration: underline;
-  padding: 6px 4px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 2px solid transparent;
+
+  transition: transform 0.12s ease, box-shadow 0.15s ease, background 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .btn-limpar-filtros:hover {
-  color: var(--verde-oliva);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
+  color: white;
+  transform: translateY(-1px);
+  background-color: rgba(128, 128, 128, 0.5);
 }
 
 /* CARD dos filtros */
+
 .filtros-card {
   background: #ffffff;
   border-radius: 18px;
@@ -131,14 +251,6 @@ REALIZAO/* =========================================================
   margin-left: var(--page-pad-x);
   margin-right: var(--page-pad-x);
   margin-bottom: 20px; /* 👈 AQUI está o espaço que faltava */
-}
-
-/* Título no mesmo peso do login */
-.filtros-title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin-bottom: 14px;
-  color: #111;
 }
 
 /* Grid dos filtros */
@@ -158,23 +270,6 @@ REALIZAO/* =========================================================
   display: flex;
   justify-content: flex-end;
   margin-top: 10px;
-}
-
-/* Botão limpar no mesmo “peso visual” do app */
-.btn-limpar-filtros {
-  background: none;
-  border: none;
-  font-family: "Montserrat", sans-serif;
-  color: var(--verde-folha);
-  font-weight: 600;
-  font-size: 0.85rem;
-  cursor: pointer;
-  padding: 6px 4px;
-}
-
-.btn-limpar-filtros:hover {
-  color: var(--verde-oliva);
-  text-decoration: underline;
 }
 
 /* topo: "Filtros" + "Limpar filtros" lado a lado */

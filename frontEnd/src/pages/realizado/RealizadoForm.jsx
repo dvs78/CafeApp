@@ -1,38 +1,21 @@
-// src/pages/realizado/RealizadoForm.jsx
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSave } from "@fortawesome/free-solid-svg-icons";
+const UNIDADES_OPCIONAIS = ["L", "Kg", "mL", "g", "uni"];
 
-// Permitir:
-// - dígitos
-// - UMA vírgula ou ponto como decimal
-// Permite só dígitos e UMA vírgula (padrão BR)
+// Permite só números, vírgula e ponto. Garante no máx. 1 vírgula.
 function limparEntradaQuantidade(valor) {
   if (!valor) return "";
-
-  // permite apenas números, vírgula e ponto
   valor = valor.replace(/[^0-9.,]/g, "");
 
-  // ❗ evita múltiplas vírgulas (decimal)
   const partesVirgula = valor.split(",");
   if (partesVirgula.length > 2) {
     valor = partesVirgula[0] + "," + partesVirgula.slice(1).join("");
   }
-
-  // ❗ permite pontos de milhar — múltiplos pontos são permitidos:
-  // "1.2.3.4,50" → deixamos, porque o usuário pode apagar depois
-  // O backend vai tratar corretamente.
-
   return valor;
 }
-
-const UNIDADES_OPCIONAIS = ["L", "Kg", "mL", "g", "uni"];
 
 function RealizadoForm({
   onSubmit,
   editandoId,
-  safra,
-  onCancel,
-  setSafra,
+
   lavoura,
   setLavoura,
   servico,
@@ -47,23 +30,38 @@ function RealizadoForm({
   setUni,
   quantidade,
   setQuantidade,
+
   listaLavouras,
   listaProdutos,
   listaServicos,
-  onCancelar,
 }) {
+  // ✅ precisa ficar DENTRO do componente (para enxergar os setters)
+  function limparFormulario() {
+    setLavoura("");
+    setServico("");
+    setData("");
+    setStatus("");
+    setProduto("");
+    setUni("");
+    setQuantidade("");
+  }
+
   return (
-    <section className="card card-form anima-card">
-      <div className="card-title-row">
-        <h2>{editandoId ? "Editar serviço" : "Lançar serviço"}</h2>
+    <section className="card-form anima-card">
+      {/* Topo no padrão do card de filtros (sem botão Cancelar) */}
+      <div className="filtros-topo">
+        <h2 className="filtros-title">
+          {editandoId ? "Editar serviço" : "Lançar serviço"}
+        </h2>
       </div>
 
       <form className="form-servico" onSubmit={onSubmit}>
         {/* LAVOURA | SERVIÇO lado a lado */}
         <div className="form-row">
-          <div className="campo">
-            <label>Lavoura</label>
+          <div className="login-campo">
+            <label className="login-label">Lavoura</label>
             <select
+              className="login-input"
               value={lavoura}
               onChange={(e) => setLavoura(e.target.value)}
               disabled={!!editandoId}
@@ -77,9 +75,10 @@ function RealizadoForm({
             </select>
           </div>
 
-          <div className="campo">
-            <label>Serviço</label>
+          <div className="login-campo">
+            <label className="login-label">Serviço</label>
             <select
+              className="login-input"
               value={servico}
               onChange={(e) => setServico(e.target.value)}
             >
@@ -93,20 +92,25 @@ function RealizadoForm({
           </div>
         </div>
 
-        {/* DATA | STATUS */}
+        {/* DATA | STATUS lado a lado */}
         <div className="form-row">
-          <div className="campo">
-            <label>Data</label>
+          <div className="login-campo">
+            <label className="login-label">Data</label>
             <input
+              className="login-input"
               type="date"
               value={data}
               onChange={(e) => setData(e.target.value)}
             />
           </div>
 
-          <div className="campo">
-            <label>Status</label>
-            <select value={status} onChange={(e) => setStatus(e.target.value)}>
+          <div className="login-campo">
+            <label className="login-label">Status</label>
+            <select
+              className="login-input"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+            >
               <option value="">Selecione</option>
               <option value="realizado">Realizado</option>
               <option value="cancelado">Cancelado</option>
@@ -114,11 +118,12 @@ function RealizadoForm({
           </div>
         </div>
 
-        {/* PRODUTO | UNIDADE | QUANTIDADE */}
+        {/* PRODUTO | UNIDADE | QUANTIDADE lado a lado */}
         <div className="form-row-3">
-          <div className="campo">
-            <label>Produto (opcional)</label>
+          <div className="login-campo">
+            <label className="login-label">Produto (opcional)</label>
             <select
+              className="login-input"
               value={produto}
               onChange={(e) => setProduto(e.target.value)}
             >
@@ -131,9 +136,13 @@ function RealizadoForm({
             </select>
           </div>
 
-          <div className="campo">
-            <label>Unidade (opcional)</label>
-            <select value={uni} onChange={(e) => setUni(e.target.value)}>
+          <div className="login-campo">
+            <label className="login-label">Unidade (opcional)</label>
+            <select
+              className="login-input"
+              value={uni}
+              onChange={(e) => setUni(e.target.value)}
+            >
               <option value="">Selecione</option>
               {UNIDADES_OPCIONAIS.map((u) => (
                 <option key={u} value={u}>
@@ -143,29 +152,33 @@ function RealizadoForm({
             </select>
           </div>
 
-          <div className="campo">
-            <label>Quantidade (opcional)</label>
+          <div className="login-campo">
+            <label className="login-label">Quantidade (opcional)</label>
             <input
+              className="login-input"
               type="text"
               inputMode="decimal"
               placeholder="0"
               value={quantidade}
-              onChange={(e) => {
-                const limpo = limparEntradaQuantidade(e.target.value);
-                setQuantidade(limpo);
-              }}
+              onChange={(e) =>
+                setQuantidade(limparEntradaQuantidade(e.target.value))
+              }
             />
           </div>
         </div>
-        {/* AÇÕES DO FORMULÁRIO */}
+
+        {/* AÇÕES */}
         <div className="form-actions">
           <button type="submit" className="btn-primario">
-            {/* <FontAwesomeIcon icon={faSave} /> */}
-            {editandoId ? "Salvar alterações" : "Lançar serviço"}
+            {editandoId ? "Salvar alterações" : "Salvar serviço"}
           </button>
 
-          <button type="button" className="btn-secundario" onClick={onCancelar}>
-            Cancelar
+          <button
+            type="button"
+            className="btn-limpar-filtros"
+            onClick={limparFormulario}
+          >
+            Limpar filtros
           </button>
         </div>
       </form>

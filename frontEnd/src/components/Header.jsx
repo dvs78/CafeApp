@@ -67,7 +67,7 @@ function Header({
           <div className="header-contexto">
             <span className="header-contexto-fazenda">{fazendaCtx}</span>
             {safraCtx && (
-              <span className="header-contexto-safra">Safra {safraCtx}</span>
+              <span className="header-contexto-safra"> {safraCtx}</span>
             )}
           </div>
         )}
