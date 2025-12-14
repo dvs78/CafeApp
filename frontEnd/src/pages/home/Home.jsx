@@ -1,7 +1,6 @@
-import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import "./Home.css";
+import "./home.css";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
