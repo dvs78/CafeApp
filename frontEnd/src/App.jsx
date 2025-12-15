@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   BrowserRouter,
   Routes,
@@ -34,32 +34,36 @@ function RequireAuth({ children }) {
 function RequireWorkspace({ children }) {
   const { workspace } = useAuth();
 
+  const clienteId =
+    workspace?.clienteId || localStorage.getItem("ctx_cliente_id") || "";
   const fazenda =
     workspace?.fazenda || localStorage.getItem("ctx_fazenda") || "";
   const safra = workspace?.safra || localStorage.getItem("ctx_safra") || "";
 
-  const ok = Boolean(fazenda && safra);
+  const ok = Boolean(clienteId && fazenda && safra);
 
-  if (!ok) {
-    if (!toast.isActive(TOAST_WORKSPACE)) {
-      toast.info("Selecione fazenda e safra para continuar.", {
+  useEffect(() => {
+    if (!ok && !toast.isActive(TOAST_WORKSPACE)) {
+      toast.info("Selecione cliente, fazenda e safra para continuar.", {
         toastId: TOAST_WORKSPACE,
       });
     }
-    return <Navigate to="/poslogin" replace />;
-  }
+  }, [ok]);
 
+  if (!ok) return <Navigate to="/poslogin" replace />;
   return children;
 }
 
 function RedirectIfWorkspace({ children }) {
   const { workspace } = useAuth();
 
+  const clienteId =
+    workspace?.clienteId || localStorage.getItem("ctx_cliente_id") || "";
   const fazenda =
     workspace?.fazenda || localStorage.getItem("ctx_fazenda") || "";
   const safra = workspace?.safra || localStorage.getItem("ctx_safra") || "";
 
-  if (fazenda && safra) return <Navigate to="/home" replace />;
+  if (clienteId && fazenda && safra) return <Navigate to="/home" replace />;
   return children;
 }
 

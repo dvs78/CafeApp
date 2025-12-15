@@ -3,12 +3,17 @@ import cors from "cors";
 import "dotenv/config";
 
 import rotaslogin from "./routes/rotasLogin.routes.js";
+import rotasCliente from "./routes/rotasCliente.routes.js";
+import rotasFazendas from "./routes/rotasFazendas.routes.js";
+import rotasUsuarios from "./routes/rotasUsuarios.routes.js";
+import rotasUsuariosClientes from "./routes/rotasUsuariosClientes.routes.js";
+
 import rotasServicosLista from "./routes/rotasServicosLista.routes.js";
 import rotasRealizado from "./routes/rotasRealizado.routes.js";
 import rotasSafras from "./routes/rotasSafrasLista.routes.js";
 import rotasProdutos from "./routes/rotasProdutos.routes.js";
 import rotasLavouras from "./routes/rotasLavouras.routes.js";
-import rotasCliente from "./routes/rotasCliente.routes.js";
+
 import rotasFazendasUsuario from "./routes/rotasFazendasUsuario.routes.js";
 
 import { fileURLToPath } from "url";
@@ -22,8 +27,12 @@ app.use(express.json());
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
 app.use("/login", rotaslogin);
-app.use("/fazendas-usuario", rotasFazendasUsuario);
 app.use("/clientes", rotasCliente);
+app.use("/fazendas", rotasFazendas);
+app.use("/usuarios", rotasUsuarios);
+app.use("/usuarios-clientes", rotasUsuariosClientes);
+
+app.use("/fazendas-usuario", rotasFazendasUsuario);
 app.use("/safras-lista", rotasSafras);
 app.use("/lavouras", rotasLavouras);
 app.use("/servicos-lista", rotasServicosLista);

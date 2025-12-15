@@ -1,0 +1,421 @@
+/* =========================================================
+   SETTINGS — admin clean (segue paleta e padrão do index.css)
+   ========================================================= */
+
+.settings-page {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+/* ---------- MENU LATERAL ---------- */
+.settings-menu {
+  position: sticky;
+  top: calc(var(--header-h) + 10px);
+  align-self: start;
+
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  padding: 10px;
+
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.06);
+}
+
+.settings-menu button {
+  width: 100%;
+  text-align: left;
+
+  padding: 10px 12px;
+  border-radius: 12px;
+
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+
+  font-weight: 700;
+  color: #1f2937;
+
+  transition: transform 0.12s ease, box-shadow 0.15s ease, background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.settings-menu button:hover {
+  background: rgba(88, 129, 87, 0.1);
+  border-color: rgba(58, 90, 64, 0.18);
+  transform: translateY(-1px);
+}
+
+.settings-menu button.ativo {
+  background: rgba(58, 90, 64, 0.14);
+  border-color: rgba(58, 90, 64, 0.28);
+  color: #0f172a;
+}
+
+/* ---------- CONTEÚDO ---------- */
+.settings-content {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  padding: 16px;
+
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.06);
+  min-height: 520px;
+}
+
+/* ---------- HEADER DA ABA ---------- */
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  padding-bottom: 12px;
+  margin-bottom: 14px;
+
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+.settings-header h2 {
+  font-size: 18px;
+  font-weight: 900;
+  color: #111827;
+  margin: 0;
+}
+
+/* ---------- COMPONENTES DE FORM PADRÃO ---------- */
+.settings-content label {
+  display: block;
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: #111827;
+  margin: 10px 0 6px;
+}
+
+.settings-content input,
+.settings-content select,
+.settings-content textarea {
+  width: 100%;
+  height: 42px;
+  padding: 10px 12px;
+
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  background: #ffffff;
+
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.95rem;
+  color: #111827;
+
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.settings-content textarea {
+  height: 90px;
+  padding-top: 10px;
+  resize: vertical;
+}
+
+.settings-content input:focus,
+.settings-content select:focus,
+.settings-content textarea:focus {
+  border-color: rgba(58, 90, 64, 0.45);
+  box-shadow: 0 0 0 4px rgba(58, 90, 64, 0.12);
+}
+
+/* ---------- BOTÕES PADRÃO ---------- */
+.btn-primary,
+.btn-secondary {
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  cursor: pointer;
+
+  font-weight: 900;
+  font-family: "Montserrat", sans-serif;
+  transition: transform 0.12s ease, box-shadow 0.15s ease,
+    border-color 0.15s ease, background 0.15s ease;
+}
+
+.btn-primary {
+  background: var(--verde-folha);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 22px rgba(0, 0, 0, 0.14);
+  border-color: rgba(58, 90, 64, 0.22);
+  background: #2f4c35;
+}
+
+.btn-primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-secondary {
+  background: #fff;
+  color: #111827;
+  border-color: rgba(0, 0, 0, 0.14);
+}
+
+.btn-secondary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 22px rgba(0, 0, 0, 0.1);
+  border-color: rgba(58, 90, 64, 0.22);
+}
+
+/* botões pequenos de ação na tabela */
+.settings-table .acoes button {
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  background: #fff;
+  cursor: pointer;
+  font-weight: 800;
+  transition: transform 0.12s ease, box-shadow 0.15s ease,
+    border-color 0.15s ease, background 0.15s ease;
+}
+
+.settings-table .acoes button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.12);
+  border-color: rgba(58, 90, 64, 0.22);
+  background: rgba(88, 129, 87, 0.08);
+}
+
+.settings-table .acoes button.danger {
+  border-color: rgba(220, 38, 38, 0.35);
+}
+
+.settings-table .acoes button.danger:hover {
+  background: rgba(220, 38, 38, 0.08);
+  border-color: rgba(220, 38, 38, 0.55);
+}
+
+.settings-table .acoes button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ---------- TABELA PADRÃO ---------- */
+.settings-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 14px;
+}
+
+.settings-table thead th {
+  text-align: left;
+  font-size: 0.9rem;
+  font-weight: 900;
+  color: #111827;
+
+  padding: 12px 12px;
+  background: rgba(242, 232, 207, 0.55);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.settings-table tbody td {
+  padding: 12px 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  color: #111827;
+  font-weight: 600;
+}
+
+.settings-table tbody tr:hover td {
+  background: rgba(88, 129, 87, 0.06);
+}
+
+.settings-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.settings-table .acoes {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+/* ---------- MODAL PADRÃO (Form*) ---------- */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(0, 0, 0, 0.45);
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+
+.modal-card {
+  width: min(520px, 100%);
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(242, 232, 207, 0.35);
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 900;
+  color: #111827;
+}
+
+.modal-close {
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  background: #fff;
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  font-weight: 900;
+  transition: transform 0.12s ease, box-shadow 0.15s ease,
+    border-color 0.15s ease, background 0.15s ease;
+}
+
+.modal-close:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 22px rgba(0, 0, 0, 0.14);
+  border-color: rgba(58, 90, 64, 0.22);
+  background: rgba(88, 129, 87, 0.1);
+}
+
+.modal-body {
+  padding: 14px 16px 6px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 12px 16px 14px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(242, 232, 207, 0.18);
+}
+
+/* ---------- BLOQUEIO ---------- */
+.settings-bloqueado {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 14px;
+  padding: 16px;
+  font-weight: 800;
+  color: #111827;
+}
+
+/* ---------- RESPONSIVO ---------- */
+@media (max-width: 900px) {
+  .settings-page {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-menu {
+    position: static;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .settings-menu button {
+    width: auto;
+    text-align: center;
+  }
+}
+
+/* =========================================================
+   SETTINGS — TOP BAR PADRÃO DAS ABAS
+   ========================================================= */
+
+.settings-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.settings-topbar-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.settings-topbar-title {
+  font-size: 18px;
+  font-weight: 900;
+  color: #111827;
+}
+
+.settings-topbar-subtitle {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.settings-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* inputs compactos na topbar */
+.settings-topbar-actions input,
+.settings-topbar-actions select {
+  height: 38px;
+  min-width: 160px;
+}
+
+/* separador visual */
+.settings-divider {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.08);
+  margin: 12px 0 16px;
+}
+
+/* ---------- MOBILE ---------- */
+@media (max-width: 700px) {
+  .settings-topbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .settings-topbar-actions {
+    justify-content: space-between;
+  }
+
+  .settings-topbar-actions input,
+  .settings-topbar-actions select {
+    flex: 1;
+  }
+}

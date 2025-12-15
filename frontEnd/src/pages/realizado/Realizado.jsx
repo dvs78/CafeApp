@@ -62,6 +62,11 @@ function Realizado({
 }) {
   const navigate = useNavigate();
   const { token, usuario, workspace } = useAuth();
+  const clienteId =
+    workspace?.clienteId ||
+    localStorage.getItem("ctx_cliente_id") ||
+    usuario?.clienteId || // fallback antigo (se existir)
+    "";
 
   // workspace (com fallback do localStorage)
   const fazenda =
@@ -76,11 +81,11 @@ function Realizado({
       navigate("/login");
       return;
     }
-    if (!fazenda || !safra) {
-      notificar("erro", "Selecione Fazenda e Safra para continuar.");
+    if (!clienteId || !fazenda || !safra) {
+      notificar("erro", "Selecione Cliente, Fazenda e Safra para continuar.");
       navigate("/poslogin");
     }
-  }, [usuario, token, fazenda, safra, navigate]);
+  }, [usuario, token, clienteId, fazenda, safra, navigate]);
 
   // ------------------------------
   // CAMPOS FORM
@@ -131,33 +136,22 @@ function Realizado({
   // CARREGAR DADOS (Realizado)
   // ------------------------------
   useEffect(() => {
-    if (!token || !usuario) return;
+    if (!token || !usuario || !clienteId) return;
 
     api
-      .get("/realizado", {
-        // mantém seus params (se o backend usar)
-        params: {
-          clienteId: usuario.clienteId,
-          fazenda,
-          safra,
-        },
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "cliente-id": usuario.clienteId,
-        },
-      })
+      .get("/realizado", { params: { clienteId, fazenda, safra } })
       .then((res) => setServicos(Array.isArray(res.data) ? res.data : []))
       .catch(() => notificar("erro", "Erro ao carregar serviços."));
-  }, [token, usuario, fazenda, safra]);
+  }, [token, usuario, clienteId, fazenda, safra]);
 
   // ------------------------------
   // CARREGAR LISTAS AUXILIARES
   // ------------------------------
   useEffect(() => {
-    if (!usuario) return;
+    if (!usuario || !clienteId) return;
 
     Promise.all([
-      api.get(`/lavouras/${usuario.clienteId}`),
+      api.get(`/lavouras/${clienteId}`),
       api.get("/produtos"),
       api.get("/servicos-lista"),
     ])
@@ -167,7 +161,7 @@ function Realizado({
         setListaServicos(Array.isArray(s.data) ? s.data : []);
       })
       .catch(() => notificar("erro", "Erro ao carregar listas."));
-  }, [usuario]);
+  }, [usuario, clienteId]);
 
   // ------------------------------
   // Lavouras “relevantes” da safra (para o FORM)
@@ -200,7 +194,7 @@ function Realizado({
     // 2) cliente (no seu JSON vem como "cliente_id")
     base = base.filter((s) => {
       const cid = s?.cliente_id ?? s?.clienteId ?? s?.cliente;
-      return cid ? String(cid) === String(usuario?.clienteId) : true;
+      return cid ? String(cid) === String(clienteId) : true;
     });
 
     // 3) fazenda: só filtra se existir campo de fazenda em algum item
@@ -379,7 +373,7 @@ function Realizado({
       produto: produto || null,
       unidade: uni || null,
       quantidade: limparQuantidade(quantidade),
-      cliente_id: usuario.clienteId,
+      cliente_id: clienteId,
       usuario_id: usuario.id,
       // Se você tiver campo fazenda no backend, vale mandar também:
       // fazenda,

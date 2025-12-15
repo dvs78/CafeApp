@@ -22,9 +22,15 @@ function Login() {
 
     try {
       // const res = await axios.post("/login", { email, senha });
+      // Login.jsx
       const res = await api.post("/login", { email, senha });
 
-      login(res.data.token, res.data.usuario);
+      // res.data = { token, usuario, clientes }
+      login(res.data.token, {
+        ...res.data.usuario,
+        clientes: res.data.clientes,
+      });
+
       navigate("/poslogin");
     } catch (err) {
       toast.error("Usuário ou senha inválidos");
