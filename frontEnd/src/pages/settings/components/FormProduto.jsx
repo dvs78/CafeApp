@@ -12,7 +12,7 @@ function FormProduto({ produto, onClose, onSaved }) {
   useEffect(() => {
     if (editando) {
       setNome(produto.nome || "");
-      setAtivo(produto.ativo !== false);
+      setAtivo(!!produto.ativo);
     } else {
       setNome("");
       setAtivo(true);
@@ -21,6 +21,7 @@ function FormProduto({ produto, onClose, onSaved }) {
 
   function validar() {
     if (!nome.trim()) return "Informe o nome do produto.";
+    if (nome.trim().length < 2) return "Nome do produto muito curto.";
     return null;
   }
 
@@ -30,31 +31,21 @@ function FormProduto({ produto, onClose, onSaved }) {
 
     setSalvando(true);
     try {
-      const payload = {
-        nome: nome.trim(),
-        ativo: !!ativo,
-      };
+      const payload = { nome: nome.trim(), ativo: !!ativo };
 
-      let resp;
       if (editando) {
-        resp = await api.put(`/produtos/${produto.id}`, payload);
+        await api.put(`/produtos/${produto.id}`, payload);
         notificar("sucesso", "Produto atualizado.");
       } else {
-        resp = await api.post("/produtos", payload);
+        await api.post("/produtos", payload);
         notificar("sucesso", "Produto criado.");
       }
 
-      onSaved?.(resp.data);
+      onSaved?.();
       onClose?.();
     } catch (err) {
-      const status = err?.response?.status;
-      const msgApi = err?.response?.data?.erro;
-
-      if (status === 409) {
-        return notificar("erro", msgApi || "Produto já cadastrado.");
-      }
-
-      notificar("erro", msgApi || "Erro ao salvar produto.");
+      const msg = err?.response?.data?.erro || "Erro ao salvar produto.";
+      notificar("erro", msg);
     } finally {
       setSalvando(false);
     }
@@ -71,17 +62,17 @@ function FormProduto({ produto, onClose, onSaved }) {
         </div>
 
         <div className="modal-body">
-          <label>Nome</label>
+          <label>Nome do produto</label>
           <input value={nome} onChange={(e) => setNome(e.target.value)} />
 
-          <label style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <input
-              type="checkbox"
-              checked={ativo}
-              onChange={(e) => setAtivo(e.target.checked)}
-            />
-            Ativo
-          </label>
+          <label>Status</label>
+          <select
+            value={String(ativo)}
+            onChange={(e) => setAtivo(e.target.value === "true")}
+          >
+            <option value="true">Ativo</option>
+            <option value="false">Inativo</option>
+          </select>
         </div>
 
         <div className="modal-footer">

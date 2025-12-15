@@ -4,6 +4,8 @@ import { useAuth } from "../../context/AuthContext";
 import api from "../../services/api";
 import { toast } from "react-toastify";
 import "./PosLogin.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 
 const TOAST_ERRO_CARREGAR = "toast-erro-carregar-poslogin";
 
@@ -117,6 +119,18 @@ function PosLogin() {
 
   return (
     <div className="poslogin-wrapper">
+      <button
+        type="button"
+        className="logout-btn"
+        onClick={() => {
+          logout();
+          navigate("/login", { replace: true });
+        }}
+        title="Sair"
+      >
+        <FontAwesomeIcon icon={faRightFromBracket} />
+      </button>
+
       <div className="poslogin-card">
         <h2 className="titulo-ola">Olá, {usuario?.usuario || "Usuário"}</h2>
 
@@ -126,9 +140,30 @@ function PosLogin() {
           <span>Selecione o Cliente</span>
         </div>
 
-        <div className="clientes-grid">
+        {/* <div className="cliente-card ">
           {clientesPermitidos.map((c) => {
             const ativo = clienteId === c.id;
+            return (
+              <button
+                key={c.id}
+                type="button"
+                className={`cliente-card ${ativo ? "ativo" : ""}`}
+                onClick={() => {
+                  const id = String(c.id || "").trim();
+                  setClienteId(id);
+                  setClienteNome(String(c.cliente || ""));
+                  setFazenda("");
+                  setFazendas([]);
+                }}
+              >
+                <span className="card-title">{c.cliente}</span>
+              </button>
+            );
+          })}
+        </div> */}
+        <div className="clientes-grid">
+          {clientesPermitidos.map((c) => {
+            const ativo = String(clienteId) === String(c.id);
             return (
               <button
                 key={c.id}

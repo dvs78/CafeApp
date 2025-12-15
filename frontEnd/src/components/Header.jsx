@@ -27,7 +27,7 @@ function Header({
 
   // ✅ Fonte única: workspace OU localStorage
   const clienteCtx =
-    workspace?.cliente || localStorage.getItem("ctx_cliente") || "";
+    workspace?.clienteNome || localStorage.getItem("ctx_cliente_nome") || "";
 
   const fazendaCtx =
     workspace?.fazenda || localStorage.getItem("ctx_fazenda") || "";

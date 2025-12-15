@@ -1,7 +1,6 @@
 import "./Settings.css";
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
-
 import ClientesTab from "./tabs/ClientesTab";
 import FazendasTab from "./tabs/FazendasTab";
 import UsuariosTab from "./tabs/UsuariosTab";

@@ -8,9 +8,7 @@ import {
 } from "react-router-dom";
 
 import { toast } from "react-toastify";
-
 import { useAuth } from "./context/AuthContext";
-
 import Header from "./components/Header";
 import Home from "./pages/home/Home";
 import Realizado from "./pages/realizado/Realizado";

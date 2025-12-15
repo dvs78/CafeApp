@@ -79,6 +79,39 @@ button {
 }
 
 /* ===============================
+   CLIENTES (igual FAZENDAS)
+=============================== */
+.clientes-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.cliente-card {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 14px 18px;
+  background: #ffffff;
+  border: 2px solid #e5e5e5;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: 0.25s ease;
+  text-align: left;
+}
+
+.cliente-card:hover {
+  border-color: var(--verde-folha);
+}
+
+.cliente-card.ativo {
+  background: #e9f4ec;
+  border-color: var(--verde-folha);
+  box-shadow: 0 0 6px rgba(58, 90, 64, 0.25);
+}
+
+/* ===============================
    FAZENDAS
 =============================== */
 .fazendas-grid {
@@ -235,7 +268,6 @@ button {
 .logout-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
-  /* border-color: rgba(58, 90, 64, 0.22); */
   background: rgba(58, 90, 64, 0.3);
 }
 
@@ -251,6 +283,10 @@ button {
     font-size: 1rem;
     top: 14px;
     right: 14px;
+  }
+  .cliente-card {
+    padding: 10px 12px;
+    border-radius: 10px;
   }
 }
 

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../../../services/api";
 import { notificar } from "../../../components/Toast";
 
-export default function FormCliente({ cliente, onClose, onSave }) {
+function FormCliente({ cliente, onClose, onSave }) {
   const [nome, setNome] = useState("");
 
   useEffect(() => {
@@ -60,3 +60,5 @@ export default function FormCliente({ cliente, onClose, onSave }) {
     </div>
   );
 }
+
+export default FormCliente;
