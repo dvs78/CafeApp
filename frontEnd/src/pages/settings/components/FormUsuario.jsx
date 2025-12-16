@@ -3,7 +3,7 @@ import api from "../../../services/api";
 import { notificar } from "../../../components/Toast";
 
 function FormUsuario({ usuario, onClose, onSaved }) {
-  const editando = !!usuario?.id;
+  const editando = Boolean(usuario?.id);
 
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
@@ -17,6 +17,14 @@ function FormUsuario({ usuario, onClose, onSaved }) {
       setNome(usuario.usuario || "");
       setEmail(usuario.email || "");
       setRole(usuario.role_global || "user");
+      setSenha("");
+      setSenha2("");
+    } else {
+      setNome("");
+      setEmail("");
+      setRole("user");
+      setSenha("");
+      setSenha2("");
     }
   }, [editando, usuario]);
 
@@ -43,7 +51,9 @@ function FormUsuario({ usuario, onClose, onSaved }) {
     return null;
   }
 
-  async function salvar() {
+  async function salvar(e) {
+    e.preventDefault();
+
     const erro = validar();
     if (erro) return notificar("erro", erro);
 
@@ -56,16 +66,15 @@ function FormUsuario({ usuario, onClose, onSaved }) {
         ...(senha ? { senha } : {}),
       };
 
-      let resp;
-      if (editando) {
-        resp = await api.put(`/usuarios/${usuario.id}`, payload);
-        notificar("sucesso", "Usuário atualizado.");
-      } else {
-        resp = await api.post("/usuarios", payload);
-        notificar("sucesso", "Usuário criado.");
-      }
+      const resp = editando
+        ? await api.put(`/usuarios/${usuario.id}`, payload)
+        : await api.post("/usuarios", payload);
 
-      onSaved?.(resp.data); // ✅ aqui
+      notificar(
+        "sucesso",
+        editando ? "Usuário atualizado." : "Usuário criado."
+      );
+      onSaved?.(resp.data);
       onClose?.();
     } catch (err) {
       const msg = err?.response?.data?.erro || "Erro ao salvar usuário.";
@@ -76,56 +85,71 @@ function FormUsuario({ usuario, onClose, onSaved }) {
   }
 
   return (
-    <div className="modal-backdrop">
+    <div className="modal-backdrop" role="dialog" aria-modal="true">
       <div className="modal-card">
         <div className="modal-header">
           <h3>{editando ? "Editar Usuário" : "Novo Usuário"}</h3>
-          <button type="button" className="modal-close" onClick={onClose}>
+          <button
+            type="button"
+            className="modal-close"
+            onClick={onClose}
+            aria-label="Fechar"
+          >
             ×
           </button>
         </div>
 
-        <div className="modal-body">
-          <label>Nome</label>
-          <input value={nome} onChange={(e) => setNome(e.target.value)} />
+        <form onSubmit={salvar}>
+          <div className="modal-body">
+            <label>Nome</label>
+            <input
+              value={nome}
+              onChange={(e) => setNome(e.target.value)}
+              placeholder="Nome do usuário"
+            />
 
-          <label>E-mail</label>
-          <input value={email} onChange={(e) => setEmail(e.target.value)} />
+            <label>E-mail</label>
+            <input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="email@exemplo.com"
+              inputMode="email"
+              autoComplete="email"
+            />
 
-          <label>Permissão</label>
-          <select value={role} onChange={(e) => setRole(e.target.value)}>
-            <option value="user">user</option>
-            <option value="super_admin">super_admin</option>
-          </select>
+            <label>Permissão</label>
+            <select value={role} onChange={(e) => setRole(e.target.value)}>
+              <option value="user">user</option>
+              <option value="super_admin">super_admin</option>
+            </select>
 
-          <label>{editando ? "Nova senha (opcional)" : "Senha"}</label>
-          <input
-            type="password"
-            value={senha}
-            onChange={(e) => setSenha(e.target.value)}
-          />
+            <label>{editando ? "Nova senha (opcional)" : "Senha"}</label>
+            <input
+              type="password"
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
+              autoComplete={editando ? "new-password" : "new-password"}
+            />
 
-          <label>Confirmar senha</label>
-          <input
-            type="password"
-            value={senha2}
-            onChange={(e) => setSenha2(e.target.value)}
-          />
-        </div>
+            <label>Confirmar senha</label>
+            <input
+              type="password"
+              value={senha2}
+              onChange={(e) => setSenha2(e.target.value)}
+              autoComplete="new-password"
+            />
+          </div>
 
-        <div className="modal-footer">
-          <button type="button" onClick={onClose} className="btn-secondary">
-            Cancelar
-          </button>
-          <button
-            type="button"
-            onClick={salvar}
-            className="btn-primary"
-            disabled={salvando}
-          >
-            {salvando ? "Salvando..." : "Salvar"}
-          </button>
-        </div>
+          <div className="modal-footer">
+            <button type="submit" className="btn-primary" disabled={salvando}>
+              {salvando ? "Salvando..." : "Salvar"}
+            </button>
+
+            <button type="button" onClick={onClose} className="btn-secondary">
+              Cancelar
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

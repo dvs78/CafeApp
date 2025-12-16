@@ -92,7 +92,7 @@ def backup_sql_via_pg_dump():
 
 
 def export_to_excel():
-    """Exporta TODAS as tabelas do schema public para um Excel em BACKUP_DIR."""
+    """Exporta TODAS as tabelas do schema public para um Excel em BACKUP_DIR, com Tabela do Excel em cada aba."""
     ts = dt.datetime.now().strftime("%Y-%m-%d_%H%M%S")
     xlsx_file = BACKUP_DIR / f"backup_realizado_{ts}.xlsx"
 
@@ -121,7 +121,8 @@ def export_to_excel():
 
         if not tables:
             print("   ⚠ Nenhuma tabela encontrada no schema 'public'.")
-            with pd.ExcelWriter(xlsx_file) as _:
+            # cria arquivo vazio mesmo assim
+            with pd.ExcelWriter(xlsx_file, engine="xlsxwriter") as _:
                 pass
             return xlsx_file
 
@@ -139,12 +140,62 @@ def export_to_excel():
             used.add(name)
             return name
 
-        with pd.ExcelWriter(xlsx_file) as writer:
+        def table_name_from_sheet(sname: str, used_tables: set) -> str:
+            """
+            Gera um nome de tabela válido e único para o Excel:
+            - começa com letra/underscore
+            - só letras, números e underscore
+            - único no arquivo
+            """
+            import re
+
+            base = re.sub(r"[^A-Za-z0-9_]", "_", sname)
+            if not base:
+                base = "TB"
+            if not (base[0].isalpha() or base[0] == "_"):
+                base = f"TB_{base}"
+            name = f"TB_{base}".upper()
+
+            cand = name
+            i = 1
+            while cand in used_tables:
+                cand = f"{name}_{i}"
+                i += 1
+
+            used_tables.add(cand)
+            return cand
+
+        used_tables = set()
+
+        # IMPORTANTE: usar xlsxwriter para poder criar a Tabela do Excel
+        with pd.ExcelWriter(xlsx_file, engine="xlsxwriter") as writer:
             for t in tables:
                 df = pd.read_sql(text(f'SELECT * FROM "{t}"'), conn)
-                sname = sheet_name(t)  # aqui NÃO renomeamos 'realizado'
+                sname = sheet_name(t)
                 df.to_excel(writer, sheet_name=sname, index=False)
-                print(f"   • {t} → aba '{sname}': {len(df)} linha(s)")
+
+                worksheet = writer.sheets[sname]
+
+                linhas, colunas = df.shape
+                if colunas == 0:
+                    # não cria tabela se não há colunas
+                    print(f"   • {t} → aba '{sname}': 0 coluna(s) (tabela não criada)")
+                    continue
+
+                tb_name = table_name_from_sheet(sname, used_tables)
+
+                # Cria TABELA real do Excel (ListObject) — sem formatação de células extra
+                worksheet.add_table(
+                    0, 0,
+                    max(linhas, 1), colunas - 1,
+                    {
+                        "name": tb_name,
+                        "columns": [{"header": col} for col in df.columns],
+                        "style": "Table Style Medium 2",
+                    }
+                )
+
+                print(f"   • {t} → aba '{sname}': {len(df)} linha(s) | tabela: {tb_name}")
 
     print("   ✔ Excel criado com sucesso.")
     return xlsx_file

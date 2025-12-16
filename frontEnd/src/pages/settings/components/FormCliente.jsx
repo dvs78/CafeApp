@@ -3,12 +3,12 @@ import api from "../../../services/api";
 import { notificar } from "../../../components/Toast";
 
 function FormCliente({ cliente, onClose, onSave }) {
+  const editando = Boolean(cliente?.id);
+
   const [nome, setNome] = useState("");
 
   useEffect(() => {
-    if (cliente) {
-      setNome(cliente.cliente);
-    }
+    setNome(cliente?.cliente || "");
   }, [cliente]);
 
   async function salvar(e) {
@@ -20,39 +20,62 @@ function FormCliente({ cliente, onClose, onSave }) {
     }
 
     try {
-      const payload = { cliente: nome };
+      let resp;
 
-      const { data } = cliente
-        ? await api.put(`/clientes/${cliente.id}`, payload)
-        : await api.post("/clientes", payload);
+      if (editando) {
+        resp = await api.put(`/clientes/${cliente.id}`, {
+          cliente: nome.trim(),
+        });
+        notificar("sucesso", "Cliente atualizado.");
+      } else {
+        resp = await api.post(`/clientes`, { cliente: nome.trim() });
+        notificar("sucesso", "Cliente criado.");
+      }
 
-      onSave(data);
-      notificar("sucesso", cliente ? "Cliente atualizado." : "Cliente criado.");
-      onClose();
+      onSave?.(resp?.data);
+      onClose?.();
     } catch {
       notificar("erro", "Erro ao salvar cliente.");
     }
   }
 
   return (
-    <div className="modal-backdrop">
+    <div className="modal-backdrop" role="dialog" aria-modal="true">
       <div className="modal-card">
-        <h3>{cliente ? "Editar Cliente" : "Novo Cliente"}</h3>
+        <div className="modal-header">
+          <h3>{editando ? "Editar Cliente" : "Novo Cliente"}</h3>
 
+          <button
+            type="button"
+            className="modal-close"
+            onClick={onClose}
+            aria-label="Fechar"
+            title="Fechar"
+          >
+            ×
+          </button>
+        </div>
+
+        {/* IMPORTANTE: footer está DENTRO do form */}
         <form onSubmit={salvar}>
-          <label>Nome do cliente</label>
-          <input
-            value={nome}
-            onChange={(e) => setNome(e.target.value)}
-            autoFocus
-          />
+          <div className="modal-body">
+            <label>Nome do cliente</label>
+            <input
+              value={nome}
+              onChange={(e) => setNome(e.target.value)}
+              placeholder="Ex.: Agrocoffee"
+              autoFocus
+            />
+          </div>
 
-          <div className="modal-actions">
-            <button type="button" onClick={onClose}>
-              Cancelar
-            </button>
-            <button className="btn-primary" type="submit">
+          <div className="modal-footer">
+            {/* GARANTIDO: submit */}
+            <button type="submit" className="btn-primary">
               Salvar
+            </button>
+
+            <button type="button" className="btn-secondary" onClick={onClose}>
+              Cancelar
             </button>
           </div>
         </form>

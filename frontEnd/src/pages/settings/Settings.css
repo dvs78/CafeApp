@@ -17,7 +17,9 @@
   --settings-muted: rgba(17, 24, 39, 0.7);
 }
 
-/* página */
+/* =========================================================
+   PÁGINA
+   ========================================================= */
 .settings-page {
   display: grid;
   grid-template-columns: 260px 1fr;
@@ -31,8 +33,11 @@
   padding: 14px;
 }
 
-/* menu lateral */
+/* =========================================================
+   MENU LATERAL
+   ========================================================= */
 .settings-menu {
+  font-family: "Montserrat", sans-serif;
   border: 1px solid var(--settings-border);
   border-radius: var(--settings-radius);
   background: rgba(255, 255, 255, 0.75);
@@ -43,7 +48,6 @@
   gap: 8px;
 }
 
-/* botão do menu */
 .settings-menu button {
   width: 100%;
   text-align: left;
@@ -73,7 +77,9 @@
   font-weight: 700;
 }
 
-/* conteúdo */
+/* =========================================================
+   CONTEÚDO
+   ========================================================= */
 .settings-content {
   border: 1px solid var(--settings-border);
   border-radius: var(--settings-radius);
@@ -83,7 +89,6 @@
   min-height: 520px;
 }
 
-/* bloqueio */
 .settings-bloqueado {
   border: 1px solid var(--settings-border);
   border-radius: var(--settings-radius);
@@ -93,43 +98,38 @@
 }
 
 /* =========================================================
-   TOPBAR (título + filtros + botão)
+   HEADER DA ABA (VOCÊ USA "settings-header")
    ========================================================= */
-.settings-topbar {
+.settings-header {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
+
+  padding: 6px 2px 10px;
 }
 
-.settings-topbar-left {
+.settings-header-actions {
   display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 240px;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
-.settings-topbar-title {
+.settings-header h2 {
+  margin: 0;
   font-size: 20px;
-  font-weight: 800;
+  font-weight: 900;
   color: var(--settings-text);
   line-height: 1.1;
 }
 
-.settings-topbar-subtitle {
-  font-size: 0.92rem;
-  color: var(--settings-muted);
+.settings-header .btn-primary {
+  height: 42px;
 }
 
-.settings-topbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-/* divisor */
+/* divisor opcional caso queira usar depois */
 .settings-divider {
   height: 1px;
   background: rgba(0, 0, 0, 0.08);
@@ -137,14 +137,13 @@
 }
 
 /* =========================================================
-   CONTROLES (input/select/label)
-   Usa sua base do index.css, aqui só refinamos aparência.
+   CONTROLES (labels / inputs / selects)
    ========================================================= */
 .settings-content label,
 .modal-body label {
   display: block;
   font-size: 0.86rem;
-  font-weight: 700;
+  font-weight: 800;
   margin: 10px 0 6px;
   color: var(--settings-text);
 }
@@ -153,14 +152,18 @@
 .settings-content select,
 .modal-body input,
 .modal-body select {
-  height: 42px;
+  width: 100%;
+  height: 44px;
   padding: 0 12px;
+
   border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.12);
   outline: none;
-  background: rgba(255, 255, 255, 0.95);
+
+  background: rgba(255, 255, 255, 0.96);
   transition: box-shadow 0.15s ease, border-color 0.15s ease;
-  font-family: inherit;
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.96rem;
 }
 
 .settings-content input:focus,
@@ -172,31 +175,101 @@
 }
 
 /* =========================================================
-   BOTÕES
+   BOTÕES DE AÇÃO (ícones)
    ========================================================= */
-.btn-primary,
-.btn-secondary,
-.settings-table .acoes button {
-  height: 42px;
-  padding: 0 14px;
-  border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+
+.settings-table .acoes {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* base comum */
+.settings-table .acoes .acao {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: transparent;
+  border: 1px solid transparent;
+
   cursor: pointer;
-  transition: transform 0.12s ease, box-shadow 0.15s ease, background 0.15s ease,
-    border-color 0.15s ease, opacity 0.15s ease;
-  font-family: inherit;
+  font-size: 0.85rem;
+
+  transition: background 0.15s ease, border-color 0.15s ease,
+    box-shadow 0.15s ease, transform 0.12s ease;
+}
+
+/* ===== EDITAR ===== */
+/* ===== EDITAR (AZUL) ===== */
+.settings-table .acoes .editar {
+  color: rgb(37, 99, 235); /* azul elegante */
+  border-color: rgba(37, 99, 235, 0.35);
+  background: rgba(37, 99, 235, 0.06);
+}
+
+.settings-table .acoes .editar:hover {
+  background: rgba(37, 99, 235, 0.14);
+  border-color: rgba(37, 99, 235, 0.55);
+  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.25);
+  transform: translateY(-1px);
+}
+
+/* ===== EXCLUIR ===== */
+.settings-table .acoes .danger {
+  color: rgb(185, 28, 28);
+  border-color: rgba(220, 38, 38, 0.35);
+  background: rgba(220, 38, 38, 0.08);
+}
+
+.settings-table .acoes .danger:hover {
+  background: rgba(220, 38, 38, 0.16);
+  border-color: rgba(220, 38, 38, 0.55);
+  box-shadow: 0 6px 14px rgba(220, 38, 38, 0.25);
+  transform: translateY(-1px);
+}
+
+.settings-table .acoes .acao svg {
+  transition: transform 0.15s ease;
+}
+
+.settings-table .acoes .acao:hover svg {
+  transform: scale(1.05);
 }
 
 .btn-primary {
-  background: rgba(58, 90, 64, 0.95);
-  color: white;
-  border-color: rgba(58, 90, 64, 0.25);
-  font-weight: 700;
+  height: 42px;
+  padding: 0 16px;
+
+  border-radius: 999px;
+
+  background: linear-gradient(
+    180deg,
+    rgba(58, 90, 64, 0.95),
+    rgba(58, 90, 64, 0.85)
+  );
+
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.9rem;
+
+  border: 1px solid rgba(58, 90, 64, 0.35);
+
+  box-shadow: 0 6px 14px rgba(58, 90, 64, 0.25);
+
+  cursor: pointer;
+
+  transition: transform 0.12s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
 
 .btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: var(--settings-shadow-sm);
+  background: rgba(58, 90, 64, 0.75);
+  box-shadow: 0 10px 22px rgba(58, 90, 64, 0.35);
 }
 
 .btn-primary:disabled {
@@ -207,24 +280,28 @@
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.95);
-  color: var(--settings-text);
+  background: transparent;
+  border: none;
+  color: black;
+  font-weight: 700;
 }
 
 .btn-secondary:hover {
-  background: rgba(58, 90, 64, 0.08);
-  border-color: rgba(58, 90, 64, 0.2);
+  background: rgba(128, 128, 128, 0.8);
 }
 
-/* ação danger */
+/* danger */
 .settings-table .acoes .danger {
-  background: rgba(220, 38, 38, 0.1);
-  border-color: rgba(220, 38, 38, 0.2);
+  border-color: rgba(220, 38, 38, 0.35);
+  color: rgb(185, 28, 28);
+  background: rgba(220, 38, 38, 0.08);
 }
 
 .settings-table .acoes .danger:hover {
   background: rgba(220, 38, 38, 0.16);
-  border-color: rgba(220, 38, 38, 0.28);
+  border-color: rgba(220, 38, 38, 0.55);
+  box-shadow: 0 6px 14px rgba(220, 38, 38, 0.25);
+  transform: translateY(-1px);
 }
 
 /* =========================================================
@@ -267,40 +344,68 @@
 }
 
 /* =========================================================
-   MODAL (reaproveita seu modal existente, mas melhora visual)
+   MODAL (ÚNICO) — refinado
    ========================================================= */
+
+body.modal-open {
+  overflow: hidden;
+}
+
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
   z-index: 2000;
+
+  display: grid;
+  place-items: center;
+
+  padding: 22px;
+
+  /* fundo escurecido LIMPO (sem embaçar) */
+  background: rgba(0, 0, 0, 0.35);
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .modal-card {
-  width: min(520px, 100%);
+  width: min(640px, 100%);
+  max-height: calc(100vh - 44px);
+
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.98);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: var(--settings-shadow);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.28), 0 10px 22px rgba(0, 0, 0, 0.12);
+
   overflow: hidden;
+  animation: modalIn 0.16s ease-out;
 }
 
 .modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
+
   padding: 14px 16px;
+
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.92);
 }
 
 .modal-header h3 {
-  font-size: 1.05rem;
-  font-weight: 800;
+  margin: 0;
+  font-size: 1.12rem;
+  font-weight: 900;
   color: var(--settings-text);
 }
 
@@ -308,20 +413,89 @@
   width: 40px;
   height: 40px;
   border-radius: 999px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  background: white;
+
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.96);
   cursor: pointer;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: transform 0.12s ease, box-shadow 0.15s ease,
+    border-color 0.15s ease, background 0.15s ease;
+}
+
+.modal-close:hover {
+  transform: translateY(-1px);
+  border-color: rgba(58, 90, 64, 0.22);
+  box-shadow: var(--settings-shadow-sm);
+  background: rgba(58, 90, 64, 0.06);
 }
 
 .modal-body {
-  padding: 14px 16px 6px;
+  padding: 16px;
+  display: grid;
+  gap: 10px;
+  overflow: auto;
 }
 
 .modal-footer {
   padding: 12px 16px 16px;
+
   display: flex;
   justify-content: flex-end;
+  align-items: center;
   gap: 10px;
+
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+/* GARANTE visual mesmo se você esquecer classes nos botões */
+.modal-footer button {
+  height: 42px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 800;
+  transition: transform 0.12s ease, box-shadow 0.15s ease, background 0.15s ease,
+    border-color 0.15s ease, opacity 0.15s ease;
+}
+
+/* Hover geral apenas para botões primários */
+.modal-footer .btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--settings-shadow-sm);
+}
+
+/* Remove borda do botão Cancelar no modal */
+.modal-footer .btn-secondary {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent;
+}
+
+/* Hover elegante do botão Cancelar (cinza suave) */
+.modal-footer .btn-secondary:hover {
+  background: rgba(0, 0, 0, 0.08);
+  box-shadow: none;
+  transform: none;
+}
+
+@media (max-width: 520px) {
+  .modal-footer {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .modal-footer button,
+  .modal-footer .btn-primary,
+  .modal-footer .btn-secondary {
+    width: 100%;
+  }
 }
 
 /* =========================================================
@@ -341,4 +515,26 @@
   .settings-menu button {
     width: auto;
   }
+}
+
+/* =========================================================
+   SETTINGS — INPUT DE PESQUISA (com ícone)
+   ========================================================= */
+
+.settings-search {
+  position: relative;
+  min-width: 260px;
+}
+
+.settings-search__icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.settings-search input {
+  padding-left: 38px !important; /* abre espaço pro ícone */
 }

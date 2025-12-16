@@ -1,12 +1,21 @@
+// src/pages/settings/tabs/SafrasTab.jsx
 import { useEffect, useState } from "react";
 import api from "../../../services/api";
 import { notificar } from "../../../components/Toast";
 import FormSafra from "../components/FormSafra";
+import ConfirmDialog from "../../../components/ConfirmDialog";
+
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 
 function SafrasTab() {
   const [safras, setSafras] = useState([]);
   const [abrirForm, setAbrirForm] = useState(false);
   const [editar, setEditar] = useState(null);
+
+  // ConfirmDialog
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [alvoExcluir, setAlvoExcluir] = useState(null);
 
   async function carregar() {
     try {
@@ -14,6 +23,7 @@ function SafrasTab() {
       setSafras(data || []);
     } catch {
       notificar("erro", "Erro ao carregar safras.");
+      setSafras([]);
     }
   }
 
@@ -21,16 +31,28 @@ function SafrasTab() {
     carregar();
   }, []);
 
-  async function excluir(id) {
-    if (!window.confirm("Deseja excluir esta safra?")) return;
+  function abrirConfirmExcluir(safra) {
+    setAlvoExcluir({ id: safra.id, nome: safra.nome });
+    setConfirmOpen(true);
+  }
+
+  function fecharConfirmExcluir() {
+    setConfirmOpen(false);
+    setAlvoExcluir(null);
+  }
+
+  async function confirmarExcluir() {
+    if (!alvoExcluir?.id) return;
 
     try {
-      await api.delete(`/safras-lista/${id}`);
-      setSafras((prev) => prev.filter((s) => s.id !== id));
+      await api.delete(`/safras-lista/${alvoExcluir.id}`);
+      setSafras((prev) => prev.filter((s) => s.id !== alvoExcluir.id));
       notificar("sucesso", "Safra removida.");
     } catch (err) {
       const msg = err?.response?.data?.erro || "Erro ao excluir safra.";
       notificar("erro", msg);
+    } finally {
+      fecharConfirmExcluir();
     }
   }
 
@@ -38,6 +60,7 @@ function SafrasTab() {
     <>
       <div className="settings-header">
         <h2>Safras</h2>
+
         <button
           className="btn-primary"
           type="button"
@@ -59,16 +82,24 @@ function SafrasTab() {
           {safras.map((s) => (
             <tr key={s.id}>
               <td>{s.nome}</td>
+
               <td className="acoes">
-                <button type="button" onClick={() => setEditar(s)}>
-                  Editar
-                </button>
                 <button
                   type="button"
-                  className="danger"
-                  onClick={() => excluir(s.id)}
+                  className="acao editar"
+                  onClick={() => setEditar(s)}
+                  title="Editar"
                 >
-                  Excluir
+                  <FontAwesomeIcon icon={faPen} />
+                </button>
+
+                <button
+                  type="button"
+                  className="acao danger"
+                  onClick={() => abrirConfirmExcluir(s)}
+                  title="Excluir"
+                >
+                  <FontAwesomeIcon icon={faTrash} />
                 </button>
               </td>
             </tr>
@@ -89,9 +120,24 @@ function SafrasTab() {
             setAbrirForm(false);
             setEditar(null);
           }}
-          onSaved={() => carregar()}
+          onSaved={carregar}
         />
       )}
+
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Excluir safra"
+        description={
+          alvoExcluir
+            ? `Tem certeza que deseja excluir a safra "${alvoExcluir.nome}"?\n\nEsta ação não pode ser desfeita.`
+            : ""
+        }
+        confirmLabel="Confirmar"
+        cancelLabel="Cancelar"
+        variant="danger"
+        onConfirm={confirmarExcluir}
+        onCancel={fecharConfirmExcluir}
+      />
     </>
   );
 }

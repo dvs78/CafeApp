@@ -1,33 +1,100 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import api from "../../../services/api";
 import { notificar } from "../../../components/Toast";
 import FormLavoura from "../components/FormLavoura";
+import ConfirmDialog from "../../../components/ConfirmDialog";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 
 function LavourasTab() {
   const [clientes, setClientes] = useState([]);
   const [clienteId, setClienteId] = useState("");
-  const [lavouras, setLavouras] = useState([]);
 
+  const [fazendas, setFazendas] = useState([]);
+  const fazendaNomePorId = useMemo(() => {
+    const map = new Map();
+    (fazendas || []).forEach((f) => map.set(String(f.id), f.fazenda));
+    return map;
+  }, [fazendas]);
+
+  const [lavouras, setLavouras] = useState([]);
   const [abrirForm, setAbrirForm] = useState(false);
   const [editar, setEditar] = useState(null);
 
+  // -------------------------
+  // CONFIRM DIALOG (EXCLUIR)
+  // -------------------------
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [alvoExcluir, setAlvoExcluir] = useState(null);
+
+  function abrirConfirmExcluir(lavoura) {
+    const nomeFazenda = fazendaNomePorId.get(String(lavoura.fazenda_id)) || "—";
+
+    setAlvoExcluir({
+      id: lavoura.id,
+      lavoura: lavoura.nome,
+      fazenda: nomeFazenda,
+    });
+
+    setConfirmOpen(true);
+  }
+
+  function fecharConfirmExcluir() {
+    setConfirmOpen(false);
+    setAlvoExcluir(null);
+  }
+
+  async function confirmarExcluir() {
+    if (!alvoExcluir?.id) return;
+
+    try {
+      await api.delete(`/lavouras/${alvoExcluir.id}`);
+      setLavouras((prev) => prev.filter((l) => l.id !== alvoExcluir.id));
+      notificar("sucesso", "Lavoura removida.");
+    } catch (err) {
+      const msg = err?.response?.data?.erro || "Erro ao excluir lavoura.";
+      notificar("erro", msg);
+    } finally {
+      fecharConfirmExcluir();
+    }
+  }
+
+  // -------------------------
+  // LOADERS
+  // -------------------------
   async function carregarClientes() {
     try {
       const { data } = await api.get("/clientes");
       setClientes(data || []);
-      if (!clienteId && data?.length) setClienteId(data[0].id);
+      if (!clienteId && (data || []).length) setClienteId(data[0].id);
     } catch {
       notificar("erro", "Erro ao carregar clientes.");
+      setClientes([]);
+    }
+  }
+
+  async function carregarFazendas(cid) {
+    if (!cid) return setFazendas([]);
+    try {
+      const { data } = await api.get("/fazendas", {
+        params: { cliente_id: cid },
+      });
+      setFazendas(data || []);
+    } catch {
+      notificar("erro", "Erro ao carregar fazendas.");
+      setFazendas([]);
     }
   }
 
   async function carregarLavouras(cid) {
     if (!cid) return setLavouras([]);
     try {
+      // mantém seu endpoint atual: GET /lavouras/:clienteId
       const { data } = await api.get(`/lavouras/${cid}`);
       setLavouras(data || []);
     } catch {
       notificar("erro", "Erro ao carregar lavouras.");
+      setLavouras([]);
     }
   }
 
@@ -37,21 +104,10 @@ function LavourasTab() {
   }, []);
 
   useEffect(() => {
+    carregarFazendas(clienteId);
     carregarLavouras(clienteId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clienteId]);
-
-  async function excluir(id) {
-    if (!window.confirm("Deseja excluir esta lavoura?")) return;
-
-    try {
-      await api.delete(`/lavouras/${id}`);
-      setLavouras((prev) => prev.filter((l) => l.id !== id));
-      notificar("sucesso", "Lavoura removida.");
-    } catch (err) {
-      const msg = err?.response?.data?.erro || "Erro ao excluir lavoura.";
-      notificar("erro", msg);
-    }
-  }
 
   return (
     <>
@@ -85,6 +141,7 @@ function LavourasTab() {
         <thead>
           <tr>
             <th>Lavoura</th>
+            <th>Fazenda</th>
             <th width="160">Ações</th>
           </tr>
         </thead>
@@ -92,16 +149,25 @@ function LavourasTab() {
           {lavouras.map((l) => (
             <tr key={l.id}>
               <td>{l.nome}</td>
+              <td>{fazendaNomePorId.get(String(l.fazenda_id)) || "-"}</td>
+
               <td className="acoes">
-                <button type="button" onClick={() => setEditar(l)}>
-                  Editar
-                </button>
                 <button
                   type="button"
-                  className="danger"
-                  onClick={() => excluir(l.id)}
+                  className="acao editar"
+                  onClick={() => setEditar(l)}
+                  title="Editar"
                 >
-                  Excluir
+                  <FontAwesomeIcon icon={faPen} />
+                </button>
+
+                <button
+                  type="button"
+                  className="acao danger"
+                  onClick={() => abrirConfirmExcluir(l)}
+                  title="Excluir"
+                >
+                  <FontAwesomeIcon icon={faTrash} />
                 </button>
               </td>
             </tr>
@@ -109,7 +175,7 @@ function LavourasTab() {
 
           {lavouras.length === 0 && (
             <tr>
-              <td colSpan={2}>Nenhuma lavoura cadastrada para este cliente.</td>
+              <td colSpan={3}>Nenhuma lavoura cadastrada para este cliente.</td>
             </tr>
           )}
         </tbody>
@@ -126,6 +192,24 @@ function LavourasTab() {
           onSaved={() => carregarLavouras(clienteId)}
         />
       )}
+
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Excluir lavoura"
+        description={
+          alvoExcluir
+            ? `Você está prestes a excluir a lavoura:\n\n` +
+              `Lavoura: ${alvoExcluir.lavoura}\n` +
+              `Fazenda: ${alvoExcluir.fazenda}\n\n` +
+              `Esta ação não pode ser desfeita.`
+            : ""
+        }
+        confirmLabel="Confirmar"
+        cancelLabel="Cancelar"
+        variant="danger"
+        onConfirm={confirmarExcluir}
+        onCancel={fecharConfirmExcluir}
+      />
     </>
   );
 }

@@ -4,7 +4,6 @@ import { notificar } from "../../../components/Toast";
 
 function FormFazenda({ clienteId, fazenda, onClose, onSaved }) {
   const editando = Boolean(fazenda?.id);
-
   const [nome, setNome] = useState("");
 
   useEffect(() => {
@@ -36,30 +35,38 @@ function FormFazenda({ clienteId, fazenda, onClose, onSaved }) {
   }
 
   return (
-    <div className="modal-overlay">
+    <div className="modal-backdrop" role="dialog" aria-modal="true">
       <div className="modal-card">
         <div className="modal-header">
           <h3>{editando ? "Editar Fazenda" : "Nova Fazenda"}</h3>
-          <button type="button" className="modal-close" onClick={onClose}>
+          <button
+            type="button"
+            className="modal-close"
+            onClick={onClose}
+            aria-label="Fechar"
+          >
             ×
           </button>
         </div>
 
-        <form onSubmit={salvar} className="modal-body">
-          <label>Fazenda</label>
-          <input
-            value={nome}
-            onChange={(e) => setNome(e.target.value)}
-            placeholder="Nome da fazenda"
-            autoFocus
-          />
+        <form onSubmit={salvar}>
+          <div className="modal-body">
+            <label>Fazenda</label>
+            <input
+              value={nome}
+              onChange={(e) => setNome(e.target.value)}
+              placeholder="Nome da fazenda"
+              autoFocus
+            />
+          </div>
 
-          <div className="modal-actions">
-            <button type="button" className="btn-secondary" onClick={onClose}>
-              Cancelar
-            </button>
+          <div className="modal-footer">
             <button type="submit" className="btn-primary">
               Salvar
+            </button>
+
+            <button type="button" className="btn-secondary" onClick={onClose}>
+              Cancelar
             </button>
           </div>
         </form>
