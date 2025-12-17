@@ -1,13 +1,15 @@
+import { useEffect } from "react";
+
 const UNIDADES_OPCIONAIS = ["L", "Kg", "mL", "g", "uni"];
 
-// Permite só números, vírgula e ponto. Garante no máx. 1 vírgula.
 function limparEntradaQuantidade(valor) {
   if (!valor) return "";
   valor = valor.replace(/[^0-9.,]/g, "");
+  valor = valor.replace(/\./g, ",");
 
-  const partesVirgula = valor.split(",");
-  if (partesVirgula.length > 2) {
-    valor = partesVirgula[0] + "," + partesVirgula.slice(1).join("");
+  const partes = valor.split(",");
+  if (partes.length > 2) {
+    valor = partes[0] + "," + partes.slice(1).join("");
   }
   return valor;
 }
@@ -35,7 +37,15 @@ function RealizadoForm({
   listaProdutos,
   listaServicos,
 }) {
-  // ✅ precisa ficar DENTRO do componente (para enxergar os setters)
+  // Se mudar a lista (mudou fazenda), e a lavoura atual não existir mais -> zera
+  useEffect(() => {
+    if (!lavoura) return;
+    const existe = (listaLavouras || []).some(
+      (l) => String(l?.nome) === String(lavoura)
+    );
+    if (!existe) setLavoura("");
+  }, [listaLavouras, lavoura, setLavoura]);
+
   function limparFormulario() {
     setLavoura("");
     setServico("");
@@ -48,7 +58,6 @@ function RealizadoForm({
 
   return (
     <section className="card-form anima-card">
-      {/* Topo no padrão do card de filtros (sem botão Cancelar) */}
       <div className="filtros-topo">
         <h2 className="filtros-title">
           {editandoId ? "Editar serviço" : "Lançar serviço"}
@@ -56,7 +65,6 @@ function RealizadoForm({
       </div>
 
       <form className="form-servico" onSubmit={onSubmit}>
-        {/* LAVOURA | SERVIÇO lado a lado */}
         <div className="form-row">
           <div className="login-campo">
             <label className="login-label">Lavoura</label>
@@ -83,7 +91,7 @@ function RealizadoForm({
               onChange={(e) => setServico(e.target.value)}
             >
               <option value="">Selecione o serviço</option>
-              {listaServicos.map((s) => (
+              {(listaServicos || []).map((s) => (
                 <option key={s.id} value={s.nome}>
                   {s.nome}
                 </option>
@@ -92,7 +100,6 @@ function RealizadoForm({
           </div>
         </div>
 
-        {/* DATA | STATUS lado a lado */}
         <div className="form-row">
           <div className="login-campo">
             <label className="login-label">Data</label>
@@ -118,7 +125,6 @@ function RealizadoForm({
           </div>
         </div>
 
-        {/* PRODUTO | UNIDADE | QUANTIDADE lado a lado */}
         <div className="form-row-3">
           <div className="login-campo">
             <label className="login-label">Produto (opcional)</label>
@@ -128,7 +134,7 @@ function RealizadoForm({
               onChange={(e) => setProduto(e.target.value)}
             >
               <option value="">Selecione o produto (opcional)</option>
-              {listaProdutos.map((p) => (
+              {(listaProdutos || []).map((p) => (
                 <option key={p.id} value={p.nome}>
                   {p.nome}
                 </option>
@@ -167,7 +173,6 @@ function RealizadoForm({
           </div>
         </div>
 
-        {/* AÇÕES */}
         <div className="form-actions">
           <button type="submit" className="btn-primario">
             {editandoId ? "Salvar alterações" : "Salvar serviço"}
@@ -178,7 +183,7 @@ function RealizadoForm({
             className="btn-limpar-filtros"
             onClick={limparFormulario}
           >
-            Limpar filtros
+            Limpar campos
           </button>
         </div>
       </form>

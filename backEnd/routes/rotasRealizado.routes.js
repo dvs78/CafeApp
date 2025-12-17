@@ -1,87 +1,12 @@
-// // backEnd/routes/rotasRealizado.routes.js
-// import { Router } from "express";
-// import DbClassRealizado from "./DbClassRealizado.routes.js";
-
-// const router = Router();
-// const db = new DbClassRealizado();
-
-// // GET /realizado
-// router.get("/", async (req, res) => {
-//   try {
-//     const lista = await db.getAll();
-//     res.json(lista);
-//   } catch (err) {
-//     console.error("Erro ao buscar realizados:", err);
-//     res.status(500).json({ erro: "Erro ao buscar realizados" });
-//   }
-// });
-
-// // GET /realizado/:id
-// router.get("/:id", async (req, res) => {
-//   try {
-//     const item = await db.getById(req.params.id);
-//     if (!item) return res.status(404).json({ erro: "Registro não encontrado" });
-//     res.json(item);
-//   } catch (err) {
-//     console.error("Erro ao buscar realizado:", err);
-//     res.status(500).json({ erro: "Erro ao buscar realizado" });
-//   }
-// });
-
-// // POST /realizado
-// router.post("/", async (req, res) => {
-//   try {
-//     const novo = await db.create(req.body);
-//     res.status(201).json(novo);
-//   } catch (err) {
-//     console.error("Erro ao criar realizado:", err);
-//     res.status(500).json({ erro: "Erro ao criar realizado" });
-//   }
-// });
-
-// // PUT /realizado/:id
-// router.put("/:id", async (req, res) => {
-//   try {
-//     console.log("PUT /realizado body:", req.body); // 👈 log 1
-//     const atualizado = await db.updateById(req.params.id, req.body);
-//     console.log("PUT /realizado atualizado:", atualizado); // 👈 log 2
-//     if (!atualizado)
-//       return res.status(404).json({ erro: "Registro não encontrado" });
-//     res.json(atualizado);
-//   } catch (err) {
-//     console.error("Erro ao atualizar realizado:", err);
-//     res.status(500).json({ erro: "Erro ao atualizar realizado" });
-//   }
-// });
-
-// // DELETE /realizado/:id
-// router.delete("/:id", async (req, res) => {
-//   try {
-//     const apagado = await db.deleteById(req.params.id);
-//     if (!apagado)
-//       return res.status(404).json({ erro: "Registro não encontrado" });
-//     res.json(apagado);
-//   } catch (err) {
-//     console.error("Erro ao excluir realizado:", err);
-//     res.status(500).json({ erro: "Erro ao excluir realizado" });
-//   }
-// });
-
-// export default router;
-
-// backEnd/routes/rotasRealizado.routes.js
+// GET /realizado
+// Query: ?cliente_id=...&safra=...&fazenda_id=...
 import { Router } from "express";
 import pool from "./connect.routes.js";
 
 const router = Router();
 
-/**
- * GET /realizado
- * Query: ?cliente_id=...&safra=...&fazenda=...
- * Retorna lançamentos do cliente (obrigatório) e opcionalmente filtra safra/fazenda.
- */
 router.get("/", async (req, res) => {
-  const { cliente_id, safra, fazenda } = req.query;
+  const { cliente_id, safra, fazenda_id } = req.query;
 
   if (!cliente_id) {
     return res.status(400).json({ erro: "cliente_id é obrigatório" });
@@ -99,17 +24,10 @@ router.get("/", async (req, res) => {
       where.push(`r.safra = $${params.length}`);
     }
 
-    // Se você tiver coluna "fazenda" (texto) no realizado, habilite:
-    // if (fazenda) {
-    //   params.push(fazenda);
-    //   where.push(`r.fazenda = $${params.length}`);
-    // }
-
-    // Se você tiver fazenda_id no realizado, e quer filtrar por nome vindo do ctx (ex: "Limeira"):
-    // if (fazenda) {
-    //   params.push(fazenda);
-    //   where.push(`f.fazenda = $${params.length}`);
-    // }
+    if (fazenda_id) {
+      params.push(fazenda_id);
+      where.push(`r.fazenda_id = $${params.length}`);
+    }
 
     const sql = `
       SELECT
@@ -123,13 +41,11 @@ router.get("/", async (req, res) => {
         r.unidade,
         r.quantidade,
         r.cliente_id,
-        r.usuario_id
-        -- Se existir:
-        -- r.fazenda_id,
-        -- f.fazenda AS fazenda
+        r.usuario_id,
+        r.fazenda_id,
+        f.fazenda AS fazenda
       FROM realizado r
-      -- Se existir fazenda_id em realizado:
-      -- LEFT JOIN fazendas f ON f.id = r.fazenda_id
+      LEFT JOIN fazendas f ON f.id = r.fazenda_id
       WHERE ${where.join(" AND ")}
       ORDER BY r.data DESC NULLS LAST, r.id DESC
     `;
@@ -142,9 +58,6 @@ router.get("/", async (req, res) => {
   }
 });
 
-/**
- * GET /realizado/:id
- */
 router.get("/:id", async (req, res) => {
   const { id } = req.params;
 
@@ -162,8 +75,11 @@ router.get("/:id", async (req, res) => {
         r.unidade,
         r.quantidade,
         r.cliente_id,
-        r.usuario_id
+        r.usuario_id,
+        r.fazenda_id,
+        f.fazenda AS fazenda
       FROM realizado r
+      LEFT JOIN fazendas f ON f.id = r.fazenda_id
       WHERE r.id = $1
       `,
       [id]
@@ -180,10 +96,6 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-/**
- * POST /realizado
- * Body: { safra, lavoura, servico, data, status, produto?, unidade?, quantidade?, cliente_id, usuario_id }
- */
 router.post("/", async (req, res) => {
   const {
     safra,
@@ -196,9 +108,7 @@ router.post("/", async (req, res) => {
     quantidade,
     cliente_id,
     usuario_id,
-    // se existir no seu schema:
-    // fazenda_id,
-    // fazenda,
+    fazenda_id, // ✅ novo
   } = req.body;
 
   if (
@@ -208,33 +118,45 @@ router.post("/", async (req, res) => {
     !data ||
     !status ||
     !cliente_id ||
-    !usuario_id
+    !usuario_id ||
+    !fazenda_id
   ) {
     return res.status(400).json({
-      erro: "safra, lavoura, servico, data, status, cliente_id e usuario_id são obrigatórios",
+      erro: "safra, lavoura, servico, data, status, cliente_id, usuario_id e fazenda_id são obrigatórios",
     });
   }
 
   try {
-    // (opcional, mas recomendado) evitar duplicado por safra+lavoura+servico+produto+cliente
-    // Ajuste a regra se quiser considerar data/status também.
+    // (recomendado) valida se a fazenda pertence ao cliente
+    const chk = await pool.query(
+      `SELECT 1 FROM fazendas WHERE id = $1 AND cliente_id = $2`,
+      [fazenda_id, cliente_id]
+    );
+    if (!chk.rows.length) {
+      return res
+        .status(400)
+        .json({ erro: "Fazenda inválida para este cliente." });
+    }
+
+    // duplicado: agora inclui fazenda_id para não “bater” fazendas diferentes
     const dup = await pool.query(
       `
       SELECT 1
       FROM realizado
       WHERE cliente_id = $1
-        AND safra = $2
-        AND lower(trim(lavoura)) = lower(trim($3))
-        AND lower(trim(servico)) = lower(trim($4))
-        AND coalesce(lower(trim(produto)), '') = coalesce(lower(trim($5)), '')
+        AND fazenda_id = $2
+        AND safra = $3
+        AND lower(trim(lavoura)) = lower(trim($4))
+        AND lower(trim(servico)) = lower(trim($5))
+        AND coalesce(lower(trim(produto)), '') = coalesce(lower(trim($6)), '')
       LIMIT 1
       `,
-      [cliente_id, safra, lavoura, servico, produto || ""]
+      [cliente_id, fazenda_id, safra, lavoura, servico, produto || ""]
     );
 
     if (dup.rows.length) {
       return res.status(409).json({
-        erro: "Já existe lançamento com a mesma Safra, Lavoura, Serviço e Produto para este cliente.",
+        erro: "Já existe lançamento com a mesma Safra, Lavoura, Serviço e Produto para este cliente e fazenda.",
       });
     }
 
@@ -243,23 +165,17 @@ router.post("/", async (req, res) => {
       INSERT INTO realizado (
         id, safra, lavoura, servico, data, status,
         produto, unidade, quantidade,
-        cliente_id, usuario_id
-        -- se existir:
-        -- , fazenda_id
-        -- , fazenda
+        cliente_id, usuario_id, fazenda_id
       )
       VALUES (
         gen_random_uuid(), $1, $2, $3, $4, $5,
         $6, $7, $8,
-        $9, $10
-        -- se existir:
-        -- , $11
-        -- , $12
+        $9, $10, $11
       )
       RETURNING
         id, safra, lavoura, servico, data, status,
         produto, unidade, quantidade,
-        cliente_id, usuario_id
+        cliente_id, usuario_id, fazenda_id
       `,
       [
         safra,
@@ -272,8 +188,7 @@ router.post("/", async (req, res) => {
         quantidade ?? null,
         cliente_id,
         usuario_id,
-        // fazenda_id || null,
-        // fazenda || null,
+        fazenda_id,
       ]
     );
 
@@ -284,10 +199,6 @@ router.post("/", async (req, res) => {
   }
 });
 
-/**
- * PUT /realizado/:id
- * Body: campos editáveis (ex.: lavoura, servico, data, status, produto, unidade, quantidade)
- */
 router.put("/:id", async (req, res) => {
   const { id } = req.params;
 
@@ -302,9 +213,9 @@ router.put("/:id", async (req, res) => {
     quantidade,
     cliente_id,
     usuario_id,
+    fazenda_id, // ✅ novo
   } = req.body;
 
-  // aqui você decide seu mínimo obrigatório
   if (
     !safra ||
     !lavoura?.trim() ||
@@ -312,33 +223,46 @@ router.put("/:id", async (req, res) => {
     !data ||
     !status ||
     !cliente_id ||
-    !usuario_id
+    !usuario_id ||
+    !fazenda_id
   ) {
     return res.status(400).json({
-      erro: "safra, lavoura, servico, data, status, cliente_id e usuario_id são obrigatórios",
+      erro: "safra, lavoura, servico, data, status, cliente_id, usuario_id e fazenda_id são obrigatórios",
     });
   }
 
   try {
-    // (opcional) bloquear update se virar duplicado
+    // valida fazenda do cliente
+    const chk = await pool.query(
+      `SELECT 1 FROM fazendas WHERE id = $1 AND cliente_id = $2`,
+      [fazenda_id, cliente_id]
+    );
+    if (!chk.rows.length) {
+      return res
+        .status(400)
+        .json({ erro: "Fazenda inválida para este cliente." });
+    }
+
+    // duplicado (inclui fazenda_id)
     const dup = await pool.query(
       `
       SELECT 1
       FROM realizado
       WHERE id <> $1
         AND cliente_id = $2
-        AND safra = $3
-        AND lower(trim(lavoura)) = lower(trim($4))
-        AND lower(trim(servico)) = lower(trim($5))
-        AND coalesce(lower(trim(produto)), '') = coalesce(lower(trim($6)), '')
+        AND fazenda_id = $3
+        AND safra = $4
+        AND lower(trim(lavoura)) = lower(trim($5))
+        AND lower(trim(servico)) = lower(trim($6))
+        AND coalesce(lower(trim(produto)), '') = coalesce(lower(trim($7)), '')
       LIMIT 1
       `,
-      [id, cliente_id, safra, lavoura, servico, produto || ""]
+      [id, cliente_id, fazenda_id, safra, lavoura, servico, produto || ""]
     );
 
     if (dup.rows.length) {
       return res.status(409).json({
-        erro: "Já existe outro lançamento com a mesma Safra, Lavoura, Serviço e Produto para este cliente.",
+        erro: "Já existe outro lançamento com a mesma Safra, Lavoura, Serviço e Produto para este cliente e fazenda.",
       });
     }
 
@@ -355,12 +279,13 @@ router.put("/:id", async (req, res) => {
         unidade = $7,
         quantidade = $8,
         cliente_id = $9,
-        usuario_id = $10
-      WHERE id = $11
+        usuario_id = $10,
+        fazenda_id = $11
+      WHERE id = $12
       RETURNING
         id, safra, lavoura, servico, data, status,
         produto, unidade, quantidade,
-        cliente_id, usuario_id
+        cliente_id, usuario_id, fazenda_id
       `,
       [
         safra,
@@ -373,6 +298,7 @@ router.put("/:id", async (req, res) => {
         quantidade ?? null,
         cliente_id,
         usuario_id,
+        fazenda_id,
         id,
       ]
     );
@@ -385,29 +311,6 @@ router.put("/:id", async (req, res) => {
   } catch (err) {
     console.error("Erro ao atualizar realizado:", err);
     res.status(500).json({ erro: "Erro ao atualizar realizado" });
-  }
-});
-
-/**
- * DELETE /realizado/:id
- */
-router.delete("/:id", async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    const { rows } = await pool.query(
-      "DELETE FROM realizado WHERE id = $1 RETURNING id",
-      [id]
-    );
-
-    if (!rows.length) {
-      return res.status(404).json({ erro: "Registro não encontrado" });
-    }
-
-    res.json({ ok: true });
-  } catch (err) {
-    console.error("Erro ao excluir realizado:", err);
-    res.status(500).json({ erro: "Erro ao excluir realizado" });
   }
 });
 

@@ -73,28 +73,23 @@ function Realizado({
   }, [clienteId, navigate]);
 
   // workspace (com fallback do localStorage)
-  const fazenda =
-    workspace?.fazenda || localStorage.getItem("ctx_fazenda") || "";
+  const fazendaId =
+    workspace?.fazendaId || localStorage.getItem("ctx_fazenda_id") || "";
+
   const safra = workspace?.safra || localStorage.getItem("ctx_safra") || "";
 
-  // useEffect(() => {
-  //   console.log("CTX Realizado:", {
-  //     clienteId,
-  //     fazenda,
-  //     safra,
-  //     ls_clienteId: localStorage.getItem("ctx_cliente_id"),
-  //     ws_clienteId: workspace?.clienteId,
-  //   });
-  // }, [clienteId, fazenda, safra, workspace]);
-
   useEffect(() => {
-    // Se o contexto existe, garante persistência no localStorage
     if (workspace?.clienteId)
       localStorage.setItem("ctx_cliente_id", workspace.clienteId);
     if (workspace?.clienteNome)
       localStorage.setItem("ctx_cliente_nome", workspace.clienteNome);
+
+    if (workspace?.fazendaId)
+      localStorage.setItem("ctx_fazenda_id", workspace.fazendaId);
+
     if (workspace?.fazenda)
-      localStorage.setItem("ctx_fazenda", workspace.fazenda);
+      localStorage.setItem("ctx_fazenda", workspace.fazenda); // opcional (nome)
+
     if (workspace?.safra) localStorage.setItem("ctx_safra", workspace.safra);
   }, [workspace]);
 
@@ -106,11 +101,11 @@ function Realizado({
       navigate("/login");
       return;
     }
-    if (!clienteId || !fazenda || !safra) {
+    if (!clienteId || !fazendaId || !safra) {
       notificar("erro", "Selecione Cliente, Fazenda e Safra para continuar.");
       navigate("/poslogin");
     }
-  }, [usuario, token, clienteId, fazenda, safra, navigate]);
+  }, [usuario, token, clienteId, fazendaId, safra, navigate]);
 
   // ------------------------------
   // CAMPOS FORM
@@ -148,6 +143,14 @@ function Realizado({
   const [filtroLavoura, setFiltroLavoura] = useState("");
   const [filtroServico, setFiltroServico] = useState("");
 
+  function limparFiltros() {
+    setFiltroMes("");
+    setFiltroAno("");
+    setFiltroTexto("");
+    setFiltroLavoura("");
+    setFiltroServico("");
+  }
+
   // ------------------------------
   // HEADER
   // ------------------------------
@@ -161,17 +164,24 @@ function Realizado({
   // CARREGAR DADOS (Realizado)
   // ------------------------------
   useEffect(() => {
-    if (!token || !usuario || !clienteId) return;
+    if (!token || !usuario || !clienteId || !fazendaId || !safra) return;
 
     api
-      .get("/realizado", { params: { cliente_id: clienteId, fazenda, safra } })
+      .get("/realizado", {
+        params: { cliente_id: clienteId, fazenda_id: fazendaId, safra },
+      })
       .then((res) => setServicos(Array.isArray(res.data) ? res.data : []))
       .catch(() => notificar("erro", "Erro ao carregar serviços."));
-  }, [token, usuario, clienteId, fazenda, safra]);
+  }, [token, usuario, clienteId, fazendaId, safra]);
 
   // ------------------------------
   // CARREGAR LISTAS AUXILIARES
   // ------------------------------
+  useEffect(() => {
+    setServicos([]);
+    limparFiltros();
+  }, [clienteId, fazendaId, safra]);
+
   useEffect(() => {
     if (!usuario || !clienteId) return;
 
@@ -206,29 +216,12 @@ function Realizado({
       });
   }, [usuario, clienteId, token]);
 
-  // ------------------------------
-  // Lavouras “relevantes” da safra (para o FORM)
-  // ------------------------------
-  // const lavourasDaSafra = useMemo(() => {
-  //   if (!safra) return listaLavouras;
-
-  //   const nomesUsados = new Set(
-  //     (servicos || [])
-  //       .filter((s) => s?.safra === safra)
-  //       .map((s) => s?.lavoura)
-  //       .filter(Boolean)
-  //   );
-
-  //   if (nomesUsados.size === 0) return listaLavouras;
-
-  //   // listaLavouras do seu backend parece ter { nome: "..." }
-  //   return (listaLavouras || []).filter((lav) => nomesUsados.has(lav?.nome));
-  // }, [safra, servicos, listaLavouras]);
-
   const lavourasDaFazenda = useMemo(() => {
-    if (!fazenda) return listaLavouras;
-    return listaLavouras.filter((l) => String(l.fazenda) === String(fazenda));
-  }, [listaLavouras, fazenda]);
+    if (!fazendaId) return listaLavouras;
+    return listaLavouras.filter(
+      (l) => String(l.fazenda_id) === String(fazendaId)
+    );
+  }, [listaLavouras, fazendaId]);
 
   // ------------------------------
   // BASE DO CONTEXTO (cliente + safra + fazenda) — sem “zerar” se campo não existir
@@ -236,48 +229,18 @@ function Realizado({
   const servicosDoContexto = useMemo(() => {
     const lista = Array.isArray(servicos) ? servicos : [];
 
-    // 1) safra (sempre tem no objeto, pelo seu JSON)
-    let base = safra ? lista.filter((s) => s?.safra === safra) : lista;
+    return lista.filter((s) => {
+      if (safra && String(s?.safra) !== String(safra)) return false;
 
-    // 2) cliente (no seu JSON vem como "cliente_id")
-    base = base.filter((s) => {
       const cid = s?.cliente_id ?? s?.clienteId ?? s?.cliente;
-      return cid ? String(cid) === String(clienteId) : true;
+      if (cid && String(cid) !== String(clienteId)) return false;
+
+      const fid = s?.fazenda_id ?? s?.fazendaId;
+      if (fazendaId && String(fid) !== String(fazendaId)) return false;
+
+      return true;
     });
-
-    // 3) fazenda: só filtra se existir campo de fazenda em algum item
-    const temFazendaNoObjeto = base.some(
-      (s) =>
-        s?.fazenda !== undefined ||
-        s?.fazenda_nome !== undefined ||
-        s?.nome_fazenda !== undefined ||
-        s?.fazendaId !== undefined ||
-        s?.fazenda_id !== undefined
-    );
-
-    if (fazenda && temFazendaNoObjeto) {
-      base = base.filter((s) => {
-        const f =
-          s?.fazenda ??
-          s?.fazenda_nome ??
-          s?.nome_fazenda ??
-          s?.fazendaId ??
-          s?.fazenda_id;
-
-        return String(f ?? "") === String(fazenda);
-      });
-    }
-
-    return base;
-  }, [servicos, safra, fazenda, usuario]);
-
-  function limparFiltros() {
-    setFiltroMes("");
-    setFiltroAno("");
-    setFiltroTexto("");
-    setFiltroLavoura("");
-    setFiltroServico("");
-  }
+  }, [servicos, safra, clienteId, fazendaId]);
 
   // ------------------------------
   // OPÇÕES DOS SELECTS (usando dados do contexto)
@@ -299,6 +262,11 @@ function Realizado({
     });
     return Array.from(set).sort((a, b) => Number(b) - Number(a));
   }, [servicosDoContexto]);
+
+  const opcoesLavoura = useMemo(() => {
+    const nomes = (lavourasDaFazenda || []).map((l) => l?.nome).filter(Boolean);
+    return [...new Set(nomes)].sort((a, b) => a.localeCompare(b));
+  }, [lavourasDaFazenda]);
 
   // const opcoesLavoura = useMemo(() => {
   //   // preferir lavourasDaSafra (do BD)
@@ -386,6 +354,15 @@ function Realizado({
   function handleSubmit(e) {
     e.preventDefault();
 
+    if (!clienteId || !fazendaId || !safra) {
+      notificar(
+        "erro",
+        "Contexto inválido. Retorne e selecione Cliente, Fazenda e Safra novamente."
+      );
+      navigate("/poslogin");
+      return;
+    }
+
     if (!lavoura || !servico || !data || !status) {
       notificar("erro", "Preencha os campos obrigatórios.");
       return;
@@ -396,6 +373,8 @@ function Realizado({
     const existeDuplicado = (servicos || []).some((s) => {
       return (
         s?.id !== editandoId &&
+        String(s?.cliente_id) === String(clienteId) &&
+        String(s?.fazenda_id) === String(fazendaId) &&
         normalizar(s?.safra) === normalizar(safra) &&
         normalizar(s?.lavoura) === normalizar(lavoura) &&
         normalizar(s?.servico) === normalizar(servico) &&
@@ -422,9 +401,8 @@ function Realizado({
       unidade: uni || null,
       quantidade: limparQuantidade(quantidade),
       cliente_id: clienteId,
+      fazenda_id: fazendaId,
       usuario_id: usuario.id,
-      // Se você tiver campo fazenda no backend, vale mandar também:
-      // fazenda,
     };
 
     const req = editandoId
@@ -557,7 +535,7 @@ function Realizado({
               type="button"
               onClick={limparFiltros}
             >
-              Limpar filtros
+              Limpar campos
             </button>
           </header>
 

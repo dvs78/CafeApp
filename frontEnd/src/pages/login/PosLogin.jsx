@@ -22,6 +22,10 @@ function PosLogin() {
     () => localStorage.getItem("ctx_cliente_nome") || ""
   );
 
+  const [fazendaId, setFazendaId] = useState(
+    () => localStorage.getItem("ctx_fazenda_id") || ""
+  );
+
   const [fazendas, setFazendas] = useState([]);
   const [fazenda, setFazenda] = useState(
     () => localStorage.getItem("ctx_fazenda") || ""
@@ -33,8 +37,8 @@ function PosLogin() {
   );
 
   const podeContinuar = useMemo(
-    () => !!clienteId && !!fazenda && !!safra,
-    [clienteId, fazenda, safra]
+    () => !!clienteId && !!fazendaId && !!fazenda && !!safra,
+    [clienteId, fazendaId, fazenda, safra]
   );
 
   // 1) carrega safras + auto-seleciona cliente se só tiver 1
@@ -83,13 +87,16 @@ function PosLogin() {
         // se a fazenda atual não existe mais nesse cliente, reseta
         if (lista.length === 1) {
           setFazenda(lista[0].fazenda);
+          setFazendaId(String(lista[0].id)); // ✅
         } else if (!lista.some((f) => f.fazenda === fazenda)) {
           setFazenda("");
+          setFazendaId(""); // ✅
         }
       } catch (err) {
         console.error(err);
         setFazendas([]);
         setFazenda("");
+        setFazendaId("");
 
         toast.error("Erro ao carregar fazendas.", {
           toastId: TOAST_ERRO_CARREGAR,
@@ -102,20 +109,26 @@ function PosLogin() {
   }, [clienteId]); // (se quiser, pode adicionar fazenda aqui, mas não é obrigatório)
 
   function continuar() {
-    if (!podeContinuar) {
-      toast.info("Selecione cliente, fazenda e safra para continuar.");
-      return;
-    }
+    if (!clienteId) return toast.info("Selecione o cliente para continuar.");
+    if (!fazenda) return toast.info("Selecione a fazenda para continuar.");
+    if (!safra) return toast.info("Selecione a safra para continuar.");
 
     localStorage.setItem("ctx_cliente_id", clienteId);
     localStorage.setItem("ctx_cliente_nome", clienteNome);
     localStorage.setItem("ctx_fazenda", fazenda);
+    localStorage.setItem("ctx_fazenda_id", fazendaId);
     localStorage.setItem("ctx_safra", safra);
 
-    setWorkspace({ clienteId, clienteNome, fazenda, safra });
+    setWorkspace({ clienteId, clienteNome, fazenda, fazendaId, safra });
 
     navigate("/home", { replace: true });
   }
+
+  useEffect(() => {
+    if (!fazenda) return;
+    localStorage.setItem("ctx_fazenda", fazenda);
+    if (fazendaId) localStorage.setItem("ctx_fazenda_id", fazendaId);
+  }, [fazenda, fazendaId]);
 
   return (
     <div className="poslogin-wrapper">
@@ -140,27 +153,6 @@ function PosLogin() {
           <span>Selecione o Cliente</span>
         </div>
 
-        {/* <div className="cliente-card ">
-          {clientesPermitidos.map((c) => {
-            const ativo = clienteId === c.id;
-            return (
-              <button
-                key={c.id}
-                type="button"
-                className={`cliente-card ${ativo ? "ativo" : ""}`}
-                onClick={() => {
-                  const id = String(c.id || "").trim();
-                  setClienteId(id);
-                  setClienteNome(String(c.cliente || ""));
-                  setFazenda("");
-                  setFazendas([]);
-                }}
-              >
-                <span className="card-title">{c.cliente}</span>
-              </button>
-            );
-          })}
-        </div> */}
         <div className="clientes-grid">
           {clientesPermitidos.map((c) => {
             const ativo = String(clienteId) === String(c.id);
@@ -171,10 +163,20 @@ function PosLogin() {
                 className={`cliente-card ${ativo ? "ativo" : ""}`}
                 onClick={() => {
                   const id = String(c.id || "").trim();
+
+                  // limpa contexto antigo
+                  localStorage.removeItem("ctx_fazenda");
+                  localStorage.removeItem("ctx_fazenda_id");
+                  localStorage.removeItem("ctx_safra");
+
                   setClienteId(id);
                   setClienteNome(String(c.cliente || ""));
+
+                  // reseta seleções dependentes
                   setFazenda("");
+                  setFazendaId(""); // ✅ faltava
                   setFazendas([]);
+                  setSafra("");
                 }}
               >
                 <span className="card-title">{c.cliente}</span>
@@ -197,7 +199,16 @@ function PosLogin() {
                 key={f.id}
                 type="button"
                 className={`fazenda-card ${ativo ? "ativo" : ""}`}
-                onClick={() => setFazenda(f.fazenda)}
+                onClick={() => {
+                  // ao trocar fazenda, zera o contexto dependente
+                  localStorage.removeItem("ctx_fazenda");
+                  localStorage.removeItem("ctx_fazenda_id");
+                  localStorage.removeItem("ctx_safra");
+
+                  setFazenda(f.fazenda); // nome (para UI)
+                  setFazendaId(String(f.id)); // id (para API)
+                  setSafra(""); // força escolher safra de novo
+                }}
               >
                 <span className="card-title">{f.fazenda}</span>
               </button>
