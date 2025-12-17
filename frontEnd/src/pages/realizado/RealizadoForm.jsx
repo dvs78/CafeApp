@@ -2,14 +2,26 @@ import { useEffect } from "react";
 
 const UNIDADES_OPCIONAIS = ["L", "Kg", "mL", "g", "uni"];
 
+// function limparEntradaQuantidade(valor) {
+//   if (!valor) return "";
+//   valor = valor.replace(/[^0-9.,]/g, "");
+//   valor = valor.replace(/\./g, ",");
+
+//   const partes = valor.split(",");
+//   if (partes.length > 2) {
+//     valor = partes[0] + "," + partes.slice(1).join("");
+//   }
+//   return valor;
+// }
+
+// Essa função deixa lançar ponto e vírgula
 function limparEntradaQuantidade(valor) {
   if (!valor) return "";
   valor = valor.replace(/[^0-9.,]/g, "");
-  valor = valor.replace(/\./g, ",");
 
-  const partes = valor.split(",");
-  if (partes.length > 2) {
-    valor = partes[0] + "," + partes.slice(1).join("");
+  const partesVirgula = valor.split(",");
+  if (partesVirgula.length > 2) {
+    valor = partesVirgula[0] + "," + partesVirgula.slice(1).join("");
   }
   return valor;
 }
