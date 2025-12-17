@@ -1,20 +1,20 @@
-// backEnd/routes/DbClassCliente.routes.js
-import DbClass from "./DbClass.routes.js";
+// // backEnd/routes/DbClassCliente.routes.js
+// import DbClass from "./DbClass.routes.js";
 
-class DbClassCliente extends DbClass {
-  tabela = "clientes";
-  idCol = "id";
-  cols = ["id", "cliente"];
+// class DbClassCliente extends DbClass {
+//   tabela = "clientes";
+//   idCol = "id";
+//   cols = ["id", "cliente"];
 
-  sanitize(payload) {
-    const out = {};
+//   sanitize(payload) {
+//     const out = {};
 
-    if (payload.cliente !== undefined) {
-      out.cliente = payload.cliente.trim();
-    }
+//     if (payload.cliente !== undefined) {
+//       out.cliente = payload.cliente.trim();
+//     }
 
-    return out;
-  }
-}
+//     return out;
+//   }
+// }
 
-export default DbClassCliente;
+// export default DbClassCliente;

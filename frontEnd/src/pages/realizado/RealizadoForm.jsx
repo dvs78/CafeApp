@@ -67,7 +67,7 @@ function RealizadoForm({
               disabled={!!editandoId}
             >
               <option value="">Selecione a lavoura</option>
-              {listaLavouras.map((l) => (
+              {(listaLavouras || []).map((l) => (
                 <option key={l.id} value={l.nome}>
                   {l.nome}
                 </option>

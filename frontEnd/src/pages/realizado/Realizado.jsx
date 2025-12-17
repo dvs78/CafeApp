@@ -63,15 +63,40 @@ function Realizado({
   const navigate = useNavigate();
   const { token, usuario, workspace } = useAuth();
   const clienteId =
-    workspace?.clienteId ||
-    localStorage.getItem("ctx_cliente_id") ||
-    usuario?.clienteId || // fallback antigo (se existir)
-    "";
+    workspace?.clienteId || localStorage.getItem("ctx_cliente_id") || "";
+
+  useEffect(() => {
+    if (!clienteId) {
+      notificar("erro", "Cliente não selecionado. Retorne ao início.");
+      navigate("/poslogin");
+    }
+  }, [clienteId, navigate]);
 
   // workspace (com fallback do localStorage)
   const fazenda =
     workspace?.fazenda || localStorage.getItem("ctx_fazenda") || "";
   const safra = workspace?.safra || localStorage.getItem("ctx_safra") || "";
+
+  // useEffect(() => {
+  //   console.log("CTX Realizado:", {
+  //     clienteId,
+  //     fazenda,
+  //     safra,
+  //     ls_clienteId: localStorage.getItem("ctx_cliente_id"),
+  //     ws_clienteId: workspace?.clienteId,
+  //   });
+  // }, [clienteId, fazenda, safra, workspace]);
+
+  useEffect(() => {
+    // Se o contexto existe, garante persistência no localStorage
+    if (workspace?.clienteId)
+      localStorage.setItem("ctx_cliente_id", workspace.clienteId);
+    if (workspace?.clienteNome)
+      localStorage.setItem("ctx_cliente_nome", workspace.clienteNome);
+    if (workspace?.fazenda)
+      localStorage.setItem("ctx_fazenda", workspace.fazenda);
+    if (workspace?.safra) localStorage.setItem("ctx_safra", workspace.safra);
+  }, [workspace]);
 
   // ------------------------------
   // PROTEÇÃO
@@ -139,7 +164,7 @@ function Realizado({
     if (!token || !usuario || !clienteId) return;
 
     api
-      .get("/realizado", { params: { clienteId, fazenda, safra } })
+      .get("/realizado", { params: { cliente_id: clienteId, fazenda, safra } })
       .then((res) => setServicos(Array.isArray(res.data) ? res.data : []))
       .catch(() => notificar("erro", "Erro ao carregar serviços."));
   }, [token, usuario, clienteId, fazenda, safra]);
@@ -151,36 +176,59 @@ function Realizado({
     if (!usuario || !clienteId) return;
 
     Promise.all([
-      api.get(`/lavouras/${clienteId}`),
-      api.get("/produtos"),
-      api.get("/servicos-lista"),
+      api.get(`/lavouras/${clienteId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }),
+      api.get("/produtos", {
+        headers: { Authorization: `Bearer ${token}` },
+      }),
+      api.get("/servicos-lista", {
+        headers: { Authorization: `Bearer ${token}` },
+      }),
     ])
       .then(([l, p, s]) => {
+        // console.log("API lavouras:", l.status, l.data);
+        // console.log("API produtos:", p.status, p.data);
+        // console.log("API servicos-lista:", s.status, s.data);
+
         setListaLavouras(Array.isArray(l.data) ? l.data : []);
         setListaProdutos(Array.isArray(p.data) ? p.data : []);
         setListaServicos(Array.isArray(s.data) ? s.data : []);
       })
-      .catch(() => notificar("erro", "Erro ao carregar listas."));
-  }, [usuario, clienteId]);
+      .catch((err) => {
+        console.log("ERRO ao carregar listas:", {
+          message: err?.message,
+          status: err?.response?.status,
+          data: err?.response?.data,
+          url: err?.config?.url,
+        });
+        notificar("erro", "Erro ao carregar listas.");
+      });
+  }, [usuario, clienteId, token]);
 
   // ------------------------------
   // Lavouras “relevantes” da safra (para o FORM)
   // ------------------------------
-  const lavourasDaSafra = useMemo(() => {
-    if (!safra) return listaLavouras;
+  // const lavourasDaSafra = useMemo(() => {
+  //   if (!safra) return listaLavouras;
 
-    const nomesUsados = new Set(
-      (servicos || [])
-        .filter((s) => s?.safra === safra)
-        .map((s) => s?.lavoura)
-        .filter(Boolean)
-    );
+  //   const nomesUsados = new Set(
+  //     (servicos || [])
+  //       .filter((s) => s?.safra === safra)
+  //       .map((s) => s?.lavoura)
+  //       .filter(Boolean)
+  //   );
 
-    if (nomesUsados.size === 0) return listaLavouras;
+  //   if (nomesUsados.size === 0) return listaLavouras;
 
-    // listaLavouras do seu backend parece ter { nome: "..." }
-    return (listaLavouras || []).filter((lav) => nomesUsados.has(lav?.nome));
-  }, [safra, servicos, listaLavouras]);
+  //   // listaLavouras do seu backend parece ter { nome: "..." }
+  //   return (listaLavouras || []).filter((lav) => nomesUsados.has(lav?.nome));
+  // }, [safra, servicos, listaLavouras]);
+
+  const lavourasDaFazenda = useMemo(() => {
+    if (!fazenda) return listaLavouras;
+    return listaLavouras.filter((l) => String(l.fazenda) === String(fazenda));
+  }, [listaLavouras, fazenda]);
 
   // ------------------------------
   // BASE DO CONTEXTO (cliente + safra + fazenda) — sem “zerar” se campo não existir
@@ -252,17 +300,17 @@ function Realizado({
     return Array.from(set).sort((a, b) => Number(b) - Number(a));
   }, [servicosDoContexto]);
 
-  const opcoesLavoura = useMemo(() => {
-    // preferir lavourasDaSafra (do BD)
-    const nomes = (lavourasDaSafra || []).map((l) => l?.nome).filter(Boolean);
-    if (nomes.length)
-      return [...new Set(nomes)].sort((a, b) => a.localeCompare(b));
+  // const opcoesLavoura = useMemo(() => {
+  //   // preferir lavourasDaSafra (do BD)
+  //   const nomes = (lavourasDaSafra || []).map((l) => l?.nome).filter(Boolean);
+  //   if (nomes.length)
+  //     return [...new Set(nomes)].sort((a, b) => a.localeCompare(b));
 
-    // fallback: tirar dos lançamentos
-    const set = new Set();
-    servicosDoContexto.forEach((s) => s?.lavoura && set.add(s.lavoura));
-    return Array.from(set).sort((a, b) => a.localeCompare(b));
-  }, [lavourasDaSafra, servicosDoContexto]);
+  //   // fallback: tirar dos lançamentos
+  //   const set = new Set();
+  //   servicosDoContexto.forEach((s) => s?.lavoura && set.add(s.lavoura));
+  //   return Array.from(set).sort((a, b) => a.localeCompare(b));
+  // }, [lavourasDaSafra, servicosDoContexto]);
 
   const opcoesServico = useMemo(() => {
     const set = new Set();
@@ -492,7 +540,7 @@ function Realizado({
           setUni={setUni}
           quantidade={quantidade}
           setQuantidade={setQuantidade}
-          listaLavouras={lavourasDaSafra}
+          listaLavouras={lavourasDaFazenda}
           listaProdutos={listaProdutos}
           listaServicos={listaServicos}
           onCancelar={fecharFormulario}
