@@ -42,10 +42,6 @@ function formatarQuantidadeParaInput(valor) {
     .replace(/\./g, "");
 }
 
-/**
- * BUGFIX: data vem como ISO tipo "2025-11-18T03:00:00.000Z"
- * NÃO pode fazer split("-") esperando só YYYY-MM-DD.
- */
 function extrairAnoMes(dataISO) {
   if (!dataISO) return { ano: "", mes: "" };
   const d = new Date(dataISO);
@@ -62,6 +58,10 @@ function Realizado({
 }) {
   const navigate = useNavigate();
   const { token, usuario, workspace } = useAuth();
+
+  const [confirmExcluir, setConfirmExcluir] = useState(false);
+  const [servicoParaExcluir, setServicoParaExcluir] = useState(null);
+
   const clienteId =
     workspace?.clienteId || localStorage.getItem("ctx_cliente_id") || "";
 
@@ -72,7 +72,6 @@ function Realizado({
     }
   }, [clienteId, navigate]);
 
-  // workspace (com fallback do localStorage)
   const fazendaId =
     workspace?.fazendaId || localStorage.getItem("ctx_fazenda_id") || "";
 
@@ -88,14 +87,11 @@ function Realizado({
       localStorage.setItem("ctx_fazenda_id", workspace.fazendaId);
 
     if (workspace?.fazenda)
-      localStorage.setItem("ctx_fazenda", workspace.fazenda); // opcional (nome)
+      localStorage.setItem("ctx_fazenda", workspace.fazenda);
 
     if (workspace?.safra) localStorage.setItem("ctx_safra", workspace.safra);
   }, [workspace]);
 
-  // ------------------------------
-  // PROTEÇÃO
-  // ------------------------------
   useEffect(() => {
     if (!usuario || !token) {
       navigate("/login");
@@ -120,6 +116,11 @@ function Realizado({
   const [editandoId, setEditandoId] = useState(null);
 
   const [confirmDuplicado, setConfirmDuplicado] = useState(false);
+
+  // ✅ CONTROLE DE DUPLICAÇÃO
+  const [modoDuplicar, setModoDuplicar] = useState(false);
+  const [lavouraOriginalDuplicacao, setLavouraOriginalDuplicacao] =
+    useState("");
 
   // ------------------------------
   // LISTAS
@@ -197,10 +198,6 @@ function Realizado({
       }),
     ])
       .then(([l, p, s]) => {
-        // console.log("API lavouras:", l.status, l.data);
-        // console.log("API produtos:", p.status, p.data);
-        // console.log("API servicos-lista:", s.status, s.data);
-
         setListaLavouras(Array.isArray(l.data) ? l.data : []);
         setListaProdutos(Array.isArray(p.data) ? p.data : []);
         setListaServicos(Array.isArray(s.data) ? s.data : []);
@@ -224,7 +221,7 @@ function Realizado({
   }, [listaLavouras, fazendaId]);
 
   // ------------------------------
-  // BASE DO CONTEXTO (cliente + safra + fazenda) — sem “zerar” se campo não existir
+  // BASE DO CONTEXTO (cliente + safra + fazenda)
   // ------------------------------
   const servicosDoContexto = useMemo(() => {
     const lista = Array.isArray(servicos) ? servicos : [];
@@ -243,7 +240,7 @@ function Realizado({
   }, [servicos, safra, clienteId, fazendaId]);
 
   // ------------------------------
-  // OPÇÕES DOS SELECTS (usando dados do contexto)
+  // OPÇÕES DOS SELECTS
   // ------------------------------
   const opcoesMes = useMemo(() => {
     const set = new Set();
@@ -268,18 +265,6 @@ function Realizado({
     return [...new Set(nomes)].sort((a, b) => a.localeCompare(b));
   }, [lavourasDaFazenda]);
 
-  // const opcoesLavoura = useMemo(() => {
-  //   // preferir lavourasDaSafra (do BD)
-  //   const nomes = (lavourasDaSafra || []).map((l) => l?.nome).filter(Boolean);
-  //   if (nomes.length)
-  //     return [...new Set(nomes)].sort((a, b) => a.localeCompare(b));
-
-  //   // fallback: tirar dos lançamentos
-  //   const set = new Set();
-  //   servicosDoContexto.forEach((s) => s?.lavoura && set.add(s.lavoura));
-  //   return Array.from(set).sort((a, b) => a.localeCompare(b));
-  // }, [lavourasDaSafra, servicosDoContexto]);
-
   const opcoesServico = useMemo(() => {
     const set = new Set();
     servicosDoContexto.forEach((s) => s?.servico && set.add(s.servico));
@@ -290,33 +275,24 @@ function Realizado({
   const filtroPreviewServico = mostrarFormulario ? servico : "";
 
   // ------------------------------
-  // FILTRAGEM FINAL (agora com data correta)
-  // ------------------------------
-  // ------------------------------
   // FILTRAGEM + ORDENAÇÃO (data desc)
   // ------------------------------
   const servicosFiltrados = useMemo(() => {
-    // 1) base (use o contexto se quiser; se preferir, pode usar servicos direto)
     const base = Array.isArray(servicosDoContexto) ? servicosDoContexto : [];
 
-    // 2) filtra primeiro (pelos seus filtros reais + preview)
     const filtrado = base.filter((s) => {
-      // filtros do card
       if (filtroLavoura && s?.lavoura !== filtroLavoura) return false;
       if (filtroServico && s?.servico !== filtroServico) return false;
 
-      // preview automático do formulário
       if (filtroPreviewLavoura && s?.lavoura !== filtroPreviewLavoura)
         return false;
       if (filtroPreviewServico && s?.servico !== filtroPreviewServico)
         return false;
 
-      // mês/ano (corrigido para ISO completo)
       const { ano, mes } = extrairAnoMes(s?.data);
       if (filtroMes && mes !== filtroMes) return false;
       if (filtroAno && ano !== filtroAno) return false;
 
-      // texto
       if (filtroTexto) {
         const texto = normalizar(
           `${s?.lavoura} ${s?.servico} ${s?.produto} ${s?.status}`
@@ -327,14 +303,10 @@ function Realizado({
       return true;
     });
 
-    // 3) ordena depois (mais nova -> mais antiga)
     return filtrado.sort((a, b) => {
       const tb = new Date(b?.data || 0).getTime();
       const ta = new Date(a?.data || 0).getTime();
-
       if (tb !== ta) return tb - ta;
-
-      // desempate estável (opcional)
       return (b?.id ?? 0) - (a?.id ?? 0);
     });
   }, [
@@ -366,6 +338,17 @@ function Realizado({
     if (!lavoura || !servico || !data || !status) {
       notificar("erro", "Preencha os campos obrigatórios.");
       return;
+    }
+
+    // ✅ REGRA DA DUPLICAÇÃO: lavoura precisa mudar
+    if (modoDuplicar) {
+      if (normalizar(lavoura) === normalizar(lavouraOriginalDuplicacao)) {
+        notificar(
+          "erro",
+          "Ao copiar um item, você precisa alterar a Lavoura para salvar o novo lançamento."
+        );
+        return;
+      }
     }
 
     if (!usuario || !token) return;
@@ -430,6 +413,9 @@ function Realizado({
   }
 
   function handleEditar(s) {
+    setModoDuplicar(false);
+    setLavouraOriginalDuplicacao("");
+
     setEditandoId(s.id);
     setLavoura(s.lavoura || "");
     setServico(s.servico || "");
@@ -441,23 +427,60 @@ function Realizado({
     setMostrarFormulario(true);
   }
 
-  function handleExcluir(id) {
-    if (!token) return;
+  // ✅ NOVO: DUPLICAR
+  function handleDuplicar(s) {
+    setEditandoId(null); // novo lançamento
+    setModoDuplicar(true);
+    setLavouraOriginalDuplicacao(s.lavoura || "");
+
+    // força o usuário a escolher outra lavoura
+    setLavoura("");
+
+    // mantém o núcleo do serviço
+    setServico(s.servico || "");
+    setData(s.data ? s.data.split("T")[0] : "");
+    setStatus(s.status || "");
+
+    // ✅ ABREM VAZIOS
+    setProduto("");
+    setUni("");
+    setQuantidade("");
+
+    setMostrarFormulario(true);
+  }
+
+  function pedirExcluir(servico) {
+    setServicoParaExcluir(servico);
+    setConfirmExcluir(true);
+  }
+
+  function confirmarExcluir() {
+    if (!token || !servicoParaExcluir?.id) return;
 
     api
-      .delete(`/realizado/${id}`, {
+      .delete(`/realizado/${servicoParaExcluir.id}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then(() => {
-        setServicos((prev) => prev.filter((s) => s.id !== id));
+        setServicos((prev) =>
+          prev.filter((s) => s.id !== servicoParaExcluir.id)
+        );
         notificar("sucesso", "Serviço excluído.");
       })
-      .catch(() => notificar("erro", "Erro ao excluir serviço."));
+      .catch(() => notificar("erro", "Erro ao excluir serviço."))
+      .finally(() => {
+        setConfirmExcluir(false);
+        setServicoParaExcluir(null);
+      });
   }
 
   function fecharFormulario() {
     setMostrarFormulario(false);
     setEditandoId(null);
+
+    setModoDuplicar(false);
+    setLavouraOriginalDuplicacao("");
+
     setLavoura("");
     setServico("");
     setData("");
@@ -495,7 +518,7 @@ function Realizado({
   }
 
   // ------------------------------
-  // RENDER (SEM mexer em CSS)
+  // RENDER
   // ------------------------------
   return (
     <div className="realizado-page">
@@ -503,6 +526,8 @@ function Realizado({
         <RealizadoForm
           onSubmit={handleSubmit}
           editandoId={editandoId}
+          modoDuplicar={modoDuplicar}
+          lavouraOriginalDuplicacao={lavouraOriginalDuplicacao}
           safra={safra}
           lavoura={lavoura}
           setLavoura={setLavoura}
@@ -620,9 +645,49 @@ function Realizado({
       <RealizadoLista
         servicosFiltrados={servicosFiltrados}
         onEditar={handleEditar}
-        onExcluir={handleExcluir}
+        onDuplicar={handleDuplicar}
+        onExcluir={pedirExcluir}
         onExportarExcel={exportarExcel}
         onExportarPDF={exportarPDF}
+      />
+
+      {/* <ConfirmDialog
+        open={confirmExcluir}
+        title="Excluir serviço?"
+        description={
+          servicoParaExcluir
+            ? `Lavoura: ${servicoParaExcluir.lavoura}\nServiço: ${servicoParaExcluir.servico}\n\nEssa ação não pode ser desfeita.`
+            : "Essa ação não pode ser desfeita."
+        }
+        cancelLabel="Cancelar"
+        confirmLabel="Excluir"
+        onCancel={() => {
+          setConfirmExcluir(false);
+          setServicoParaExcluir(null);
+        }}
+        onConfirm={confirmarExcluir}
+        variant="danger"
+      /> */}
+
+      <ConfirmDialog
+        open={confirmExcluir}
+        title="Excluir serviço?"
+        description={
+          servicoParaExcluir
+            ? `Lavoura: ${servicoParaExcluir.lavoura}
+Serviço: ${servicoParaExcluir.servico}
+
+Essa ação não pode ser desfeita.`
+            : "Essa ação não pode ser desfeita."
+        }
+        cancelLabel="Cancelar"
+        confirmLabel="Excluir"
+        onCancel={() => {
+          setConfirmExcluir(false);
+          setServicoParaExcluir(null);
+        }}
+        onConfirm={confirmarExcluir}
+        variant="danger"
       />
 
       <ConfirmDialog
@@ -640,11 +705,9 @@ function Realizado({
         type="button"
         onClick={() => {
           if (mostrarFormulario) {
-            // clicou no X
-            fecharFormulario(); // fecha e limpa os campos do form
-            limparFiltros(); // limpa os filtros do card
+            fecharFormulario();
+            limparFiltros();
           } else {
-            // clicou no +
             setMostrarFormulario(true);
           }
         }}

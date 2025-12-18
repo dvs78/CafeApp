@@ -24,6 +24,17 @@ export function AuthProvider({ children }) {
       ? { fazenda, safra, clienteId, clienteNome }
       : null;
   });
+  function clearWorkspaceStorage() {
+    // remove qualquer chave do contexto (ctx_ e cb_)
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const k = localStorage.key(i);
+      if (!k) continue;
+
+      if (k.startsWith("ctx_") || k.startsWith("cb_")) {
+        localStorage.removeItem(k);
+      }
+    }
+  }
 
   useEffect(() => {
     const tk = localStorage.getItem("token");
@@ -69,10 +80,16 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("usuario");
     localStorage.removeItem("clientes");
 
-    localStorage.removeItem("ctx_fazenda");
-    localStorage.removeItem("ctx_safra");
     localStorage.removeItem("ctx_cliente_id");
     localStorage.removeItem("ctx_cliente_nome");
+
+    localStorage.removeItem("ctx_fazenda");
+    localStorage.removeItem("ctx_safra");
+
+    // se você guarda ids também:
+    localStorage.removeItem("ctx_cliente_id");
+    localStorage.removeItem("ctx_fazenda_id");
+    clearWorkspaceStorage(); // <- mata o ctx_fazenda_id (e qualquer outro ctx_* “fantasma”)
   }
 
   const value = useMemo(

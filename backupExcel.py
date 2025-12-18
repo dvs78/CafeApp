@@ -1,199 +1,3 @@
-# # gerar_backup_lancamentos.py
-# import os
-# import datetime as dt
-# from pathlib import Path
-# from urllib.parse import quote_plus
-
-# import pandas as pd
-# from sqlalchemy import create_engine, text
-
-# # ==== CONFIGURAÇÕES ==========================================================
-# USER = os.getenv("DB_USER", "cafeappdb_8cz2_user")
-# PASSWORD = os.getenv("DB_PASSWORD", "OZUlAW7ag7mdgTwerY0N1UqbDGFyqkVL")
-# HOST = os.getenv(
-#     "DB_HOST",
-#     "dpg-d4njnpfpm1nc73e92tmg-a.oregon-postgres.render.com"
-# )
-# PORT = int(os.getenv("DB_PORT", "5432"))
-# DBNAME = os.getenv("DB_NAME", "cafeappdb_8cz2")
-
-# # Pasta do executável (arquivo fixo REALIZADO.xlsx)
-# EXECUTAVEL_DIR = Path(
-#     os.getenv(
-#         "EXECUTAVEL_DIR",
-#         r"G:\Meu Drive\Python\Fazendas\Executavel\Agrocoffee"
-#     )
-# )
-# EXECUTAVEL_DIR.mkdir(parents=True, exist_ok=True)
-
-# SQLA_URL = (
-#     f"postgresql+psycopg2://{USER}:{quote_plus(PASSWORD)}"
-#     f"@{HOST}:{PORT}/{DBNAME}"
-# )
-
-# # Nome do cliente = nome da pasta onde está este arquivo .py
-# CLIENTE_NOME = Path(__file__).resolve().parent.name
-
-# # ============================================================================
-
-# def transformar_dataframe(df: pd.DataFrame) -> pd.DataFrame:
-#     """
-#     Transforma a tabela 'realizado' conforme solicitado:
-#     - renomeia colunas (safra→safras, lavoura→lavouras, etc.)
-#     - cria colunas ano, mes, dia
-#     - define 'clientes' = 'Agrocoffee'
-#     - exclui colunas indesejadas
-#     - formata data como dd/mm/YYYY
-#     - coloca todas as colunas em MAIÚSCULO, exceto 'Qtde TOTAL' e 'Ok'
-#     - padroniza valores da coluna Ok (realizado→Ok, cancelado→Cancelado)
-#     - reordena as colunas na sequência pedida
-#     """
-
-#     # 1) Converter a coluna data para datetime e criar ano/mes/dia
-#     if "data" in df.columns:
-#         df["data"] = pd.to_datetime(df["data"], errors="coerce")
-#         df["ano"] = df["data"].dt.year
-#         df["mes"] = df["data"].dt.month
-#         df["dia"] = df["data"].dt.day
-
-#     # 2) Coluna clientes = Agrocoffee
-#     df["clientes"] = "Agrocoffee"
-
-#     # 3) Renomear colunas
-#     rename_map = {
-#         "safra": "safras",
-#         "lavoura": "lavouras",
-#         "servico": "serviços",
-#         "produto": "produtos",
-#         "unidade": "uni",
-#         "quantidade": "Qtde TOTAL",
-#         "status": "Ok",   # renomeia coluna status para Ok
-#     }
-#     df = df.rename(columns=rename_map)
-
-#     # 4) Padronizar valores da coluna Ok
-#     if "Ok" in df.columns:
-#         df["Ok"] = (
-#             df["Ok"]
-#             .astype(str)
-#             .str.lower()
-#             .map({
-#                 "realizado": "Ok",
-#                 "cancelado": "Cancelado",
-#             })
-#             .fillna(df["Ok"])
-#         )
-
-#     # 5) Remover colunas desnecessárias
-#     cols_drop = ["id", "usuario_id", "cliente_id", "criado_em"]
-#     df = df.drop(columns=[c for c in cols_drop if c in df.columns], errors="ignore")
-
-#     # 6) Formatar a coluna data para dd/mm/YYYY
-#     if "data" in df.columns:
-#         df["data"] = df["data"].dt.strftime("%d/%m/%Y")
-
-#     # 7) Colocar colunas em MAIÚSCULO, exceto Ok e Qtde TOTAL
-#     excecoes = {"Ok", "Qtde TOTAL"}
-#     novas_colunas = []
-#     for col in df.columns:
-#         if col in excecoes:
-#             novas_colunas.append(col)
-#         else:
-#             novas_colunas.append(col.upper())
-#     df.columns = novas_colunas
-
-#     # 7.1) Renomear MES → MÊS (depois de deixar maiúsculo)
-#     if "MES" in df.columns:
-#         df = df.rename(columns={"MES": "MÊS"})
-
-#     # 8) Reordenar colunas na sequência pedida
-#     ordem_preferida = [
-#         "SAFRAS",
-#         "DATA",
-#         "LAVOURAS",
-#         "SERVIÇOS",
-#         "PRODUTOS",
-#         "UNI",
-#         "Qtde TOTAL",
-#         "Ok",
-#         "CLIENTES",
-#         "ANO",
-#         "MÊS",
-#         "DIA",
-#     ]
-
-#     cols_exist = [c for c in ordem_preferida if c in df.columns]
-#     restantes = [c for c in df.columns if c not in cols_exist]
-
-#     df = df[cols_exist + restantes]
-
-#     return df
-
-
-# def gerar_backup_lancamentos():
-#     """
-#     Cria/atualiza REALIZADO.xlsx em EXECUTAVEL_DIR
-#     contendo APENAS a tabela 'realizado' como aba 'Lançamentos',
-#     com todas as transformações pedidas.
-#     """
-#     xlsx_exec = EXECUTAVEL_DIR / "REALIZADO.xlsx"
-#     agora = dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-#     print(f"🔄 Gerando REALIZADO.xlsx em: {xlsx_exec}")
-#     print(f"   Data/hora de geração: {agora}")
-#     print(f"   Cliente (nome da pasta): {CLIENTE_NOME}")
-
-#     engine = create_engine(
-#         SQLA_URL,
-#         connect_args={"sslmode": "require"},
-#         pool_pre_ping=True,
-#     )
-
-#     with engine.connect() as conn:
-#         # Garante que a tabela existe
-#         tem_realizado = conn.execute(
-#             text(
-#                 """
-#                 SELECT EXISTS (
-#                     SELECT 1
-#                     FROM information_schema.tables
-#                     WHERE table_schema = 'public'
-#                       AND table_name = 'realizado'
-#                 )
-#                 """
-#             )
-#         ).scalar()
-
-#         if not tem_realizado:
-#             raise RuntimeError("Tabela 'realizado' não encontrada no schema 'public'.")
-
-#         # Carrega somente a tabela realizado
-#         df = pd.read_sql(text('SELECT * FROM "realizado"'), conn)
-#         print(f"   • realizado (original) → {len(df)} linha(s)")
-
-#     # Aplica as transformações
-#     df = transformar_dataframe(df)
-#     print(f"   • Lançamentos (transformado) → {len(df)} linha(s)")
-
-#     # Cria o Excel com UMA única aba: Lançamentos
-#     with pd.ExcelWriter(xlsx_exec) as writer:
-#         df.to_excel(writer, sheet_name="Lançamentos", index=False)
-
-#     print("✅ Arquivo REALIZADO.xlsx criado/atualizado com sucesso.")
-
-
-# def main():
-#     try:
-#         gerar_backup_lancamentos()
-#     except Exception as e:
-#         print("❌ Erro ao gerar REALIZADO:", e)
-
-
-# if __name__ == "__main__":
-#     main()
-
-
-# gerar_backup_lancamentos.py
 import os
 import datetime as dt
 from pathlib import Path
@@ -202,129 +6,181 @@ from urllib.parse import quote_plus
 import pandas as pd
 from sqlalchemy import create_engine, text
 
-# ==== CONFIGURAÇÕES ==========================================================
+
+# =============================================================================
+# CONFIGURAÇÕES DO BANCO
+# =============================================================================
 USER = os.getenv("DB_USER", "cafeappdb_8cz2_user")
 PASSWORD = os.getenv("DB_PASSWORD", "OZUlAW7ag7mdgTwerY0N1UqbDGFyqkVL")
-HOST = os.getenv(
-    "DB_HOST",
-    "dpg-d4njnpfpm1nc73e92tmg-a.oregon-postgres.render.com"
-)
+HOST = os.getenv("DB_HOST", "dpg-d4njnpfpm1nc73e92tmg-a.oregon-postgres.render.com")
 PORT = int(os.getenv("DB_PORT", "5432"))
 DBNAME = os.getenv("DB_NAME", "cafeappdb_8cz2")
-
-EXECUTAVEL_DIR = Path(
-    os.getenv(
-        "EXECUTAVEL_DIR",
-        r"G:\Meu Drive\Python\Fazendas\Executavel\Agrocoffee"
-    )
-)
-EXECUTAVEL_DIR.mkdir(parents=True, exist_ok=True)
 
 SQLA_URL = (
     f"postgresql+psycopg2://{USER}:{quote_plus(PASSWORD)}"
     f"@{HOST}:{PORT}/{DBNAME}"
 )
 
-CLIENTE_NOME = Path(__file__).resolve().parent.name
+# =============================================================================
+# PASTA RAIZ
+# =============================================================================
+EXECUTAVEL_ROOT = Path(
+    os.getenv("EXECUTAVEL_ROOT", r"G:\Meu Drive\Python\Fazendas\Executavel")
+)
+EXECUTAVEL_ROOT.mkdir(parents=True, exist_ok=True)
 
-# ============================================================================
+# =============================================================================
+# CLIENTES + FAZENDAS (IDs EXPLÍCITOS)
+# =============================================================================
+CLIENTES = {
+    "Agrocoffee": {
+        "cliente_db": "Agrocoffee",
+        "cliente_id": "096da0b8-b4cf-4dd4-96df-782c9febb2f1",
+        "fazenda_id": "eddf70d8-215f-4065-8fed-9d392ccec032",
+    },
+    "Sergio_Lucas": {
+        "cliente_db": "Sérgio e Lucas",
+        "cliente_id": "4d61d53d-6e7a-4c54-8dff-d188b9cfbefa",
+        "fazenda_id": "bfe74515-08af-4231-8bdd-d8162d585605",
+    },
+    "Sergio_Lucas_F": {
+        "cliente_db": "Sérgio e Lucas",
+        "cliente_id": "4d61d53d-6e7a-4c54-8dff-d188b9cfbefa",
+        "fazenda_id": "7c4d073c-1b44-4c7e-8324-22bea9b852af",
+    },
+}
 
-def transformar_dataframe(df: pd.DataFrame) -> pd.DataFrame:
-    if "data" in df.columns:
-        df["data"] = pd.to_datetime(df["data"], errors="coerce")
-        df["ano"] = df["data"].dt.year
-        df["mes"] = df["data"].dt.month
-        df["dia"] = df["data"].dt.day
 
-    df["clientes"] = "Agrocoffee"
+# =============================================================================
+# DIAGNÓSTICO: INFO DO BANCO
+# =============================================================================
+def mostrar_info_banco(conn):
+    info = conn.execute(
+        text("""
+            SELECT
+                current_database() AS db,
+                inet_server_addr() AS server_ip,
+                inet_server_port() AS server_port,
+                current_user AS user,
+                version() AS version
+        """)
+    ).mappings().first()
 
-    rename_map = {
-        "safra": "safras",
-        "lavoura": "lavouras",
-        "servico": "serviços",
-        "produto": "produtos",
-        "unidade": "uni",
+    print("\n================ INFO DO BANCO (onde o script está conectado) ================")
+    print(f"DB.............: {info['db']}")
+    print(f"Server IP......: {info['server_ip']}")
+    print(f"Server Port....: {info['server_port']}")
+    print(f"User...........: {info['user']}")
+    print(f"Version........: {str(info['version'])[:120]}...")
+    print("==============================================================================")
+
+
+# =============================================================================
+# DIAGNÓSTICO: RESUMO POR CLIENTE+FAZENDA
+# =============================================================================
+def mostrar_resumo_realizado(df_realizado: pd.DataFrame):
+    print("\n================ RESUMO REALIZADO (cliente_id x fazenda_id) ==================")
+    if df_realizado.empty:
+        print("Tabela realizado veio vazia.")
+        print("==============================================================================")
+        return
+
+    resumo = (
+        df_realizado
+        .assign(
+            cliente_id=df_realizado["cliente_id"].astype(str),
+            fazenda_id=df_realizado["fazenda_id"].astype(str),
+        )
+        .groupby(["cliente_id", "fazenda_id"], dropna=False)
+        .size()
+        .reset_index(name="qtd")
+        .sort_values("qtd", ascending=False)
+    )
+
+    print(resumo.to_string(index=False))
+    print("==============================================================================")
+
+
+# =============================================================================
+# TRANSFORMAÇÃO DO DATAFRAME (PADRONIZA EXCEL)
+# =============================================================================
+def transformar_dataframe(df: pd.DataFrame, cliente_nome: str) -> pd.DataFrame:
+    if df.empty:
+        # mantém cabeçalho padrão mesmo quando não tem linhas
+        return pd.DataFrame(columns=[
+            "SAFRAS", "DATA", "LAVOURAS", "SERVIÇOS", "PRODUTOS", "UNI",
+            "Qtde TOTAL", "Ok", "CLIENTES", "ANO", "MÊS", "DIA"
+        ])
+
+    df["data"] = pd.to_datetime(df["data"], errors="coerce")
+    df["ANO"] = df["data"].dt.year
+    df["MÊS"] = df["data"].dt.month
+    df["DIA"] = df["data"].dt.day
+    df["DATA"] = df["data"].dt.strftime("%d/%m/%Y")
+
+    df["CLIENTES"] = cliente_nome
+
+    df = df.rename(columns={
+        "safra": "SAFRAS",
+        "lavoura": "LAVOURAS",
+        "servico": "SERVIÇOS",
+        "produto": "PRODUTOS",
+        "unidade": "UNI",
         "quantidade": "Qtde TOTAL",
         "status": "Ok",
-    }
-    df = df.rename(columns=rename_map)
+    })
 
     if "Ok" in df.columns:
         df["Ok"] = (
             df["Ok"]
             .astype(str)
             .str.lower()
-            .map({
-                "realizado": "Ok",
-                "cancelado": "Cancelado",
-            })
+            .map({"realizado": "Ok", "cancelado": "Cancelado"})
             .fillna(df["Ok"])
         )
 
-    cols_drop = ["id", "usuario_id", "cliente_id", "criado_em"]
-    df = df.drop(columns=[c for c in cols_drop if c in df.columns], errors="ignore")
+    # remove colunas técnicas
+    df = df.drop(
+        columns=[c for c in ["id", "usuario_id", "cliente_id", "fazenda_id", "criado_em", "data"] if c in df.columns],
+        errors="ignore",
+    )
 
-    if "data" in df.columns:
-        df["data"] = df["data"].dt.strftime("%d/%m/%Y")
-
-    excecoes = {"Ok", "Qtde TOTAL"}
-    df.columns = [
-        col if col in excecoes else col.upper()
-        for col in df.columns
+    ordem = [
+        "SAFRAS", "DATA", "LAVOURAS", "SERVIÇOS", "PRODUTOS", "UNI",
+        "Qtde TOTAL", "Ok", "CLIENTES", "ANO", "MÊS", "DIA"
     ]
-
-    if "MES" in df.columns:
-        df = df.rename(columns={"MES": "MÊS"})
-
-    ordem_preferida = [
-        "SAFRAS",
-        "DATA",
-        "LAVOURAS",
-        "SERVIÇOS",
-        "PRODUTOS",
-        "UNI",
-        "Qtde TOTAL",
-        "Ok",
-        "CLIENTES",
-        "ANO",
-        "MÊS",
-        "DIA",
-    ]
-
-    cols_exist = [c for c in ordem_preferida if c in df.columns]
-    restantes = [c for c in df.columns if c not in cols_exist]
-
-    return df[cols_exist + restantes]
+    cols = [c for c in ordem if c in df.columns]
+    return df[cols]
 
 
+# =============================================================================
+# EXPORTAÇÃO EXCEL COM TABELA
+# =============================================================================
 def exportar_excel_com_tabela(df: pd.DataFrame, caminho_xlsx: Path):
     with pd.ExcelWriter(caminho_xlsx, engine="xlsxwriter") as writer:
         df.to_excel(writer, sheet_name="Lançamentos", index=False)
-
-        worksheet = writer.sheets["Lançamentos"]
+        ws = writer.sheets["Lançamentos"]
 
         linhas, colunas = df.shape
+        if colunas == 0:
+            return
 
-        # cria TABELA real do Excel (sem formatação de célula)
-        worksheet.add_table(
+        ws.add_table(
             0, 0,
-            max(linhas, 1), colunas - 1,
+            max(linhas, 1),
+            colunas - 1,
             {
                 "name": "TB_LANCAMENTOS",
-                "columns": [{"header": col} for col in df.columns],
+                "columns": [{"header": c} for c in df.columns],
                 "style": "Table Style Medium 2",
-            }
+            },
         )
 
 
-def gerar_backup_lancamentos():
-    xlsx_exec = EXECUTAVEL_DIR / "REALIZADO.xlsx"
-    agora = dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    print(f"🔄 Gerando REALIZADO.xlsx em: {xlsx_exec}")
-    print(f"   Data/hora: {agora}")
-    print(f"   Cliente: {CLIENTE_NOME}")
-
+# =============================================================================
+# MAIN
+# =============================================================================
+def main():
     engine = create_engine(
         SQLA_URL,
         connect_args={"sslmode": "require"},
@@ -332,34 +188,49 @@ def gerar_backup_lancamentos():
     )
 
     with engine.connect() as conn:
-        existe = conn.execute(
-            text("""
-                SELECT EXISTS (
-                    SELECT 1
-                    FROM information_schema.tables
-                    WHERE table_schema = 'public'
-                      AND table_name = 'realizado'
-                )
-            """)
-        ).scalar()
+        # 1) Mostra de qual banco está vindo
+        mostrar_info_banco(conn)
 
-        if not existe:
-            raise RuntimeError("Tabela 'realizado' não encontrada.")
+        # 2) Baixa a tabela toda UMA vez
+        print("\n================ BAIXANDO TABELA REALIZADO =================")
+        df_realizado = pd.read_sql(text("SELECT * FROM realizado"), conn)
+        print(f"Total de registros baixados: {len(df_realizado)}")
 
-        df = pd.read_sql(text('SELECT * FROM "realizado"'), conn)
+        print("\nAmostra da tabela REALIZADO (5 primeiras linhas):")
+        print(df_realizado.head(5))
+        print("============================================================")
 
-    df = transformar_dataframe(df)
+        # 3) Mostra resumo por cliente/fazenda (diagnóstico definitivo)
+        mostrar_resumo_realizado(df_realizado)
 
-    exportar_excel_com_tabela(df, xlsx_exec)
+        # 4) Loop por cliente + fazenda: filtra e salva REALIZADO.xlsx
+        for pasta, meta in CLIENTES.items():
+            cliente_dir = EXECUTAVEL_ROOT / pasta
+            cliente_dir.mkdir(parents=True, exist_ok=True)
 
-    print("✅ REALIZADO.xlsx gerado com TABELA do Excel.")
+            saida = cliente_dir / "REALIZADO.xlsx"
 
+            cid = str(meta["cliente_id"])
+            fid = str(meta["fazenda_id"])
 
-def main():
-    try:
-        gerar_backup_lancamentos()
-    except Exception as e:
-        print("❌ Erro:", e)
+            print(f"\n---------------- PROCESSANDO {pasta} ----------------")
+            print(f"cliente_id : {cid}")
+            print(f"fazenda_id : {fid}")
+
+            df_filtrado = df_realizado[
+                (df_realizado["cliente_id"].astype(str) == cid) &
+                (df_realizado["fazenda_id"].astype(str) == fid)
+            ].copy()
+
+            print(f"Registros encontrados: {len(df_filtrado)}")
+            print("Amostra filtrada (3 linhas):")
+            print(df_filtrado.head(3))
+
+            df_final = transformar_dataframe(df_filtrado, meta["cliente_db"])
+            exportar_excel_com_tabela(df_final, saida)
+
+            print(f"Arquivo salvo em: {saida}")
+            print("------------------------------------------------------")
 
 
 if __name__ == "__main__":

@@ -36,6 +36,28 @@ function PosLogin() {
     () => localStorage.getItem("ctx_safra") || ""
   );
 
+  function limparCampos() {
+    // limpa storage do contexto
+    localStorage.removeItem("ctx_cliente_id");
+    localStorage.removeItem("ctx_cliente_nome");
+    localStorage.removeItem("ctx_fazenda");
+    localStorage.removeItem("ctx_fazenda_id");
+    localStorage.removeItem("ctx_safra");
+
+    // limpa estados
+    setClienteId("");
+    setClienteNome("");
+    setFazendaId("");
+    setFazendas([]);
+    setFazenda("");
+    setSafra("");
+
+    // zera também no contexto global (evita RequireWorkspace redirecionar errado)
+    setWorkspace(null);
+
+    toast.info("Seleções limpas.");
+  }
+
   const podeContinuar = useMemo(
     () => !!clienteId && !!fazendaId && !!fazenda && !!safra,
     [clienteId, fazendaId, fazenda, safra]
@@ -124,11 +146,11 @@ function PosLogin() {
     navigate("/home", { replace: true });
   }
 
-  useEffect(() => {
-    if (!fazenda) return;
-    localStorage.setItem("ctx_fazenda", fazenda);
-    if (fazendaId) localStorage.setItem("ctx_fazenda_id", fazendaId);
-  }, [fazenda, fazendaId]);
+  // useEffect(() => {
+  //   if (!fazenda) return;
+  //   localStorage.setItem("ctx_fazenda", fazenda);
+  //   if (fazendaId) localStorage.setItem("ctx_fazenda_id", fazendaId);
+  // }, [fazenda, fazendaId]);
 
   return (
     <div className="poslogin-wrapper">
@@ -245,6 +267,9 @@ function PosLogin() {
           disabled={!podeContinuar}
         >
           Continuar
+        </button>
+        <button className="btn-limpar" onClick={limparCampos} type="button">
+          Limpar campos
         </button>
       </div>
     </div>

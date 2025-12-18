@@ -1,15 +1,12 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faPen,
+  faCopy,
   faTrash,
   faFileExcel,
   faFilePdf,
 } from "@fortawesome/free-solid-svg-icons";
 import { memo } from "react";
-
-// -----------------------------------------------------------------------------
-// HELPERS
-// -----------------------------------------------------------------------------
 
 function formatarData(iso) {
   if (!iso) return "";
@@ -17,7 +14,6 @@ function formatarData(iso) {
   return data.toLocaleDateString("pt-BR");
 }
 
-// Não altera o valor, só o "jeito" de mostrar
 function formatarNumero(valorRaw) {
   if (valorRaw === null || valorRaw === undefined || valorRaw === "") {
     return "0,00";
@@ -32,10 +28,7 @@ function formatarNumero(valorRaw) {
 
   const texto = String(valorRaw).trim();
 
-  // Se já está no padrão BR com vírgula
-  if (texto.includes(",")) {
-    return texto;
-  }
+  if (texto.includes(",")) return texto;
 
   const numero = Number(texto.replace(",", "."));
   if (!Number.isNaN(numero)) {
@@ -48,17 +41,14 @@ function formatarNumero(valorRaw) {
   return texto;
 }
 
-// -----------------------------------------------------------------------------
-// ITEM DA LISTA (memoizado)
-// -----------------------------------------------------------------------------
 const ServicoItem = memo(function ServicoItem({
   servico,
   onEditar,
+  onDuplicar,
   onExcluir,
 }) {
   const {
     id,
-    safra,
     data,
     lavoura,
     servico: nomeServico,
@@ -77,16 +67,13 @@ const ServicoItem = memo(function ServicoItem({
   return (
     <li key={id} className="servico-item compacto">
       <div className="servico-linhas">
-        {/* Linha 1 */}
         <div className="linha-1">
           <span>Lavoura: {lavoura}</span>
           <span>Serviço: {nomeServico}</span>
-
           <span>Data: {dataFormatada}</span>
           <span className={`status-badge ${status}`}>{status}</span>
         </div>
 
-        {/* Linha 2 */}
         <div className="linha-2">
           <span>Produto: {produto || "-"}</span>
           <span>Quantidade: {quantidadeFormatada}</span>
@@ -98,14 +85,26 @@ const ServicoItem = memo(function ServicoItem({
           className="btn-editar"
           type="button"
           onClick={() => onEditar(servico)}
+          title="Editar"
         >
           <FontAwesomeIcon icon={faPen} />
         </button>
 
         <button
+          className="btn-copiar"
+          type="button"
+          onClick={() => onDuplicar(servico)}
+          title="Copiar"
+        >
+          <FontAwesomeIcon icon={faCopy} />
+        </button>
+
+        <button
           className="btn-excluir"
           type="button"
-          onClick={() => onExcluir(id)}
+          onClick={() => onExcluir(servico)}
+          // onClick={() => onExcluir(id)}
+          title="Excluir"
         >
           <FontAwesomeIcon icon={faTrash} />
         </button>
@@ -114,12 +113,10 @@ const ServicoItem = memo(function ServicoItem({
   );
 });
 
-// -----------------------------------------------------------------------------
-// LISTA PRINCIPAL
-// -----------------------------------------------------------------------------
 function RealizadoLista({
   servicosFiltrados,
   onEditar,
+  onDuplicar,
   onExcluir,
   onExportarExcel,
   onExportarPDF,
@@ -137,6 +134,7 @@ function RealizadoLista({
               key={s.id}
               servico={s}
               onEditar={onEditar}
+              onDuplicar={onDuplicar}
               onExcluir={onExcluir}
             />
           ))}

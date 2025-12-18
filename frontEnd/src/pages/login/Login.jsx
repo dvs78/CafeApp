@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
 import { useNavigate } from "react-router-dom";
 // import axios from "axios";
 import api from "../../services/api";
@@ -36,6 +37,25 @@ function Login() {
       toast.error("Usuário ou senha inválidos");
     }
   }
+
+  // Login.jsx
+
+  // useEffect(() => {
+  //   console.log("[Login] antes:", Object.keys(localStorage));
+
+  //   for (let i = localStorage.length - 1; i >= 0; i--) {
+  //     const k = localStorage.key(i);
+  //     if (k?.startsWith("ctx_") || k?.startsWith("cb_")) {
+  //       localStorage.removeItem(k);
+  //     }
+  //   }
+
+  //   console.log("[Login] depois:", Object.keys(localStorage));
+  //   console.log(
+  //     "[Login] ctx_fazenda_id =",
+  //     localStorage.getItem("ctx_fazenda_id")
+  //   );
+  // }, []);
 
   return (
     <div className="login-page">

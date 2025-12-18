@@ -522,6 +522,29 @@ REALIZAO/* =========================================================
   filter: brightness(0.98);
 }
 
+.btn-copiar {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: transform 0.12s ease, box-shadow 0.15s ease, filter 0.15s ease;
+
+  background: #16a34a; /* verde */
+  color: #fff;
+}
+
+.btn-copiar:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.18);
+  filter: brightness(0.98);
+}
+
 /* =========================================================
    EXPORTAÇÃO
    ========================================================= */

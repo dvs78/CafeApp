@@ -314,4 +314,25 @@ router.put("/:id", async (req, res) => {
   }
 });
 
+// DELETE /realizado/:id
+router.delete("/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const { rowCount } = await pool.query(
+      `DELETE FROM realizado WHERE id = $1`,
+      [id]
+    );
+
+    if (!rowCount) {
+      return res.status(404).json({ erro: "Registro não encontrado" });
+    }
+
+    res.json({ ok: true, id });
+  } catch (err) {
+    console.error("Erro ao excluir realizado:", err);
+    res.status(500).json({ erro: "Erro ao excluir realizado" });
+  }
+});
+
 export default router;

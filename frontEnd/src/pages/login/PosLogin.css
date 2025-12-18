@@ -369,3 +369,32 @@ button {
     min-width: 95px;
   }
 }
+
+.btn-limpar {
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px 14px;
+  font-family: "Montserrat", sans-serif;
+  border-radius: 12px;
+  background: none;
+  border: none;
+  color: black;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  border: 2px solid transparent;
+
+  transition: transform 0.12s ease, box-shadow 0.15s ease, background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.btn-limpar:hover {
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
+  color: white;
+  transform: translateY(-1px);
+  background-color: rgba(128, 128, 128, 0.5);
+}
+
+.btn-limpar:active {
+  transform: scale(0.99);
+}
