@@ -43,11 +43,6 @@ CLIENTES = {
         "cliente_id": "4d61d53d-6e7a-4c54-8dff-d188b9cfbefa",
         "fazenda_id": "bfe74515-08af-4231-8bdd-d8162d585605",
     },
-    "Sergio_Lucas_F": {
-        "cliente_db": "Sérgio e Lucas",
-        "cliente_id": "4d61d53d-6e7a-4c54-8dff-d188b9cfbefa",
-        "fazenda_id": "7c4d073c-1b44-4c7e-8324-22bea9b852af",
-    },
 }
 
 
