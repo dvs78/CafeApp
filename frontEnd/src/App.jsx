@@ -9,12 +9,15 @@ import {
 
 import { toast } from "react-toastify";
 import { useAuth } from "./context/AuthContext";
-import Header from "./components/Header";
-import Home from "./pages/home/Home";
-import Realizado from "./pages/realizado/Realizado";
 import Settings from "./pages/settings/Settings";
 import Login from "./pages/login/Login";
 import PosLogin from "./pages/login/PosLogin";
+import Header from "./components/Header";
+import Home from "./pages/home/Home";
+import Realizado from "./pages/realizado/Realizado";
+import Chuva from "./pages/chuva/Chuva";
+import Temperatura from "./pages/temperatura/Temperatura";
+import Irrigacao from "./pages/irrigacao/Irrigacao";
 import Toast from "./components/Toast";
 
 // axios.defaults.baseURL = import.meta.env.DEV
@@ -34,11 +37,14 @@ function RequireWorkspace({ children }) {
 
   const clienteId =
     workspace?.clienteId || localStorage.getItem("ctx_cliente_id") || "";
-  const fazenda =
-    workspace?.fazenda || localStorage.getItem("ctx_fazenda") || "";
-  const safra = workspace?.safra || localStorage.getItem("ctx_safra") || "";
 
-  const ok = Boolean(clienteId && fazenda && safra);
+  const fazendaId =
+    workspace?.fazendaId || localStorage.getItem("ctx_fazenda_id") || "";
+
+  const safraId =
+    workspace?.safraId || localStorage.getItem("ctx_safra_id") || "";
+
+  const ok = Boolean(clienteId && fazendaId && safraId);
 
   useEffect(() => {
     if (!ok && !toast.isActive(TOAST_WORKSPACE)) {
@@ -57,11 +63,13 @@ function RedirectIfWorkspace({ children }) {
 
   const clienteId =
     workspace?.clienteId || localStorage.getItem("ctx_cliente_id") || "";
-  const fazenda =
-    workspace?.fazenda || localStorage.getItem("ctx_fazenda") || "";
-  const safra = workspace?.safra || localStorage.getItem("ctx_safra") || "";
+  const fazendaId =
+    workspace?.fazendaId || localStorage.getItem("ctx_fazenda_id") || "";
+  const safraId =
+    workspace?.safraId || localStorage.getItem("ctx_safra_id") || "";
 
-  if (clienteId && fazenda && safra) return <Navigate to="/home" replace />;
+  if (clienteId && fazendaId && safraId) return <Navigate to="/home" replace />;
+
   return children;
 }
 
@@ -82,10 +90,8 @@ function AppInner() {
 
       {usuario && !telaAuth && (
         <Header
-          usuario={usuario} // ✅ ADICIONE ISTO
           mostrarFiltros={mostrarFiltros}
           onToggleFiltros={() => setMostrarFiltros((prev) => !prev)}
-          onLogout={logout}
           ocultarBotaoFiltros={ocultarBotaoFiltros}
           tituloCustom={tituloCustom}
         />
@@ -141,6 +147,43 @@ function AppInner() {
               <RequireAuth>
                 <RequireWorkspace>
                   <Settings />
+                </RequireWorkspace>
+              </RequireAuth>
+            }
+          />
+
+          <Route
+            path="/chuva"
+            element={
+              <RequireAuth>
+                <RequireWorkspace>
+                  <Chuva
+                    mostrarFiltros={mostrarFiltros}
+                    setOcultarBotaoFiltros={setOcultarBotaoFiltros}
+                    setTituloCustom={setTituloCustom}
+                  />
+                </RequireWorkspace>
+              </RequireAuth>
+            }
+          />
+
+          <Route
+            path="/temperatura"
+            element={
+              <RequireAuth>
+                <RequireWorkspace>
+                  <Temperatura />
+                </RequireWorkspace>
+              </RequireAuth>
+            }
+          />
+
+          <Route
+            path="/irrigacao"
+            element={
+              <RequireAuth>
+                <RequireWorkspace>
+                  <Irrigacao />
                 </RequireWorkspace>
               </RequireAuth>
             }

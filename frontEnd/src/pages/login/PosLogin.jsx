@@ -10,10 +10,10 @@ import { faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 const TOAST_ERRO_CARREGAR = "toast-erro-carregar-poslogin";
 
 function PosLogin() {
-  const { usuario, logout, setWorkspace } = useAuth();
-  const navigate = useNavigate();
+  const { usuario, clientes, logout, setWorkspace } = useAuth();
+  const clientesPermitidos = clientes || [];
 
-  const clientesPermitidos = usuario?.clientes || [];
+  const navigate = useNavigate();
 
   const [clienteId, setClienteId] = useState(
     () => localStorage.getItem("ctx_cliente_id") || ""
@@ -31,6 +31,10 @@ function PosLogin() {
     () => localStorage.getItem("ctx_fazenda") || ""
   );
 
+  const [safraId, setSafraId] = useState(
+    () => localStorage.getItem("ctx_safra_id") || ""
+  );
+
   const [safras, setSafras] = useState([]);
   const [safra, setSafra] = useState(
     () => localStorage.getItem("ctx_safra") || ""
@@ -43,6 +47,7 @@ function PosLogin() {
     localStorage.removeItem("ctx_fazenda");
     localStorage.removeItem("ctx_fazenda_id");
     localStorage.removeItem("ctx_safra");
+    localStorage.removeItem("ctx_safra_id");
 
     // limpa estados
     setClienteId("");
@@ -50,7 +55,9 @@ function PosLogin() {
     setFazendaId("");
     setFazendas([]);
     setFazenda("");
+
     setSafra("");
+    setSafraId("");
 
     // zera também no contexto global (evita RequireWorkspace redirecionar errado)
     setWorkspace(null);
@@ -59,8 +66,8 @@ function PosLogin() {
   }
 
   const podeContinuar = useMemo(
-    () => !!clienteId && !!fazendaId && !!fazenda && !!safra,
-    [clienteId, fazendaId, fazenda, safra]
+    () => !!clienteId && !!fazendaId && !!fazenda && !!safraId,
+    [clienteId, fazendaId, fazenda, safraId]
   );
 
   // 1) carrega safras + auto-seleciona cliente se só tiver 1
@@ -140,8 +147,16 @@ function PosLogin() {
     localStorage.setItem("ctx_fazenda", fazenda);
     localStorage.setItem("ctx_fazenda_id", fazendaId);
     localStorage.setItem("ctx_safra", safra);
+    localStorage.setItem("ctx_safra_id", safraId);
 
-    setWorkspace({ clienteId, clienteNome, fazenda, fazendaId, safra });
+    setWorkspace({
+      clienteId,
+      clienteNome,
+      fazenda,
+      fazendaId,
+      safra,
+      safraId,
+    });
 
     navigate("/home", { replace: true });
   }
@@ -190,6 +205,8 @@ function PosLogin() {
                   localStorage.removeItem("ctx_fazenda");
                   localStorage.removeItem("ctx_fazenda_id");
                   localStorage.removeItem("ctx_safra");
+                  localStorage.removeItem("ctx_safra_id");
+                  setSafraId("");
 
                   setClienteId(id);
                   setClienteNome(String(c.cliente || ""));
@@ -226,6 +243,8 @@ function PosLogin() {
                   localStorage.removeItem("ctx_fazenda");
                   localStorage.removeItem("ctx_fazenda_id");
                   localStorage.removeItem("ctx_safra");
+                  localStorage.removeItem("ctx_safra_id");
+                  setSafraId("");
 
                   setFazenda(f.fazenda); // nome (para UI)
                   setFazendaId(String(f.id)); // id (para API)
@@ -252,7 +271,10 @@ function PosLogin() {
                 key={s.id}
                 type="button"
                 className={`safra-card ${ativo ? "ativo" : ""}`}
-                onClick={() => setSafra(s.nome)}
+                onClick={() => {
+                  setSafra(s.nome);
+                  setSafraId(String(s.id));
+                }}
               >
                 {s.nome}
               </button>

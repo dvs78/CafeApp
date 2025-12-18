@@ -7,23 +7,21 @@ import rotasCliente from "./routes/rotasCliente.routes.js";
 import rotasFazendas from "./routes/rotasFazendas.routes.js";
 import rotasUsuarios from "./routes/rotasUsuarios.routes.js";
 import rotasUsuariosClientes from "./routes/rotasUsuariosClientes.routes.js";
-
 import rotasServicosLista from "./routes/rotasServicosLista.routes.js";
-import rotasRealizado from "./routes/rotasRealizado.routes.js";
 import rotasSafras from "./routes/rotasSafrasLista.routes.js";
 import rotasProdutos from "./routes/rotasProdutos.routes.js";
 import rotasLavouras from "./routes/rotasLavouras.routes.js";
-
 import rotasFazendasUsuario from "./routes/rotasFazendasUsuario.routes.js";
+import rotasPluviometros from "./routes/rotasPluviometros.routes.js";
+import rotasRealizado from "./routes/rotasRealizado.routes.js";
+import rotasChuvas from "./routes/rotasChuvas.routes.js";
 
 import { fileURLToPath } from "url";
 import path, { dirname } from "path";
 
 const app = express();
 app.use(cors());
-
 app.use(express.json());
-
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
 app.use("/login", rotaslogin);
@@ -31,13 +29,14 @@ app.use("/clientes", rotasCliente);
 app.use("/fazendas", rotasFazendas);
 app.use("/usuarios", rotasUsuarios);
 app.use("/usuarios-clientes", rotasUsuariosClientes);
-
 app.use("/fazendas-usuario", rotasFazendasUsuario);
 app.use("/safras-lista", rotasSafras);
 app.use("/lavouras", rotasLavouras);
 app.use("/servicos-lista", rotasServicosLista);
 app.use("/produtos", rotasProdutos);
+app.use("/pluviometros", rotasPluviometros);
 app.use("/realizado", rotasRealizado);
+app.use("/chuvas", rotasChuvas);
 
 // 2) SÓ DEPOIS: estáticos do front
 const __filename = fileURLToPath(import.meta.url);

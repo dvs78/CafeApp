@@ -1,12 +1,16 @@
-// GET /realizado
-// Query: ?cliente_id=...&safra=...&fazenda_id=...
+// routes/realizado.routes.js
+// GET /realizado?cliente_id=...&safra_id=...&fazenda_id=...
 import { Router } from "express";
+import { randomUUID } from "crypto";
 import pool from "./connect.routes.js";
 
 const router = Router();
 
+// -----------------------------
+// GET /realizado
+// -----------------------------
 router.get("/", async (req, res) => {
-  const { cliente_id, safra, fazenda_id } = req.query;
+  const { cliente_id, safra_id, fazenda_id } = req.query;
 
   if (!cliente_id) {
     return res.status(400).json({ erro: "cliente_id é obrigatório" });
@@ -19,9 +23,9 @@ router.get("/", async (req, res) => {
     params.push(cliente_id);
     where.push(`r.cliente_id = $${params.length}`);
 
-    if (safra) {
-      params.push(safra);
-      where.push(`r.safra = $${params.length}`);
+    if (safra_id) {
+      params.push(safra_id);
+      where.push(`r.safra_id = $${params.length}`);
     }
 
     if (fazenda_id) {
@@ -32,7 +36,7 @@ router.get("/", async (req, res) => {
     const sql = `
       SELECT
         r.id,
-        r.safra,
+        r.safra_id,
         r.lavoura,
         r.servico,
         r.data,
@@ -54,10 +58,16 @@ router.get("/", async (req, res) => {
     res.json(rows);
   } catch (err) {
     console.error("Erro ao buscar realizados:", err);
-    res.status(500).json({ erro: "Erro ao buscar realizados" });
+    res.status(500).json({
+      erro: "Erro ao buscar realizados",
+      detalhe: err?.message,
+    });
   }
 });
 
+// -----------------------------
+// GET /realizado/:id
+// -----------------------------
 router.get("/:id", async (req, res) => {
   const { id } = req.params;
 
@@ -66,7 +76,7 @@ router.get("/:id", async (req, res) => {
       `
       SELECT
         r.id,
-        r.safra,
+        r.safra_id,
         r.lavoura,
         r.servico,
         r.data,
@@ -92,13 +102,19 @@ router.get("/:id", async (req, res) => {
     res.json(rows[0]);
   } catch (err) {
     console.error("Erro ao buscar realizado:", err);
-    res.status(500).json({ erro: "Erro ao buscar realizado" });
+    res.status(500).json({
+      erro: "Erro ao buscar realizado",
+      detalhe: err?.message,
+    });
   }
 });
 
+// -----------------------------
+// POST /realizado
+// -----------------------------
 router.post("/", async (req, res) => {
   const {
-    safra,
+    safra_id,
     lavoura,
     servico,
     data,
@@ -108,11 +124,11 @@ router.post("/", async (req, res) => {
     quantidade,
     cliente_id,
     usuario_id,
-    fazenda_id, // ✅ novo
+    fazenda_id,
   } = req.body;
 
   if (
-    !safra ||
+    !safra_id ||
     !lavoura?.trim() ||
     !servico?.trim() ||
     !data ||
@@ -122,12 +138,12 @@ router.post("/", async (req, res) => {
     !fazenda_id
   ) {
     return res.status(400).json({
-      erro: "safra, lavoura, servico, data, status, cliente_id, usuario_id e fazenda_id são obrigatórios",
+      erro: "safra_id, lavoura, servico, data, status, cliente_id, usuario_id e fazenda_id são obrigatórios",
     });
   }
 
   try {
-    // (recomendado) valida se a fazenda pertence ao cliente
+    // valida se a fazenda pertence ao cliente
     const chk = await pool.query(
       `SELECT 1 FROM fazendas WHERE id = $1 AND cliente_id = $2`,
       [fazenda_id, cliente_id]
@@ -138,47 +154,51 @@ router.post("/", async (req, res) => {
         .json({ erro: "Fazenda inválida para este cliente." });
     }
 
-    // duplicado: agora inclui fazenda_id para não “bater” fazendas diferentes
+    // duplicado: inclui fazenda_id
     const dup = await pool.query(
       `
       SELECT 1
       FROM realizado
       WHERE cliente_id = $1
         AND fazenda_id = $2
-        AND safra = $3
+        AND safra_id = $3
         AND lower(trim(lavoura)) = lower(trim($4))
         AND lower(trim(servico)) = lower(trim($5))
         AND coalesce(lower(trim(produto)), '') = coalesce(lower(trim($6)), '')
       LIMIT 1
       `,
-      [cliente_id, fazenda_id, safra, lavoura, servico, produto || ""]
+      [cliente_id, fazenda_id, safra_id, lavoura, servico, produto || ""]
     );
 
     if (dup.rows.length) {
       return res.status(409).json({
-        erro: "Já existe lançamento com a mesma Safra, Lavoura, Serviço e Produto para este cliente e fazenda.",
+        erro: "Já existe lançamento com a mesma safra_id, Lavoura, Serviço e Produto para este cliente e fazenda.",
       });
     }
+
+    // ✅ gera UUID no Node (não depende do pgcrypto)
+    const id = randomUUID();
 
     const { rows } = await pool.query(
       `
       INSERT INTO realizado (
-        id, safra, lavoura, servico, data, status,
+        id, safra_id, lavoura, servico, data, status,
         produto, unidade, quantidade,
         cliente_id, usuario_id, fazenda_id
       )
       VALUES (
-        gen_random_uuid(), $1, $2, $3, $4, $5,
-        $6, $7, $8,
-        $9, $10, $11
+        $1, $2, $3, $4, $5, $6,
+        $7, $8, $9,
+        $10, $11, $12
       )
       RETURNING
-        id, safra, lavoura, servico, data, status,
+        id, safra_id, lavoura, servico, data, status,
         produto, unidade, quantidade,
         cliente_id, usuario_id, fazenda_id
       `,
       [
-        safra,
+        id,
+        safra_id,
         lavoura.trim(),
         servico.trim(),
         data,
@@ -195,15 +215,21 @@ router.post("/", async (req, res) => {
     res.status(201).json(rows[0]);
   } catch (err) {
     console.error("Erro ao criar realizado:", err);
-    res.status(500).json({ erro: "Erro ao criar realizado" });
+    res.status(500).json({
+      erro: "Erro ao criar realizado",
+      detalhe: err?.message,
+    });
   }
 });
 
+// -----------------------------
+// PUT /realizado/:id
+// -----------------------------
 router.put("/:id", async (req, res) => {
   const { id } = req.params;
 
   const {
-    safra,
+    safra_id,
     lavoura,
     servico,
     data,
@@ -213,11 +239,11 @@ router.put("/:id", async (req, res) => {
     quantidade,
     cliente_id,
     usuario_id,
-    fazenda_id, // ✅ novo
+    fazenda_id,
   } = req.body;
 
   if (
-    !safra ||
+    !safra_id ||
     !lavoura?.trim() ||
     !servico?.trim() ||
     !data ||
@@ -227,7 +253,7 @@ router.put("/:id", async (req, res) => {
     !fazenda_id
   ) {
     return res.status(400).json({
-      erro: "safra, lavoura, servico, data, status, cliente_id, usuario_id e fazenda_id são obrigatórios",
+      erro: "safra_id, lavoura, servico, data, status, cliente_id, usuario_id e fazenda_id são obrigatórios",
     });
   }
 
@@ -251,18 +277,18 @@ router.put("/:id", async (req, res) => {
       WHERE id <> $1
         AND cliente_id = $2
         AND fazenda_id = $3
-        AND safra = $4
+        AND safra_id = $4
         AND lower(trim(lavoura)) = lower(trim($5))
         AND lower(trim(servico)) = lower(trim($6))
         AND coalesce(lower(trim(produto)), '') = coalesce(lower(trim($7)), '')
       LIMIT 1
       `,
-      [id, cliente_id, fazenda_id, safra, lavoura, servico, produto || ""]
+      [id, cliente_id, fazenda_id, safra_id, lavoura, servico, produto || ""]
     );
 
     if (dup.rows.length) {
       return res.status(409).json({
-        erro: "Já existe outro lançamento com a mesma Safra, Lavoura, Serviço e Produto para este cliente e fazenda.",
+        erro: "Já existe outro lançamento com a mesma safra_id, Lavoura, Serviço e Produto para este cliente e fazenda.",
       });
     }
 
@@ -270,7 +296,7 @@ router.put("/:id", async (req, res) => {
       `
       UPDATE realizado
       SET
-        safra = $1,
+        safra_id = $1,
         lavoura = $2,
         servico = $3,
         data = $4,
@@ -283,12 +309,12 @@ router.put("/:id", async (req, res) => {
         fazenda_id = $11
       WHERE id = $12
       RETURNING
-        id, safra, lavoura, servico, data, status,
+        id, safra_id, lavoura, servico, data, status,
         produto, unidade, quantidade,
         cliente_id, usuario_id, fazenda_id
       `,
       [
-        safra,
+        safra_id,
         lavoura.trim(),
         servico.trim(),
         data,
@@ -310,11 +336,16 @@ router.put("/:id", async (req, res) => {
     res.json(rows[0]);
   } catch (err) {
     console.error("Erro ao atualizar realizado:", err);
-    res.status(500).json({ erro: "Erro ao atualizar realizado" });
+    res.status(500).json({
+      erro: "Erro ao atualizar realizado",
+      detalhe: err?.message,
+    });
   }
 });
 
+// -----------------------------
 // DELETE /realizado/:id
+// -----------------------------
 router.delete("/:id", async (req, res) => {
   const { id } = req.params;
 
@@ -331,7 +362,10 @@ router.delete("/:id", async (req, res) => {
     res.json({ ok: true, id });
   } catch (err) {
     console.error("Erro ao excluir realizado:", err);
-    res.status(500).json({ erro: "Erro ao excluir realizado" });
+    res.status(500).json({
+      erro: "Erro ao excluir realizado",
+      detalhe: err?.message,
+    });
   }
 });
 
