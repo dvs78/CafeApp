@@ -96,10 +96,10 @@ function PosLogin() {
   useEffect(() => {
     const cid = String(clienteId || "").trim();
 
-    // evita chamar com "", "undefined", "null"
-    if (!cid || cid === "undefined" || cid === "null") {
+    if (!cid) {
       setFazendas([]);
       setFazenda("");
+      setFazendaId("");
       return;
     }
 
@@ -112,29 +112,34 @@ function PosLogin() {
         const lista = Array.isArray(data) ? data : [];
         setFazendas(lista);
 
-        // se a fazenda atual não existe mais nesse cliente, reseta
-        if (lista.length === 1) {
+        // 🔥 restaura seleção salva
+        const fazendaSalva = localStorage.getItem("ctx_fazenda");
+        const fazendaIdSalva = localStorage.getItem("ctx_fazenda_id");
+
+        if (
+          fazendaSalva &&
+          fazendaIdSalva &&
+          lista.some((f) => String(f.id) === fazendaIdSalva)
+        ) {
+          setFazenda(fazendaSalva);
+          setFazendaId(fazendaIdSalva);
+        } else if (lista.length === 1) {
           setFazenda(lista[0].fazenda);
-          setFazendaId(String(lista[0].id)); // ✅
-        } else if (!lista.some((f) => f.fazenda === fazenda)) {
+          setFazendaId(String(lista[0].id));
+        } else {
           setFazenda("");
-          setFazendaId(""); // ✅
+          setFazendaId("");
         }
       } catch (err) {
         console.error(err);
         setFazendas([]);
         setFazenda("");
         setFazendaId("");
-
-        toast.error("Erro ao carregar fazendas.", {
-          toastId: TOAST_ERRO_CARREGAR,
-        });
       }
     }
 
     carregarFazendas();
-    // inclui "fazenda" pra validar e resetar quando trocar cliente
-  }, [clienteId]); // (se quiser, pode adicionar fazenda aqui, mas não é obrigatório)
+  }, [clienteId]);
 
   function continuar() {
     if (!clienteId) return toast.info("Selecione o cliente para continuar.");
@@ -179,36 +184,44 @@ function PosLogin() {
         </div>
 
         {/* Cliente */}
-        <label className="label">Selecione o Cliente</label>
-        <div className="label-input__container-select">
-          {clientesPermitidos.map((c) => {
-            const ativo = String(clienteId) === String(c.id);
-            return (
-              <button
-                key={c.id}
-                type="button"
-                className={`select__card ${ativo ? "ativo" : ""}`}
-                onClick={() => {
-                  const id = String(c.id || "").trim();
+        <div className="grupo__container-select">
+          <label className="label">Selecione o Cliente</label>
 
-                  localStorage.removeItem("ctx_fazenda");
-                  localStorage.removeItem("ctx_fazenda_id");
-                  localStorage.removeItem("ctx_safra");
-                  localStorage.removeItem("ctx_safra_id");
+          <div className="label-input__container-select">
+            {clientesPermitidos.map((c) => {
+              const ativo = String(clienteId) === String(c.id);
 
-                  setClienteId(id);
-                  setClienteNome(String(c.cliente || ""));
-                  setFazenda("");
-                  setFazendaId("");
-                  setSafra("");
-                  setSafraId("");
-                  setFazendas([]);
-                }}
-              >
-                <div className="select__card--title">{c.cliente}</div>
-              </button>
-            );
-          })}
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  className={`select__card ${ativo ? "ativo" : ""}`}
+                  onClick={() => {
+                    const id = String(c.id || "").trim();
+
+                    // 👉 se clicou no MESMO cliente, não faz nada
+                    if (String(clienteId) === id) return;
+
+                    // troca real de cliente → limpa dependências
+                    localStorage.removeItem("ctx_fazenda");
+                    localStorage.removeItem("ctx_fazenda_id");
+                    localStorage.removeItem("ctx_safra");
+                    localStorage.removeItem("ctx_safra_id");
+
+                    setClienteId(id);
+                    setClienteNome(String(c.cliente || ""));
+                    setFazenda("");
+                    setFazendaId("");
+                    setSafra("");
+                    setSafraId("");
+                    setFazendas([]);
+                  }}
+                >
+                  <div className="select__card--title">{c.cliente}</div>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* 2) Fazenda */}

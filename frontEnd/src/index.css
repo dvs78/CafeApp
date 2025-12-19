@@ -20,6 +20,10 @@ button {
   font-family: "Montserrat", sans-serif;
 }
 
+button {
+  cursor: pointer;
+}
+
 :root {
   /* Verdes (escala) */
   --verde-50: #f3faf5;
@@ -79,12 +83,21 @@ button {
   color: black;
   padding: 10px 0;
   border: none;
-  border-radius: 20px;
+  border-radius: 999px;
+  padding: 10px 16px;
+  transition: all 0.2s ease;
 }
 
-.select__card:hover {
-  color: white;
-  background-color: var(--verde-900);
+/* 🔥 ESTADO SELECIONADO */
+.select__card.ativo {
+  background: var(--verde-900);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* hover sem sobrescrever o ativo */
+.select__card:hover:not(.ativo) {
+  background: var(--verde-200);
 }
 
 .select__card--title {
