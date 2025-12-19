@@ -97,104 +97,106 @@ function AppInner() {
         />
       )}
 
-      <div className="app-container">
-        <Routes>
-          {/* 1) Sempre abrir em /login */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
+      <div className="app__container">
+        <div className="app__main">
+          <Routes>
+            {/* 1) Sempre abrir em /login */}
+            <Route path="/" element={<Navigate to="/login" replace />} />
 
-          <Route path="/login" element={<Login />} />
+            <Route path="/login" element={<Login />} />
 
-          <Route
-            path="/poslogin"
-            element={
-              <RequireAuth>
-                <RedirectIfWorkspace>
-                  <PosLogin />
-                </RedirectIfWorkspace>
-              </RequireAuth>
-            }
-          />
+            <Route
+              path="/poslogin"
+              element={
+                <RequireAuth>
+                  <RedirectIfWorkspace>
+                    <PosLogin />
+                  </RedirectIfWorkspace>
+                </RequireAuth>
+              }
+            />
 
-          <Route
-            path="/home"
-            element={
-              <RequireAuth>
-                <RequireWorkspace>
-                  <Home />
-                </RequireWorkspace>
-              </RequireAuth>
-            }
-          />
+            <Route
+              path="/home"
+              element={
+                <RequireAuth>
+                  <RequireWorkspace>
+                    <Home />
+                  </RequireWorkspace>
+                </RequireAuth>
+              }
+            />
 
-          <Route
-            path="/realizado"
-            element={
-              <RequireAuth>
-                <RequireWorkspace>
-                  <Realizado
-                    mostrarFiltros={mostrarFiltros}
-                    setOcultarBotaoFiltros={setOcultarBotaoFiltros}
-                    setTituloCustom={setTituloCustom}
-                  />
-                </RequireWorkspace>
-              </RequireAuth>
-            }
-          />
+            <Route
+              path="/realizado"
+              element={
+                <RequireAuth>
+                  <RequireWorkspace>
+                    <Realizado
+                      mostrarFiltros={mostrarFiltros}
+                      setOcultarBotaoFiltros={setOcultarBotaoFiltros}
+                      setTituloCustom={setTituloCustom}
+                    />
+                  </RequireWorkspace>
+                </RequireAuth>
+              }
+            />
 
-          <Route
-            path="/settings"
-            element={
-              <RequireAuth>
-                <RequireWorkspace>
-                  <Settings />
-                </RequireWorkspace>
-              </RequireAuth>
-            }
-          />
+            <Route
+              path="/settings"
+              element={
+                <RequireAuth>
+                  <RequireWorkspace>
+                    <Settings />
+                  </RequireWorkspace>
+                </RequireAuth>
+              }
+            />
 
-          <Route
-            path="/chuva"
-            element={
-              <RequireAuth>
-                <RequireWorkspace>
-                  <Chuva
-                    mostrarFiltros={mostrarFiltros}
-                    setOcultarBotaoFiltros={setOcultarBotaoFiltros}
-                    setTituloCustom={setTituloCustom}
-                  />
-                </RequireWorkspace>
-              </RequireAuth>
-            }
-          />
+            <Route
+              path="/chuva"
+              element={
+                <RequireAuth>
+                  <RequireWorkspace>
+                    <Chuva
+                      mostrarFiltros={mostrarFiltros}
+                      setOcultarBotaoFiltros={setOcultarBotaoFiltros}
+                      setTituloCustom={setTituloCustom}
+                    />
+                  </RequireWorkspace>
+                </RequireAuth>
+              }
+            />
 
-          <Route
-            path="/temperatura"
-            element={
-              <RequireAuth>
-                <RequireWorkspace>
-                  <Temperatura />
-                </RequireWorkspace>
-              </RequireAuth>
-            }
-          />
+            <Route
+              path="/temperatura"
+              element={
+                <RequireAuth>
+                  <RequireWorkspace>
+                    <Temperatura />
+                  </RequireWorkspace>
+                </RequireAuth>
+              }
+            />
 
-          <Route
-            path="/irrigacao"
-            element={
-              <RequireAuth>
-                <RequireWorkspace>
-                  <Irrigacao />
-                </RequireWorkspace>
-              </RequireAuth>
-            }
-          />
+            <Route
+              path="/irrigacao"
+              element={
+                <RequireAuth>
+                  <RequireWorkspace>
+                    <Irrigacao />
+                  </RequireWorkspace>
+                </RequireAuth>
+              }
+            />
 
-          {/* 2) Sempre por último */}
-          <Route
-            path="*"
-            element={<Navigate to={usuario ? "/home" : "/login"} replace />}
-          />
-        </Routes>
+            {/* 2) Sempre por último */}
+            <Route
+              path="*"
+              element={<Navigate to={usuario ? "/home" : "/login"} replace />}
+            />
+          </Routes>
+        </div>
       </div>
     </>
   );

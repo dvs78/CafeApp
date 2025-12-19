@@ -1,4 +1,3 @@
-import "./Chuva.css";
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
@@ -19,7 +18,6 @@ function extrairAnoMes(dataISO) {
   if (!dataISO) return { ano: "", mes: "" };
   const d = new Date(dataISO);
   if (Number.isNaN(d.getTime())) return { ano: "", mes: "" };
-
   return {
     ano: String(d.getFullYear()),
     mes: String(d.getMonth() + 1).padStart(2, "0"),
@@ -57,18 +55,25 @@ function Chuva({ mostrarFiltros, setOcultarBotaoFiltros, setTituloCustom }) {
   const [confirmExcluir, setConfirmExcluir] = useState(false);
   const [chuvaParaExcluir, setChuvaParaExcluir] = useState(null);
 
-  // filtros
+  // ------------------------------
+  // FILTROS (padrão Realizado)
+  // ------------------------------
   const [filtroMes, setFiltroMes] = useState("");
   const [filtroAno, setFiltroAno] = useState("");
 
+  function limparFiltros() {
+    setFiltroMes("");
+    setFiltroAno("");
+  }
+
   // ------------------------------
-  // HEADER
+  // HEADER (igual Realizado)
   // ------------------------------
   useEffect(() => {
-    setOcultarBotaoFiltros?.(false);
+    setOcultarBotaoFiltros?.(mostrarFormulario);
     setTituloCustom?.("Chuvas");
     return () => setTituloCustom?.("");
-  }, [setOcultarBotaoFiltros, setTituloCustom]);
+  }, [mostrarFormulario, setOcultarBotaoFiltros, setTituloCustom]);
 
   // ------------------------------
   // GUARDAS DE SEGURANÇA
@@ -83,31 +88,67 @@ function Chuva({ mostrarFiltros, setOcultarBotaoFiltros, setTituloCustom }) {
       notificar("erro", "Selecione Cliente, Fazenda e Safra para continuar.");
       navigate("/poslogin", { replace: true });
     }
-  }, [usuario, token, clienteId, fazendaId, navigate]);
+  }, [usuario, token, clienteId, fazendaId, safraId, navigate]);
 
   // ------------------------------
   // CARREGAR CHUVAS
   // ------------------------------
   useEffect(() => {
-    if (!clienteId || !fazendaId) return;
+    if (!clienteId || !fazendaId || !safraId) return;
 
     api
       .get(`/chuvas/${clienteId}`, {
         params: { fazenda_id: fazendaId, safra_id: safraId },
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       })
       .then((res) => setChuvas(Array.isArray(res.data) ? res.data : []))
       .catch(() => notificar("erro", "Erro ao carregar chuvas."));
-  }, [clienteId, fazendaId]);
+  }, [clienteId, fazendaId, safraId, token]);
+
+  // ao trocar contexto, limpa lista e filtros (igual Realizado)
+  useEffect(() => {
+    setChuvas([]);
+    limparFiltros();
+  }, [clienteId, fazendaId, safraId]);
 
   // ------------------------------
-  // FILTROS
+  // OPÇÕES (dinâmicas como Realizado)
+  // ------------------------------
+  const opcoesMes = useMemo(() => {
+    const set = new Set();
+    (chuvas || []).forEach((c) => {
+      const { mes } = extrairAnoMes(c?.data);
+      if (mes) set.add(mes);
+    });
+    return Array.from(set).sort();
+  }, [chuvas]);
+
+  const opcoesAno = useMemo(() => {
+    const set = new Set();
+    (chuvas || []).forEach((c) => {
+      const { ano } = extrairAnoMes(c?.data);
+      if (ano) set.add(ano);
+    });
+    return Array.from(set).sort((a, b) => Number(b) - Number(a));
+  }, [chuvas]);
+
+  // ------------------------------
+  // FILTRAGEM + ORDENAÇÃO (data desc)
   // ------------------------------
   const chuvasFiltradas = useMemo(() => {
-    return (chuvas || []).filter((c) => {
-      const { ano, mes } = extrairAnoMes(c.data);
+    const base = Array.isArray(chuvas) ? chuvas : [];
+
+    const filtrado = base.filter((c) => {
+      const { ano, mes } = extrairAnoMes(c?.data);
       if (filtroMes && mes !== filtroMes) return false;
       if (filtroAno && ano !== filtroAno) return false;
       return true;
+    });
+
+    return filtrado.sort((a, b) => {
+      const tb = new Date(b?.data || 0).getTime();
+      const ta = new Date(a?.data || 0).getTime();
+      return tb - ta;
     });
   }, [chuvas, filtroMes, filtroAno]);
 
@@ -128,7 +169,9 @@ function Chuva({ mostrarFiltros, setOcultarBotaoFiltros, setTituloCustom }) {
     if (!chuvaParaExcluir?.id) return;
 
     api
-      .delete(`/chuvas/${chuvaParaExcluir.id}`)
+      .delete(`/chuvas/${chuvaParaExcluir.id}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      })
       .then(() => {
         setChuvas((prev) => prev.filter((c) => c.id !== chuvaParaExcluir.id));
         notificar("sucesso", "Chuva excluída.");
@@ -167,15 +210,63 @@ function Chuva({ mostrarFiltros, setOcultarBotaoFiltros, setTituloCustom }) {
         />
       )}
 
+      {/* FILTROS (igual Realizado) */}
+      {!mostrarFormulario && mostrarFiltros && (
+        <section className="card filtros-card anima-card">
+          <header className="filtros-topo">
+            <h2 className="filtros-title">Filtros</h2>
+
+            <button
+              className="btn-limpar-filtros"
+              type="button"
+              onClick={limparFiltros}
+            >
+              Limpar campos
+            </button>
+          </header>
+
+          <div className="filtros-grid-2">
+            <div className="login-campo filtro-mes">
+              <label className="login-label">Mês</label>
+              <select
+                className="login-input"
+                value={filtroMes}
+                onChange={(e) => setFiltroMes(e.target.value)}
+              >
+                <option value="">Todos</option>
+                {opcoesMes.map((m) => (
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="login-campo filtro-ano">
+              <label className="login-label">Ano</label>
+              <select
+                className="login-input"
+                value={filtroAno}
+                onChange={(e) => setFiltroAno(e.target.value)}
+              >
+                <option value="">Todos</option>
+                {opcoesAno.map((a) => (
+                  <option key={a} value={a}>
+                    {a}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* LISTA/TABELA */}
       {!mostrarFormulario && (
         <ChuvaLista
           chuvas={chuvasFiltradas}
           onEditar={handleEditar}
           onExcluir={pedirExcluir}
-          filtroMes={filtroMes}
-          setFiltroMes={setFiltroMes}
-          filtroAno={filtroAno}
-          setFiltroAno={setFiltroAno}
         />
       )}
 
@@ -183,7 +274,14 @@ function Chuva({ mostrarFiltros, setOcultarBotaoFiltros, setTituloCustom }) {
       <button
         className="fab"
         type="button"
-        onClick={() => setMostrarFormulario((v) => !v)}
+        onClick={() => {
+          if (mostrarFormulario) {
+            fecharFormulario();
+            limparFiltros();
+          } else {
+            setMostrarFormulario(true);
+          }
+        }}
       >
         <FontAwesomeIcon icon={mostrarFormulario ? faTimes : faPlus} />
       </button>

@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../services/api";
 import { toast } from "react-toastify";
-import "./PosLogin.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 
@@ -161,138 +160,134 @@ function PosLogin() {
     navigate("/home", { replace: true });
   }
 
-  // useEffect(() => {
-  //   if (!fazenda) return;
-  //   localStorage.setItem("ctx_fazenda", fazenda);
-  //   if (fazendaId) localStorage.setItem("ctx_fazenda_id", fazendaId);
-  // }, [fazenda, fazendaId]);
-
   return (
-    <div className="poslogin-wrapper">
-      <button
-        type="button"
-        className="logout-btn"
-        onClick={() => {
-          logout();
-          navigate("/login", { replace: true });
-        }}
-        title="Sair"
-      >
-        <FontAwesomeIcon icon={faRightFromBracket} />
-      </button>
-
-      <div className="poslogin-card">
-        <h2 className="titulo-ola">Olá, {usuario?.usuario || "Usuário"}</h2>
-
-        {/* 1) Cliente */}
-        <div className="step-title">
-          <div className="step-number">1</div>
-          <span>Selecione o Cliente</span>
+    <div className="page__poslogin">
+      <div className="card__poslogin">
+        <div className="card__titulo-btn">
+          <h2 className="titulo-ola">Olá, {usuario?.usuario || "Usuário"}</h2>
+          <button
+            type="button"
+            className="icon__logout"
+            onClick={() => {
+              logout();
+              navigate("/login", { replace: true });
+            }}
+            title="Sair"
+          >
+            <FontAwesomeIcon icon={faRightFromBracket} />
+          </button>
         </div>
 
-        <div className="clientes-grid">
+        {/* Cliente */}
+        <label className="label">Selecione o Cliente</label>
+        <div className="label-input__container-select">
           {clientesPermitidos.map((c) => {
             const ativo = String(clienteId) === String(c.id);
             return (
               <button
                 key={c.id}
                 type="button"
-                className={`cliente-card ${ativo ? "ativo" : ""}`}
+                className={`select__card ${ativo ? "ativo" : ""}`}
                 onClick={() => {
                   const id = String(c.id || "").trim();
 
-                  // limpa contexto antigo
                   localStorage.removeItem("ctx_fazenda");
                   localStorage.removeItem("ctx_fazenda_id");
                   localStorage.removeItem("ctx_safra");
                   localStorage.removeItem("ctx_safra_id");
-                  setSafraId("");
 
                   setClienteId(id);
                   setClienteNome(String(c.cliente || ""));
-
-                  // reseta seleções dependentes
                   setFazenda("");
-                  setFazendaId(""); // ✅ faltava
-                  setFazendas([]);
+                  setFazendaId("");
                   setSafra("");
+                  setSafraId("");
+                  setFazendas([]);
                 }}
               >
-                <span className="card-title">{c.cliente}</span>
+                <div className="select__card--title">{c.cliente}</div>
               </button>
             );
           })}
         </div>
 
         {/* 2) Fazenda */}
-        <div className="step-title">
-          <div className="step-number">2</div>
-          <span>Selecione a Fazenda</span>
+
+        <div className="grupo__container-select">
+          {clienteId && (
+            <>
+              <label className="label">Selecione a Fazenda</label>
+              <div className="label-input__container-select">
+                {fazendas.map((f) => {
+                  const ativo = fazenda === f.fazenda;
+                  return (
+                    <button
+                      key={f.id}
+                      type="button"
+                      className={`select__card ${ativo ? "ativo" : ""}`}
+                      onClick={() => {
+                        localStorage.removeItem("ctx_fazenda");
+                        localStorage.removeItem("ctx_fazenda_id");
+                        localStorage.removeItem("ctx_safra");
+                        localStorage.removeItem("ctx_safra_id");
+
+                        setFazenda(f.fazenda);
+                        setFazendaId(String(f.id));
+                        setSafra("");
+                        setSafraId("");
+                      }}
+                    >
+                      <div className="select__card--title">{f.fazenda}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
         </div>
 
-        <div className="fazendas-grid">
-          {fazendas.map((f) => {
-            const ativo = fazenda === f.fazenda;
-            return (
-              <button
-                key={f.id}
-                type="button"
-                className={`fazenda-card ${ativo ? "ativo" : ""}`}
-                onClick={() => {
-                  // ao trocar fazenda, zera o contexto dependente
-                  localStorage.removeItem("ctx_fazenda");
-                  localStorage.removeItem("ctx_fazenda_id");
-                  localStorage.removeItem("ctx_safra");
-                  localStorage.removeItem("ctx_safra_id");
-                  setSafraId("");
+        {/* 3) Safra (só aparece depois de selecionar a fazenda) */}
+        {fazendaId && (
+          <>
+            <div className="grupo__container-select">
+              <label className="label">Selecione a Safra</label>
+              <div className="label-input__container-select">
+                {safras.map((s) => {
+                  const ativo = safra === s.nome;
+                  return (
+                    <button
+                      key={s.id}
+                      type="button"
+                      className={`select__card ${ativo ? "ativo" : ""}`}
+                      onClick={() => {
+                        setSafra(s.nome);
+                        setSafraId(String(s.id));
+                      }}
+                    >
+                      {s.nome}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </>
+        )}
 
-                  setFazenda(f.fazenda); // nome (para UI)
-                  setFazendaId(String(f.id)); // id (para API)
-                  setSafra(""); // força escolher safra de novo
-                }}
-              >
-                <span className="card-title">{f.fazenda}</span>
-              </button>
-            );
-          })}
-        </div>
+        {safraId && (
+          <>
+            <button className="btn__sucesso" onClick={continuar} type="button">
+              Continuar
+            </button>
 
-        {/* 3) Safra */}
-        <div className="step-title">
-          <div className="step-number">3</div>
-          <span>Selecione a Safra</span>
-        </div>
-
-        <div className="safras-grid">
-          {safras.map((s) => {
-            const ativo = safra === s.nome;
-            return (
-              <button
-                key={s.id}
-                type="button"
-                className={`safra-card ${ativo ? "ativo" : ""}`}
-                onClick={() => {
-                  setSafra(s.nome);
-                  setSafraId(String(s.id));
-                }}
-              >
-                {s.nome}
-              </button>
-            );
-          })}
-        </div>
-
-        <button
-          className="btn-continuar"
-          onClick={continuar}
-          type="button"
-          disabled={!podeContinuar}
-        >
-          Continuar
-        </button>
-        <button className="btn-limpar" onClick={limparCampos} type="button">
-          Limpar campos
-        </button>
+            <button
+              className="btn__cancelar"
+              onClick={limparCampos}
+              type="button"
+            >
+              Limpar campos
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

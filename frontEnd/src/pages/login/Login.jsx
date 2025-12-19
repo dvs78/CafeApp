@@ -1,11 +1,8 @@
 import { useEffect, useState } from "react";
-
 import { useNavigate } from "react-router-dom";
-// import axios from "axios";
 import api from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
 import { toast } from "react-toastify";
-import "./Login.css";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -52,33 +49,33 @@ function Login() {
   // }, []);
 
   return (
-    <div className="login-page">
-      <div className="login-card">
-        <h2 className="login-title">Entrar</h2>
+    <div className="page__login">
+      <div className="card__login">
+        <h2>LOGIN</h2>
         <p className="login-subtitle">Acesse para lançar os dados da fazenda</p>
 
-        <form className="login-form" onSubmit={handleSubmit}>
-          <div className="login-campo">
-            <label className="login-label">Email</label>
+        <form onSubmit={handleSubmit}>
+          <div className="label-input__container-bloco">
+            <label className="label">Email</label>
             <input
-              className="login-input"
+              className="input"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
 
-          <div className="login-campo">
-            <label className="login-label">Senha</label>
+          <div className="label-input__container-bloco">
+            <label className="label">Senha</label>
             <input
-              className="login-input"
+              className="input"
               type="password"
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
             />
           </div>
 
-          <button type="submit" className="btn-entrar">
+          <button type="submit" className="btn__sucesso">
             Entrar
           </button>
         </form>
