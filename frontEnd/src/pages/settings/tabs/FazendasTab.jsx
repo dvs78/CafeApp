@@ -3,7 +3,7 @@ import api from "../../../services/api";
 import { notificar } from "../../../components/Toast";
 import FormFazenda from "../components/FormFazenda";
 
-import ConfirmDialog from "../../../components/ConfirmDialog";
+import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 

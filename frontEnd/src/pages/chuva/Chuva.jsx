@@ -7,7 +7,7 @@ import { faPlus, faTimes } from "@fortawesome/free-solid-svg-icons";
 
 import ChuvaForm from "./ChuvaForm";
 import ChuvaLista from "./ChuvaLista";
-import ConfirmDialog from "../../components/ConfirmDialog";
+import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
 import { notificar } from "../../components/Toast";
 import { useAuth } from "../../context/AuthContext";
 

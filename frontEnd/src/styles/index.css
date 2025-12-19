@@ -1,0 +1,49 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap");
+
+/* Entrada global: apenas imports */
+@import "./tokens.css";
+@import "./base.css";
+@import "./utilities.css";
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* “Textura” premium bem sutil */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+
+  background: radial-gradient(
+      900px 520px at 18% 12%,
+      rgba(47, 127, 77, 0.1),
+      transparent 55%
+    ),
+    radial-gradient(
+      760px 460px at 82% 20%,
+      rgba(183, 121, 31, 0.1),
+      transparent 55%
+    ),
+    radial-gradient(
+      760px 520px at 72% 88%,
+      rgba(225, 29, 72, 0.06),
+      transparent 55%
+    );
+}

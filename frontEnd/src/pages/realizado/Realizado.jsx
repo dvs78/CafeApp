@@ -9,7 +9,7 @@ import { faPlus, faTimes } from "@fortawesome/free-solid-svg-icons";
 
 import RealizadoForm from "./RealizadoForm";
 import RealizadoLista from "./RealizadoLista";
-import ConfirmDialog from "../../components/ConfirmDialog";
+import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
 import { notificar } from "../../components/Toast";
 import { useAuth } from "../../context/AuthContext";
 

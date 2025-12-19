@@ -1,17 +1,21 @@
+// PosLogin.css
+// src/pages/login/PosLogin.jsx
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../services/api";
 import { toast } from "react-toastify";
+
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
+
+import "./PosLogin.css";
 
 const TOAST_ERRO_CARREGAR = "toast-erro-carregar-poslogin";
 
 function PosLogin() {
   const { usuario, clientes, logout, setWorkspace } = useAuth();
   const clientesPermitidos = clientes || [];
-
   const navigate = useNavigate();
 
   const [clienteId, setClienteId] = useState(
@@ -24,7 +28,6 @@ function PosLogin() {
   const [fazendaId, setFazendaId] = useState(
     () => localStorage.getItem("ctx_fazenda_id") || ""
   );
-
   const [fazendas, setFazendas] = useState([]);
   const [fazenda, setFazenda] = useState(
     () => localStorage.getItem("ctx_fazenda") || ""
@@ -33,14 +36,12 @@ function PosLogin() {
   const [safraId, setSafraId] = useState(
     () => localStorage.getItem("ctx_safra_id") || ""
   );
-
   const [safras, setSafras] = useState([]);
   const [safra, setSafra] = useState(
     () => localStorage.getItem("ctx_safra") || ""
   );
 
   function limparCampos() {
-    // limpa storage do contexto
     localStorage.removeItem("ctx_cliente_id");
     localStorage.removeItem("ctx_cliente_nome");
     localStorage.removeItem("ctx_fazenda");
@@ -48,19 +49,15 @@ function PosLogin() {
     localStorage.removeItem("ctx_safra");
     localStorage.removeItem("ctx_safra_id");
 
-    // limpa estados
     setClienteId("");
     setClienteNome("");
     setFazendaId("");
     setFazendas([]);
     setFazenda("");
-
     setSafra("");
     setSafraId("");
 
-    // zera também no contexto global (evita RequireWorkspace redirecionar errado)
     setWorkspace(null);
-
     toast.info("Seleções limpas.");
   }
 
@@ -69,14 +66,13 @@ function PosLogin() {
     [clienteId, fazendaId, fazenda, safraId]
   );
 
-  // 1) carrega safras + auto-seleciona cliente se só tiver 1
+  // Safras + auto cliente se só tiver 1
   useEffect(() => {
     async function carregarSafras() {
       try {
         const { data } = await api.get("/safras-lista");
-        setSafras(data || []);
-      } catch (err) {
-        console.error(err);
+        setSafras(Array.isArray(data) ? data : []);
+      } catch {
         toast.error("Erro ao carregar safras.", {
           toastId: TOAST_ERRO_CARREGAR,
         });
@@ -86,13 +82,13 @@ function PosLogin() {
     carregarSafras();
 
     if (!clienteId && clientesPermitidos.length === 1) {
-      setClienteId(clientesPermitidos[0].id);
-      setClienteNome(clientesPermitidos[0].cliente);
+      setClienteId(String(clientesPermitidos[0].id));
+      setClienteNome(String(clientesPermitidos[0].cliente || ""));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 2) quando clienteId mudar -> busca fazendas desse cliente
+  // Fazendas quando muda cliente
   useEffect(() => {
     const cid = String(clienteId || "").trim();
 
@@ -108,30 +104,27 @@ function PosLogin() {
         const { data } = await api.get("/fazendas", {
           params: { cliente_id: cid },
         });
-
         const lista = Array.isArray(data) ? data : [];
         setFazendas(lista);
 
-        // 🔥 restaura seleção salva
         const fazendaSalva = localStorage.getItem("ctx_fazenda");
         const fazendaIdSalva = localStorage.getItem("ctx_fazenda_id");
 
         if (
           fazendaSalva &&
           fazendaIdSalva &&
-          lista.some((f) => String(f.id) === fazendaIdSalva)
+          lista.some((f) => String(f.id) === String(fazendaIdSalva))
         ) {
-          setFazenda(fazendaSalva);
-          setFazendaId(fazendaIdSalva);
+          setFazenda(String(fazendaSalva));
+          setFazendaId(String(fazendaIdSalva));
         } else if (lista.length === 1) {
-          setFazenda(lista[0].fazenda);
+          setFazenda(String(lista[0].fazenda || ""));
           setFazendaId(String(lista[0].id));
         } else {
           setFazenda("");
           setFazendaId("");
         }
-      } catch (err) {
-        console.error(err);
+      } catch {
         setFazendas([]);
         setFazenda("");
         setFazendaId("");
@@ -143,15 +136,15 @@ function PosLogin() {
 
   function continuar() {
     if (!clienteId) return toast.info("Selecione o cliente para continuar.");
-    if (!fazenda) return toast.info("Selecione a fazenda para continuar.");
-    if (!safra) return toast.info("Selecione a safra para continuar.");
+    if (!fazendaId) return toast.info("Selecione a fazenda para continuar.");
+    if (!safraId) return toast.info("Selecione a safra para continuar.");
 
-    localStorage.setItem("ctx_cliente_id", clienteId);
-    localStorage.setItem("ctx_cliente_nome", clienteNome);
-    localStorage.setItem("ctx_fazenda", fazenda);
-    localStorage.setItem("ctx_fazenda_id", fazendaId);
-    localStorage.setItem("ctx_safra", safra);
-    localStorage.setItem("ctx_safra_id", safraId);
+    localStorage.setItem("ctx_cliente_id", String(clienteId));
+    localStorage.setItem("ctx_cliente_nome", String(clienteNome));
+    localStorage.setItem("ctx_fazenda", String(fazenda));
+    localStorage.setItem("ctx_fazenda_id", String(fazendaId));
+    localStorage.setItem("ctx_safra", String(safra));
+    localStorage.setItem("ctx_safra_id", String(safraId));
 
     setWorkspace({
       clienteId,
@@ -168,41 +161,50 @@ function PosLogin() {
   return (
     <div className="page__poslogin">
       <div className="card__poslogin">
-        <div className="card__titulo-btn">
-          <h2 className="titulo-ola">Olá, {usuario?.usuario || "Usuário"}</h2>
+        {/* Topo */}
+        <div className="poslogin__top">
+          <div>
+            <h2 className="poslogin__title">
+              Olá, {usuario?.usuario || "Usuário"}
+            </h2>
+            <p className="poslogin__subtitle">
+              Escolha o cliente, fazenda e safra para continuar.
+            </p>
+          </div>
+
           <button
             type="button"
-            className="icon__logout"
+            className="poslogin__logout"
             onClick={() => {
               logout();
               navigate("/login", { replace: true });
             }}
             title="Sair"
+            aria-label="Sair"
           >
             <FontAwesomeIcon icon={faRightFromBracket} />
           </button>
         </div>
 
         {/* Cliente */}
-        <div className="grupo__container-select">
-          <label className="label">Selecione o Cliente</label>
+        <div className="poslogin__section">
+          <div className="poslogin__sectionTitle">
+            <span className="poslogin__dot poslogin__dot--green" />
+            <h3>Cliente</h3>
+          </div>
 
-          <div className="label-input__container-select">
+          <div className="poslogin__grid">
             {clientesPermitidos.map((c) => {
               const ativo = String(clienteId) === String(c.id);
-
               return (
                 <button
                   key={c.id}
                   type="button"
-                  className={`select__card ${ativo ? "ativo" : ""}`}
+                  className={`poslogin__chip ${ativo ? "is-active" : ""}`}
                   onClick={() => {
                     const id = String(c.id || "").trim();
-
-                    // 👉 se clicou no MESMO cliente, não faz nada
                     if (String(clienteId) === id) return;
 
-                    // troca real de cliente → limpa dependências
                     localStorage.removeItem("ctx_fazenda");
                     localStorage.removeItem("ctx_fazenda_id");
                     localStorage.removeItem("ctx_safra");
@@ -217,90 +219,92 @@ function PosLogin() {
                     setFazendas([]);
                   }}
                 >
-                  <div className="select__card--title">{c.cliente}</div>
+                  {c.cliente}
                 </button>
               );
             })}
           </div>
         </div>
 
-        {/* 2) Fazenda */}
-
-        <div className="grupo__container-select">
-          {clienteId && (
-            <>
-              <label className="label">Selecione a Fazenda</label>
-              <div className="label-input__container-select">
-                {fazendas.map((f) => {
-                  const ativo = fazenda === f.fazenda;
-                  return (
-                    <button
-                      key={f.id}
-                      type="button"
-                      className={`select__card ${ativo ? "ativo" : ""}`}
-                      onClick={() => {
-                        localStorage.removeItem("ctx_fazenda");
-                        localStorage.removeItem("ctx_fazenda_id");
-                        localStorage.removeItem("ctx_safra");
-                        localStorage.removeItem("ctx_safra_id");
-
-                        setFazenda(f.fazenda);
-                        setFazendaId(String(f.id));
-                        setSafra("");
-                        setSafraId("");
-                      }}
-                    >
-                      <div className="select__card--title">{f.fazenda}</div>
-                    </button>
-                  );
-                })}
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* 3) Safra (só aparece depois de selecionar a fazenda) */}
-        {fazendaId && (
-          <>
-            <div className="grupo__container-select">
-              <label className="label">Selecione a Safra</label>
-              <div className="label-input__container-select">
-                {safras.map((s) => {
-                  const ativo = safra === s.nome;
-                  return (
-                    <button
-                      key={s.id}
-                      type="button"
-                      className={`select__card ${ativo ? "ativo" : ""}`}
-                      onClick={() => {
-                        setSafra(s.nome);
-                        setSafraId(String(s.id));
-                      }}
-                    >
-                      {s.nome}
-                    </button>
-                  );
-                })}
-              </div>
+        {/* Fazenda */}
+        {clienteId && (
+          <div className="poslogin__section">
+            <div className="poslogin__sectionTitle">
+              <span className="poslogin__dot poslogin__dot--yellow" />
+              <h3>Fazenda</h3>
             </div>
-          </>
+
+            <div className="poslogin__grid">
+              {fazendas.map((f) => {
+                const ativo = String(fazendaId) === String(f.id);
+                return (
+                  <button
+                    key={f.id}
+                    type="button"
+                    className={`poslogin__chip ${ativo ? "is-active" : ""}`}
+                    onClick={() => {
+                      setFazenda(String(f.fazenda || ""));
+                      setFazendaId(String(f.id));
+                      setSafra("");
+                      setSafraId("");
+                    }}
+                  >
+                    {f.fazenda}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         )}
 
-        {safraId && (
-          <>
-            <button className="btn__sucesso" onClick={continuar} type="button">
-              Continuar
-            </button>
+        {/* Safra */}
+        {fazendaId && (
+          <div className="poslogin__section">
+            <div className="poslogin__sectionTitle">
+              <span className="poslogin__dot poslogin__dot--red" />
+              <h3>Safra</h3>
+            </div>
 
-            <button
-              className="btn__cancelar"
-              onClick={limparCampos}
-              type="button"
-            >
-              Limpar campos
-            </button>
-          </>
+            <div className="poslogin__grid">
+              {safras.map((s) => {
+                const ativo = String(safraId) === String(s.id);
+                return (
+                  <button
+                    key={s.id}
+                    type="button"
+                    className={`poslogin__chip ${ativo ? "is-active" : ""}`}
+                    onClick={() => {
+                      setSafra(String(s.nome || ""));
+                      setSafraId(String(s.id));
+                    }}
+                  >
+                    {s.nome}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         )}
+
+        {/* Ações */}
+        <div className="poslogin__actions">
+          <button
+            className="poslogin__btn poslogin__btn--primary"
+            onClick={continuar}
+            type="button"
+            disabled={!podeContinuar}
+          >
+            Continuar
+          </button>
+
+          <button
+            className="poslogin__btn poslogin__btn--ghost"
+            onClick={limparCampos}
+            type="button"
+          >
+            Limpar campos
+          </button>
+        </div>
       </div>
     </div>
   );

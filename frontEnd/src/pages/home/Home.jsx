@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import "./home.css";
+import "./Home.css";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {

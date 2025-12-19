@@ -1,0 +1,267 @@
+/* src/pages/login/PosLogin.css
+   PosLogin — Power BI (clean, flat, enterprise)
+*/
+
+:root {
+  --brand: #2f7f4d;
+
+  --bg: #f7f8fa;
+  --panel: #ffffff;
+
+  --text: #111827;
+  --muted: #6b7280;
+
+  --border: rgba(17, 24, 39, 0.1);
+  --border-strong: rgba(17, 24, 39, 0.14);
+
+  --focus: rgba(47, 127, 77, 0.18);
+  --shadow: 0 10px 26px rgba(17, 24, 39, 0.06);
+}
+
+/* PAGE */
+.page__poslogin {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: var(--bg);
+  padding: 28px 16px;
+}
+
+/* CARD */
+.card__poslogin {
+  width: min(760px, 94%);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 22px 22px 20px;
+  box-shadow: var(--shadow);
+
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* TOPO */
+.poslogin__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(17, 24, 39, 0.06);
+}
+
+.poslogin__title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  color: var(--text);
+}
+
+.poslogin__subtitle {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* LOGOUT (neutro, enterprise) */
+.poslogin__logout {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid rgba(17, 24, 39, 0.1);
+  background: #fff;
+  color: rgba(17, 24, 39, 0.6);
+
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+
+  transition: transform 0.12s ease, background 0.12s ease,
+    border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.poslogin__logout:hover {
+  background: rgba(17, 24, 39, 0.03);
+  border-color: rgba(17, 24, 39, 0.14);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 18px rgba(17, 24, 39, 0.1);
+}
+
+.poslogin__logout:focus-visible {
+  outline: 3px solid rgba(17, 24, 39, 0.18);
+  outline-offset: 2px;
+}
+
+/* SEÇÕES */
+.poslogin__section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.poslogin__sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.poslogin__sectionTitle h3 {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: rgba(17, 24, 39, 0.82);
+  letter-spacing: 0.1px;
+}
+
+/* DOTS (discretos, sem “carnaval”) */
+.poslogin__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  display: inline-block;
+  background: rgba(17, 24, 39, 0.28);
+}
+
+.poslogin__dot--green {
+  background: rgba(47, 127, 77, 0.75);
+}
+.poslogin__dot--yellow {
+  background: rgba(245, 158, 11, 0.75);
+}
+.poslogin__dot--red {
+  background: rgba(220, 38, 38, 0.75);
+}
+
+/* GRID de chips */
+.poslogin__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+/* CHIP (flat, borda + hover suave) */
+.poslogin__chip {
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 10px;
+
+  border: 1px solid rgba(17, 24, 39, 0.1);
+  background: #ffffff;
+  color: rgba(17, 24, 39, 0.86);
+
+  font-weight: 750;
+  font-size: 13px;
+
+  cursor: pointer;
+  text-align: center;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  transition: transform 0.12s ease, background 0.12s ease,
+    border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.poslogin__chip:hover {
+  transform: translateY(-1px);
+  background: rgba(17, 24, 39, 0.02);
+  border-color: rgba(17, 24, 39, 0.14);
+  box-shadow: 0 10px 16px rgba(17, 24, 39, 0.08);
+}
+
+.poslogin__chip:focus-visible {
+  outline: 3px solid rgba(47, 127, 77, 0.18);
+  outline-offset: 2px;
+}
+
+/* ATIVO (sem gradiente, Power BI) */
+.poslogin__chip.is-active {
+  background: rgba(47, 127, 77, 0.1);
+  border-color: rgba(47, 127, 77, 0.38);
+  color: rgba(17, 24, 39, 0.92);
+  box-shadow: none;
+}
+
+/* AÇÕES */
+.poslogin__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 6px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(17, 24, 39, 0.06);
+}
+
+/* BOTÕES (retangulares) */
+.poslogin__btn {
+  height: 42px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+
+  font-size: 13.5px;
+  font-weight: 850;
+  letter-spacing: -0.1px;
+
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.15s ease, background 0.12s ease,
+    border-color 0.12s ease, opacity 0.15s ease;
+}
+
+/* PRIMARY: sólido “enterprise” (sem gradiente) */
+.poslogin__btn--primary {
+  background: #111827;
+  border-color: rgba(17, 24, 39, 0.14);
+  color: #fff;
+}
+
+.poslogin__btn--primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 18px rgba(17, 24, 39, 0.16);
+  background: #0b1220;
+}
+
+.poslogin__btn--primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/* GHOST: borda neutra */
+.poslogin__btn--ghost {
+  background: #ffffff;
+  border-color: rgba(17, 24, 39, 0.12);
+  color: rgba(17, 24, 39, 0.78);
+}
+
+.poslogin__btn--ghost:hover {
+  transform: translateY(-1px);
+  background: rgba(17, 24, 39, 0.03);
+  box-shadow: 0 10px 16px rgba(17, 24, 39, 0.1);
+}
+
+/* Responsivo */
+@media (max-width: 820px) {
+  .card__poslogin {
+    width: min(720px, 94%);
+    padding: 20px;
+  }
+}
+
+@media (max-width: 720px) {
+  .poslogin__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .poslogin__grid {
+    grid-template-columns: 1fr;
+  }
+  .poslogin__actions {
+    grid-template-columns: 1fr;
+  }
+}

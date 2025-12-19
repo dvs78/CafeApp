@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import api from "../../../services/api";
 import { notificar } from "../../../components/Toast";
 import FormSafra from "../components/FormSafra";
-import ConfirmDialog from "../../../components/ConfirmDialog";
+import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";

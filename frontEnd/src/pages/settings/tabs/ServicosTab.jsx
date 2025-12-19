@@ -224,7 +224,7 @@ import { useEffect, useMemo, useState } from "react";
 import api from "../../../services/api";
 import { notificar } from "../../../components/Toast";
 import FormServico from "../components/FormServico";
-import ConfirmDialog from "../../../components/ConfirmDialog";
+import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {

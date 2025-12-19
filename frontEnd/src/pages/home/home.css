@@ -1,116 +1,201 @@
+/* ================================
+   HOME — Power BI / SaaS (clean)
+   1 cor de marca + neutros
+   ================================ */
+
+:root {
+  --brand: #2f7f4d;
+
+  --text: #0f172a;
+  --muted: #64748b;
+
+  --card: rgba(255, 255, 255, 0.92);
+  --card-solid: #ffffff;
+
+  --border: rgba(229, 231, 235, 0.92);
+  --shadow1: 0 18px 40px rgba(15, 23, 42, 0.06);
+  --shadow2: 0 2px 10px rgba(15, 23, 42, 0.04);
+
+  --tile-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+}
+
+/* Página */
 .home-page {
-  min-height: calc(100vh - var(--header-h));
+  /* branco + leve nuance verde (sem “carnaval”) */
+  background: radial-gradient(
+      900px 500px at 15% 10%,
+      rgba(47, 127, 77, 0.06),
+      transparent 58%
+    ),
+    radial-gradient(
+      900px 520px at 55% 95%,
+      rgba(2, 6, 23, 0.03),
+      transparent 62%
+    ),
+    #ffffff;
+
+  padding: 34px 20px 70px;
   display: flex;
-  align-items: center;
   justify-content: center;
 }
 
+/* Card principal */
 .home-card {
-  width: min(860px, 95%);
-  background: #fff;
-  border-radius: 18px;
-  padding: 28px 30px;
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.12);
+  width: 100%;
+  max-width: 1120px;
+
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+
+  padding: 34px;
+  box-shadow: var(--shadow1), var(--shadow2);
+
+  position: relative;
+  overflow: hidden;
 }
 
+/* Linha premium no topo (monocromática) */
+.home-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  background: rgba(47, 127, 77, 0.85);
+}
+
+/* Tipografia */
 .home-title {
-  font-size: 1.55rem;
+  font-size: 24px;
   font-weight: 800;
-  margin-bottom: 6px;
-  color: #000;
+  color: var(--text);
+  letter-spacing: -0.3px;
+  margin: 0 0 6px;
 }
 
 .home-subtitle {
-  font-size: 0.95rem;
-  margin-bottom: 18px;
-  color: #000;
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0 0 26px;
 }
 
+/* Grid */
 .home-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
 }
 
+/* Tiles */
 .home-tile {
-  background: var(--verde-oliva);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 16px;
-  padding: 16px;
+  width: 100%;
   text-align: left;
-  cursor: pointer;
 
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 12px;
+
+  padding: 18px 18px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
 
-  transition: transform 0.15s ease, box-shadow 0.18s ease,
-    border-color 0.15s ease, background-color 0.18s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease,
+    border-color 0.15s ease, background 0.15s ease;
+
+  position: relative;
+  overflow: hidden;
+}
+
+/* Acento discreto (só a marca, nada de cor extra) */
+.home-tile::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 0;
+  background: rgba(47, 127, 77, 0.9);
+  border-radius: 999px;
+  transition: width 0.18s ease;
 }
 
 .home-tile:hover {
   transform: translateY(-2px);
-  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.16);
-  border-color: rgba(255, 255, 255, 0.35);
-  background-color: #527a4f;
+  border-color: rgba(47, 127, 77, 0.22);
+  box-shadow: var(--tile-shadow);
+  background: var(--card-solid);
 }
 
+.home-tile:hover::before {
+  width: 4px;
+}
+
+.home-tile:focus-visible {
+  outline: 3px solid rgba(47, 127, 77, 0.22);
+  outline-offset: 2px;
+}
+
+/* Left */
 .home-tile-left {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
+  gap: 14px;
+  align-items: flex-start;
 }
 
+/* Ícone (badge clean, estilo Power BI) */
 .home-icon {
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
 
-  background: #fff;
-  color: var(--verde-oliva);
-  border: 2px solid rgba(255, 255, 255, 0.55);
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+  background: linear-gradient(180deg, #ffffff, #f8fafc);
+  border: 1px solid rgba(226, 232, 240, 0.95);
 
-  flex: 0 0 auto;
+  color: #0f172a;
+  display: grid;
+  place-items: center;
+
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+  font-size: 16px;
 }
 
-.home-icon--soft {
-  background: #f3f4f6;
-  border-color: #e5e7eb;
-}
-
+/* Texto */
 .home-tile-title {
-  font-weight: 800;
-  font-size: 1.05rem;
-  margin-bottom: 4px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin-top: 1px;
 }
 
 .home-tile-desc {
-  font-size: 0.9rem;
-  color: #fff;
-  line-height: 1.3;
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 3px;
+  line-height: 1.35;
 }
 
+/* Badge admin (bem sóbrio) */
 .home-badge {
-  font-size: 0.72rem;
+  margin-left: 8px;
+  font-size: 11px;
   font-weight: 700;
-  padding: 3px 10px;
+  padding: 2px 8px;
   border-radius: 999px;
-  background: rgba(58, 90, 64, 0.12);
-  border: 1px solid rgba(58, 90, 64, 0.18);
-  color: #1f2937;
+
+  background: rgba(47, 127, 77, 0.08);
+  color: rgba(6, 95, 70, 0.95);
+  border: 1px solid rgba(47, 127, 77, 0.16);
 }
 
-@media (max-width: 820px) {
+/* Responsivo */
+@media (max-width: 860px) {
+  .home-card {
+    padding: 26px;
+  }
+}
+
+@media (max-width: 720px) {
   .home-actions {
     grid-template-columns: 1fr;
   }

@@ -1,12 +1,20 @@
-import { useEffect, useState } from "react";
+// src/pages/login/Login.jsx
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
 import { toast } from "react-toastify";
 
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+
+import "./Login.css";
+
 function Login() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [mostrarSenha, setMostrarSenha] = useState(false);
+
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -20,62 +28,61 @@ function Login() {
 
     try {
       const res = await api.post("/login", { email, senha });
-
       login(res.data.token, res.data.usuario, res.data.clientes);
-
       navigate("/poslogin");
-    } catch (err) {
+    } catch {
       toast.error("Usuário ou senha inválidos");
     }
   }
 
-  // Login.jsx
-
-  // useEffect(() => {
-  //   console.log("[Login] antes:", Object.keys(localStorage));
-
-  //   for (let i = localStorage.length - 1; i >= 0; i--) {
-  //     const k = localStorage.key(i);
-  //     if (k?.startsWith("ctx_") || k?.startsWith("cb_")) {
-  //       localStorage.removeItem(k);
-  //     }
-  //   }
-
-  //   console.log("[Login] depois:", Object.keys(localStorage));
-  //   console.log(
-  //     "[Login] ctx_fazenda_id =",
-  //     localStorage.getItem("ctx_fazenda_id")
-  //   );
-  // }, []);
-
   return (
-    <div className="page__login">
-      <div className="card__login">
-        <h2>LOGIN</h2>
-        <p className="login-subtitle">Acesse para lançar os dados da fazenda</p>
+    <div className="login-page">
+      <div className="login-card">
+        <div className="login-header">
+          <h2>Login</h2>
+          <span className="login-badge">Cafeicultura</span>
+        </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="label-input__container-bloco">
-            <label className="label">Email</label>
+        <p className="login-subtitle">
+          Acesse para lançar os dados da fazenda.
+        </p>
+
+        <form onSubmit={handleSubmit} className="login-form">
+          {/* EMAIL */}
+          <div className="login-field">
+            <label>Email</label>
             <input
-              className="input"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              placeholder="seu@email.com"
             />
           </div>
 
-          <div className="label-input__container-bloco">
-            <label className="label">Senha</label>
-            <input
-              className="input"
-              type="password"
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
-            />
+          {/* SENHA */}
+          <div className="login-field">
+            <label>Senha</label>
+
+            <div className="login-password-wrapper">
+              <input
+                type={mostrarSenha ? "text" : "password"}
+                value={senha}
+                onChange={(e) => setSenha(e.target.value)}
+                placeholder="••••••••"
+              />
+
+              <button
+                type="button"
+                className="login-eye"
+                onClick={() => setMostrarSenha((v) => !v)}
+                aria-label="Mostrar senha"
+              >
+                <FontAwesomeIcon icon={mostrarSenha ? faEyeSlash : faEye} />
+              </button>
+            </div>
           </div>
 
-          <button type="submit" className="btn__sucesso">
+          <button type="submit" className="login-btn">
             Entrar
           </button>
         </form>

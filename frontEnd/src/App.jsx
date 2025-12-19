@@ -12,7 +12,7 @@ import { useAuth } from "./context/AuthContext";
 import Settings from "./pages/settings/Settings";
 import Login from "./pages/login/Login";
 import PosLogin from "./pages/login/PosLogin";
-import Header from "./components/Header";
+import Header from "./components/Header/Header";
 import Home from "./pages/home/Home";
 import Realizado from "./pages/realizado/Realizado";
 import Chuva from "./pages/chuva/Chuva";

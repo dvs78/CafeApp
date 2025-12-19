@@ -1,0 +1,130 @@
+/* ================================
+   HEADER — estilo Power BI
+   ================================ */
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: 64px;
+
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* linha de marca discreta */
+.app-header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: #2f7f4d; /* verde marca */
+}
+
+.app-header__inner {
+  max-width: 1200px;
+  height: 100%;
+  margin: 0 auto;
+  padding: 0 20px;
+
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+}
+
+/* ===== LEFT / RIGHT ===== */
+
+.header-left,
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-left {
+  justify-content: flex-start;
+}
+.header-right {
+  justify-content: flex-end;
+}
+
+/* ===== CENTER ===== */
+
+.header-center {
+  text-align: center;
+}
+
+.header-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.2px;
+}
+
+/* contexto estilo metadata */
+.header-contexto {
+  margin-top: 2px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.header-contexto-fazenda {
+  font-weight: 600;
+}
+
+.header-contexto-safra {
+  margin-left: 6px;
+}
+
+/* ===== BOTÕES ===== */
+
+.btn-icon,
+.btn-logout {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+
+  border: 1px solid transparent;
+  background: transparent;
+
+  display: grid;
+  place-items: center;
+  color: #374151;
+
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.btn-icon:hover {
+  background: #f3f4f6;
+  border-color: #e5e7eb;
+}
+
+.btn-icon--ativo {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #065f46;
+}
+
+.btn-logout {
+  color: #b91c1c;
+}
+
+.btn-logout:hover {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+/* spacer */
+.header-spacer {
+  width: 36px;
+  height: 36px;
+}
+
+/* mobile */
+@media (max-width: 520px) {
+  .header-title {
+    font-size: 15px;
+  }
+}
