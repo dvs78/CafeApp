@@ -1,3 +1,4 @@
+// src/components/Header/Header.jsx
 import "./Header.css";
 import { useMemo } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -34,7 +35,7 @@ function Header({
     navigate("/login", { replace: true });
   };
 
-  // Contexto
+  // Contexto (workspace OU localStorage)
   const clienteCtx =
     workspace?.clienteNome || localStorage.getItem("ctx_cliente_nome") || "";
   const fazendaCtx =
@@ -54,56 +55,84 @@ function Header({
   const paginaComFiltros = estaEmRealizado || estaEmChuva;
 
   return (
-    <header className="app-header">
+    <header className="app-header" role="banner">
       <div className="app-header__inner">
+        {/* ESQUERDA */}
         <div className="header-left">
           {podeVoltar ? (
             <button
               className="btn-icon"
               onClick={() => navigate(-1)}
               title="Voltar"
+              aria-label="Voltar"
+              type="button"
             >
               <FontAwesomeIcon icon={faAngleLeft} />
             </button>
           ) : (
-            <span className="header-spacer" />
+            <span className="header-spacer" aria-hidden="true" />
           )}
         </div>
 
+        {/* CENTRO */}
         <div className="header-center">
-          <h1 className="header-title">{titulo}</h1>
-          {(estaNaHome || paginaComFiltros) && fazendaCtx && (
-            <div className="header-contexto">
-              <span className="header-contexto-fazenda">{fazendaCtx}</span>
-              {safraCtx && (
-                <span className="header-contexto-safra">{safraCtx}</span>
-              )}
+          <h1 className="header-title" title={titulo}>
+            {titulo}
+          </h1>
+
+          {(estaNaHome || paginaComFiltros) && fazendaCtx ? (
+            <div className="header-contexto" aria-label="Contexto atual">
+              <span className="ctx-pill" title={fazendaCtx}>
+                {fazendaCtx}
+              </span>
+
+              {safraCtx ? (
+                <span className="ctx-pill ctx-pill--safra" title={safraCtx}>
+                  {safraCtx}
+                </span>
+              ) : null}
             </div>
-          )}
+          ) : null}
         </div>
 
+        {/* DIREITA */}
         <div className="header-right">
           {paginaComFiltros && !ocultarBotaoFiltros ? (
             <button
               className={`btn-icon ${mostrarFiltros ? "btn-icon--ativo" : ""}`}
               onClick={onToggleFiltros}
-              title="Filtros"
+              title={mostrarFiltros ? "Ocultar filtros" : "Mostrar filtros"}
+              aria-label={
+                mostrarFiltros ? "Ocultar filtros" : "Mostrar filtros"
+              }
+              aria-pressed={!!mostrarFiltros}
+              type="button"
             >
               <FontAwesomeIcon icon={faFilter} />
             </button>
           ) : (
-            <span className="header-spacer" />
+            // Se não houver filtros, não precisa ocupar o espaço de um botão.
+            // Mantém layout estável porque o grid já reserva a coluna.
+            <span className="header-spacer" aria-hidden="true" />
           )}
 
           {estaNaHome ? (
-            <button className="btn-logout" title="Sair" onClick={handleLogout}>
+            <button
+              className="btn-icon btn-logout"
+              title="Sair"
+              aria-label="Sair"
+              onClick={handleLogout}
+              type="button"
+            >
               <FontAwesomeIcon icon={faRightFromBracket} />
             </button>
           ) : (
             <button
               className="btn-icon"
               title="Início"
+              aria-label="Início"
               onClick={() => navigate("/home")}
+              type="button"
             >
               <FontAwesomeIcon icon={faHouse} />
             </button>

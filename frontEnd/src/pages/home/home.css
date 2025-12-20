@@ -21,7 +21,17 @@
 
 /* Página */
 .home-page {
-  /* branco + leve nuance verde (sem “carnaval”) */
+  /* ✅ espaço para não “colar” no header fixo */
+  padding-top: calc(var(--header-h, 64px) + 24px);
+
+  /* mantém laterais e rodapé como você já tinha */
+  padding-right: 20px;
+  padding-left: 20px;
+  padding-bottom: 70px;
+
+  display: flex;
+  justify-content: center;
+
   background: radial-gradient(
       900px 500px at 15% 10%,
       rgba(47, 127, 77, 0.06),
@@ -33,10 +43,6 @@
       transparent 62%
     ),
     #ffffff;
-
-  padding: 34px 20px 70px;
-  display: flex;
-  justify-content: center;
 }
 
 /* Card principal */
@@ -132,8 +138,8 @@
 }
 
 .home-tile:focus-visible {
-  outline: 3px solid rgba(47, 127, 77, 0.22);
-  outline-offset: 2px;
+  outline: 3px solid rgba(47, 127, 77, 0.25);
+  outline-offset: 3px;
 }
 
 /* Left */
@@ -173,6 +179,11 @@
   color: var(--muted);
   margin-top: 3px;
   line-height: 1.35;
+}
+
+.home-tile.is-active {
+  border-color: rgba(47, 127, 77, 0.35);
+  background: rgba(47, 127, 77, 0.03);
 }
 
 /* Badge admin (bem sóbrio) */

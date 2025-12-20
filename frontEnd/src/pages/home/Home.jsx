@@ -1,37 +1,42 @@
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+// src/pages/home/Home.jsx
 import "./Home.css";
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faClipboardCheck,
-  faGear,
-  faArrowRight,
   faCloudRain,
-  faTemperatureHigh,
+  faTemperatureHalf,
   faDroplet,
+  faGear,
 } from "@fortawesome/free-solid-svg-icons";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 function Home() {
-  const { usuario } = useAuth();
   const navigate = useNavigate();
+  const { usuario } = useAuth();
 
-  const nome = usuario?.usuario || "Usuário";
-  const isAdmin = usuario?.role === "admin"; // ou usuario?.is_admin === true
+  // ✅ Admin: pelo seu print do banco existe role_global = "super_admin"
+  const isAdmin = ["admin", "super_admin"].includes(usuario?.role_global);
 
   return (
-    <div className="home-page">
-      <div className="home-card">
-        <h2 className="home-title">Bem-vindo, {nome}!</h2>
+    <main className="home-page">
+      <section className="home-card">
+        <h2 className="home-title">
+          Bem-vindo, {usuario?.usuario || "Usuário"}!
+        </h2>
         <p className="home-subtitle">Escolha o que deseja acessar.</p>
 
         <div className="home-actions">
-          {/* REALIZADO */}
-          <button className="home-tile" onClick={() => navigate("/realizado")}>
+          <button
+            className="home-tile"
+            onClick={() => navigate("/realizado")}
+            type="button"
+          >
             <div className="home-tile-left">
               <span className="home-icon">
                 <FontAwesomeIcon icon={faClipboardCheck} />
               </span>
+
               <div>
                 <div className="home-tile-title">Realizado</div>
                 <div className="home-tile-desc">
@@ -41,12 +46,16 @@ function Home() {
             </div>
           </button>
 
-          {/* CHUVA */}
-          <button className="home-tile" onClick={() => navigate("/chuva")}>
+          <button
+            className="home-tile"
+            onClick={() => navigate("/chuva")}
+            type="button"
+          >
             <div className="home-tile-left">
               <span className="home-icon">
                 <FontAwesomeIcon icon={faCloudRain} />
               </span>
+
               <div>
                 <div className="home-tile-title">Chuva</div>
                 <div className="home-tile-desc">
@@ -56,17 +65,16 @@ function Home() {
             </div>
           </button>
 
-          {/* TEMPERATURA */}
-          <button
-            className="home-tile"
-            onClick={() => navigate("/temperatura")}
-          >
+          <button className="home-tile" type="button" disabled>
             <div className="home-tile-left">
               <span className="home-icon">
-                <FontAwesomeIcon icon={faTemperatureHigh} />
+                <FontAwesomeIcon icon={faTemperatureHalf} />
               </span>
+
               <div>
-                <div className="home-tile-title">Temperatura</div>
+                <div className="home-tile-title">
+                  Temperatura <span className="home-badge">Em breve</span>
+                </div>
                 <div className="home-tile-desc">
                   Monitorar temperaturas mínimas e máximas.
                 </div>
@@ -74,14 +82,16 @@ function Home() {
             </div>
           </button>
 
-          {/* IRRIGAÇÃO */}
-          <button className="home-tile" onClick={() => navigate("/irrigacao")}>
+          <button className="home-tile" type="button" disabled>
             <div className="home-tile-left">
               <span className="home-icon">
                 <FontAwesomeIcon icon={faDroplet} />
               </span>
+
               <div>
-                <div className="home-tile-title">Irrigação</div>
+                <div className="home-tile-title">
+                  Irrigação <span className="home-badge">Em breve</span>
+                </div>
                 <div className="home-tile-desc">
                   Controle de lâminas, turnos e aplicações.
                 </div>
@@ -89,30 +99,29 @@ function Home() {
             </div>
           </button>
 
-          {/* CONFIGURAÇÕES (ADMIN) */}
           {isAdmin && (
-            <button className="home-tile" onClick={() => navigate("/settings")}>
+            <button
+              className="home-tile"
+              onClick={() => navigate("/settings")}
+              type="button"
+            >
               <div className="home-tile-left">
-                <span className="home-icon home-icon--soft">
+                <span className="home-icon">
                   <FontAwesomeIcon icon={faGear} />
                 </span>
+
                 <div>
-                  <div className="home-tile-title">
-                    Configurações <span className="home-badge">Admin</span>
-                  </div>
+                  <div className="home-tile-title">Configurações</div>
                   <div className="home-tile-desc">
-                    Ajustes do sistema e preferências.
+                    Gerenciar usuários, clientes e parâmetros do sistema.
                   </div>
                 </div>
               </div>
-              <span className="home-arrow">
-                <FontAwesomeIcon icon={faArrowRight} />
-              </span>
             </button>
           )}
         </div>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }
 

@@ -1,3 +1,5 @@
+/* src/styles/base.css */
+
 * {
   margin: 0;
   padding: 0;
@@ -10,6 +12,10 @@ body,
   height: 100%;
 }
 
+html {
+  font-family: var(--font);
+}
+
 body {
   font-family: var(--font);
   background: var(--bg-app);
@@ -18,7 +24,7 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* Textura MUITO sutil (não colorida demais) */
+/* Textura Power BI — única e neutra */
 body::before {
   content: "";
   position: fixed;
@@ -26,7 +32,6 @@ body::before {
   pointer-events: none;
   z-index: -1;
 
-  /* Power BI: quase invisível */
   background: radial-gradient(
     800px 480px at 50% 0%,
     rgba(17, 24, 39, 0.035),

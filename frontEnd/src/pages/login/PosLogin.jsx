@@ -5,9 +5,13 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../services/api";
 import { toast } from "react-toastify";
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
+import {
+  faRightFromBracket,
+  faUserTie, // Cliente
+  faTractor, // Fazenda
+  faCalendarAlt, // Safra
+} from "@fortawesome/free-solid-svg-icons";
 
 import "./PosLogin.css";
 
@@ -189,7 +193,7 @@ function PosLogin() {
         {/* Cliente */}
         <div className="poslogin__section">
           <div className="poslogin__sectionTitle">
-            <span className="poslogin__dot poslogin__dot--green" />
+            <FontAwesomeIcon icon={faUserTie} className="poslogin__icon" />
             <h3>Cliente</h3>
           </div>
 
@@ -230,7 +234,7 @@ function PosLogin() {
         {clienteId && (
           <div className="poslogin__section">
             <div className="poslogin__sectionTitle">
-              <span className="poslogin__dot poslogin__dot--yellow" />
+              <FontAwesomeIcon icon={faTractor} className="poslogin__icon" />
               <h3>Fazenda</h3>
             </div>
 
@@ -261,7 +265,10 @@ function PosLogin() {
         {fazendaId && (
           <div className="poslogin__section">
             <div className="poslogin__sectionTitle">
-              <span className="poslogin__dot poslogin__dot--red" />
+              <FontAwesomeIcon
+                icon={faCalendarAlt}
+                className="poslogin__icon"
+              />
               <h3>Safra</h3>
             </div>
 
