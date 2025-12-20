@@ -1,4 +1,4 @@
-import "./Chuva.css";
+import "./chuva.css";
 import { useEffect, useMemo, useState } from "react";
 import api from "../../services/api";
 import { notificar } from "../../components/Toast";
