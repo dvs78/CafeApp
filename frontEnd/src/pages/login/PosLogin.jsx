@@ -13,7 +13,7 @@ import {
   faCalendarAlt, // Safra
 } from "@fortawesome/free-solid-svg-icons";
 
-import "./PosLogin.css";
+import "./posLogin.css";
 
 const TOAST_ERRO_CARREGAR = "toast-erro-carregar-poslogin";
 

@@ -1,4 +1,4 @@
-import "./Settings.css";
+import "./settings.css";
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import ClientesTab from "./tabs/ClientesTab";

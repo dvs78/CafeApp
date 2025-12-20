@@ -1,5 +1,5 @@
 // src/pages/home/Home.jsx
-import "./Home.css";
+import "./home.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faClipboardCheck,
