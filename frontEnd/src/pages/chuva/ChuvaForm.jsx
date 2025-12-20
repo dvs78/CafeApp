@@ -8,7 +8,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark, faChevronDown } from "@fortawesome/free-solid-svg-icons";
 
 function ChuvaForm({ editando, onSaved, onCancelar }) {
-  const { token, workspace } = useAuth();
+  const { workspace, token } = useAuth();
 
   // ------------------------------
   // CONTEXTO
@@ -30,7 +30,21 @@ function ChuvaForm({ editando, onSaved, onCancelar }) {
   const [pluviometroId, setPluviometroId] = useState("");
   const [pluviometros, setPluviometros] = useState([]);
 
-  const titulo = editando ? "Editar chuva" : "Lançar chuva";
+  // ------------------------------
+  // HELPERS
+  // ------------------------------
+  function limparFormulario() {
+    setData("");
+    setChuva("");
+    setPluviometroId("");
+  }
+
+  const opcoesPluviometros = useMemo(() => {
+    return (Array.isArray(pluviometros) ? pluviometros : []).map((p) => ({
+      id: p.id,
+      nome: p.nome,
+    }));
+  }, [pluviometros]);
 
   // ------------------------------
   // CARREGAR PLUVIÔMETROS
@@ -41,11 +55,13 @@ function ChuvaForm({ editando, onSaved, onCancelar }) {
 
       try {
         const { data } = await api.get(`/pluviometros/${clienteId}`, {
+          params: { fazenda_id: fazendaId },
           headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         });
 
         const lista = Array.isArray(data) ? data : [];
 
+        // (se o seu endpoint já filtra por fazenda, isso aqui não atrapalha)
         const filtrados = lista.filter(
           (p) => String(p.fazenda_id) === String(fazendaId)
         );
@@ -66,22 +82,13 @@ function ChuvaForm({ editando, onSaved, onCancelar }) {
     carregarPluviometros();
   }, [clienteId, fazendaId, token]);
 
-  const opcoesPluviometro = useMemo(() => {
-    return (Array.isArray(pluviometros) ? pluviometros : [])
-      .map((p) => ({
-        id: p?.id,
-        nome: p?.nome ?? "",
-      }))
-      .filter((x) => x.id && x.nome);
-  }, [pluviometros]);
-
   // ------------------------------
   // PREENCHER QUANDO EDITANDO
   // ------------------------------
   useEffect(() => {
     if (!editando) return;
 
-    setData(editando.data ? String(editando.data).split("T")[0] : "");
+    setData(editando.data ? editando.data.split("T")[0] : "");
     setChuva(
       editando.chuva !== null && editando.chuva !== undefined
         ? String(editando.chuva)
@@ -89,15 +96,6 @@ function ChuvaForm({ editando, onSaved, onCancelar }) {
     );
     setPluviometroId(editando.pluviometro_id || "");
   }, [editando]);
-
-  // ------------------------------
-  // LIMPAR
-  // ------------------------------
-  function limparFormulario() {
-    setData("");
-    setChuva("");
-    setPluviometroId("");
-  }
 
   // ------------------------------
   // SALVAR
@@ -156,12 +154,13 @@ function ChuvaForm({ editando, onSaved, onCancelar }) {
   // ------------------------------
   return (
     <section className="card card-form anima-card">
+      {/* HEADER */}
       <div className="card-title-row">
-        <h2>{titulo}</h2>
+        <h2>{editando ? "Editar chuva" : "Lançar chuva"}</h2>
 
         <button
           type="button"
-          className="btn-icon-close"
+          className="modal-close"
           onClick={onCancelar}
           aria-label="Fechar formulário"
           title="Fechar"
@@ -170,9 +169,9 @@ function ChuvaForm({ editando, onSaved, onCancelar }) {
         </button>
       </div>
 
-      <form onSubmit={salvar} className="form-grid">
-        {/* Linha única: Data | Pluviômetro | Chuva (mm) */}
-        <div className="chuva-form-row-3">
+      <form className="form-grid" onSubmit={salvar}>
+        {/* Linha única: Data | Pluviômetro | Chuva | (Ações) */}
+        <div className="chuva-row-actions">
           <div className="form-field">
             <label>Data</label>
             <input
@@ -192,7 +191,7 @@ function ChuvaForm({ editando, onSaved, onCancelar }) {
                 onChange={(e) => setPluviometroId(e.target.value)}
               >
                 <option value="">Selecione</option>
-                {opcoesPluviometro.map((p) => (
+                {opcoesPluviometros.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.nome}
                   </option>
@@ -214,24 +213,24 @@ function ChuvaForm({ editando, onSaved, onCancelar }) {
               placeholder="0"
             />
           </div>
-        </div>
 
-        <div className="form-actions">
-          <button className="btn-primary" type="submit">
-            {editando ? "Salvar alterações" : "Salvar"}
-          </button>
+          {/* AÇÕES AO LADO DA CHUVA */}
+          <div className="form-field form-actions-inline">
+            <label>&nbsp;</label>
+            <div className="actions-inline">
+              <button type="submit" className="btn-primary">
+                Salvar
+              </button>
 
-          <button
-            type="button"
-            className="btn-secondary"
-            onClick={limparFormulario}
-          >
-            Limpar campos
-          </button>
-
-          <button type="button" className="btn-secondary" onClick={onCancelar}>
-            Cancelar
-          </button>
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={limparFormulario}
+              >
+                Limpar campos
+              </button>
+            </div>
+          </div>
         </div>
       </form>
     </section>

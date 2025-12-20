@@ -1,3 +1,4 @@
+// src/pages/chuva/Chuva.jsx
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
@@ -62,7 +63,7 @@ function Chuva({ mostrarFiltros, setOcultarBotaoFiltros, setTituloCustom }) {
   const [chuvaParaExcluir, setChuvaParaExcluir] = useState(null);
 
   // ------------------------------
-  // FILTROS (padrão Realizado)
+  // FILTROS
   // ------------------------------
   const [filtroMes, setFiltroMes] = useState("");
   const [filtroAno, setFiltroAno] = useState("");
@@ -73,10 +74,12 @@ function Chuva({ mostrarFiltros, setOcultarBotaoFiltros, setTituloCustom }) {
   }
 
   // ------------------------------
-  // HEADER (igual Realizado)
+  // HEADER
   // ------------------------------
   useEffect(() => {
+    // Esconde o botão de filtros do header enquanto o form estiver aberto (padrão Realizado)
     setOcultarBotaoFiltros?.(mostrarFormulario);
+
     setTituloCustom?.("Chuvas");
     return () => setTituloCustom?.("");
   }, [mostrarFormulario, setOcultarBotaoFiltros, setTituloCustom]);
@@ -111,14 +114,14 @@ function Chuva({ mostrarFiltros, setOcultarBotaoFiltros, setTituloCustom }) {
       .catch(() => notificar("erro", "Erro ao carregar chuvas."));
   }, [clienteId, fazendaId, safraId, token]);
 
-  // ao trocar contexto, limpa lista e filtros (igual Realizado)
+  // ao trocar contexto, limpa lista e filtros
   useEffect(() => {
     setChuvas([]);
     limparFiltros();
   }, [clienteId, fazendaId, safraId]);
 
   // ------------------------------
-  // OPÇÕES (dinâmicas como Realizado)
+  // OPÇÕES
   // ------------------------------
   const opcoesMes = useMemo(() => {
     const set = new Set();
@@ -139,7 +142,7 @@ function Chuva({ mostrarFiltros, setOcultarBotaoFiltros, setTituloCustom }) {
   }, [chuvas]);
 
   // ------------------------------
-  // FILTRAGEM + ORDENAÇÃO (data desc)
+  // FILTRAGEM + ORDENAÇÃO
   // ------------------------------
   const chuvasFiltradas = useMemo(() => {
     const base = Array.isArray(chuvas) ? chuvas : [];
@@ -199,6 +202,7 @@ function Chuva({ mostrarFiltros, setOcultarBotaoFiltros, setTituloCustom }) {
   // ------------------------------
   return (
     <div className="realizado-page chuva-page">
+      {/* FORM (fica em cima) */}
       {mostrarFormulario && (
         <ChuvaForm
           editando={editando}
@@ -216,22 +220,15 @@ function Chuva({ mostrarFiltros, setOcultarBotaoFiltros, setTituloCustom }) {
         />
       )}
 
-      {/* FILTROS (mesmo padrão do Realizado) */}
+      {/* FILTROS (somente quando NÃO está no formulário) */}
       {!mostrarFormulario && mostrarFiltros && (
         <section className="card filtros-card anima-card">
           <header className="filtros-topo">
             <h2 className="filtros-title">Filtros</h2>
-
-            <button
-              className="btn-limpar-filtros"
-              type="button"
-              onClick={limparFiltros}
-            >
-              Limpar campos
-            </button>
           </header>
 
-          <div className="filtros-grid-4 chuva-filtros-grid">
+          {/* ✅ Mês | Ano | Limpar campos (ao lado do Ano) */}
+          <div className="filtros-grid-3 chuva-filtros-grid-3">
             <div className="form-field filtro-pequeno">
               <label>Mês</label>
               <div className="form-select-wrapper">
@@ -269,18 +266,26 @@ function Chuva({ mostrarFiltros, setOcultarBotaoFiltros, setTituloCustom }) {
                 <FontAwesomeIcon icon={faChevronDown} className="select-icon" />
               </div>
             </div>
+
+            <div className="filtro-actions">
+              <button
+                className="btn-secondary"
+                type="button"
+                onClick={limparFiltros}
+              >
+                Limpar campos
+              </button>
+            </div>
           </div>
         </section>
       )}
 
       {/* LISTA/TABELA */}
-      {!mostrarFormulario && (
-        <ChuvaLista
-          chuvas={chuvasFiltradas}
-          onEditar={handleEditar}
-          onExcluir={pedirExcluir}
-        />
-      )}
+      <ChuvaLista
+        chuvas={chuvasFiltradas}
+        onEditar={handleEditar}
+        onExcluir={pedirExcluir}
+      />
 
       {/* FAB */}
       <button

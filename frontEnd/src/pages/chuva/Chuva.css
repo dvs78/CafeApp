@@ -1,31 +1,128 @@
 /* =========================================================
-   CHUVA — ajustes finos reaproveitando o padrão do Realizado
+   CHUVA — ajustes finos (padrão Realizado)
+   Tudo encapsulado em .chuva-page para evitar conflito
    ========================================================= */
 
 .chuva-page {
-  /* se você quiser algum ajuste específico, entra aqui */
+  /* se quiser, pode definir variáveis locais aqui no futuro */
 }
 
-/* Grid compacto do form (Data | Pluviômetro | Chuva) */
-.chuva-form-row-3 {
+/* =========================================================
+   FORM — grids
+   ========================================================= */
+
+/* Linha do form: Data | Pluviômetro | Chuva */
+.chuva-page .chuva-form-row-3 {
   display: grid;
   grid-template-columns: 220px 1fr 220px;
   gap: 16px;
   align-items: end;
 }
 
-/* Filtros do módulo chuva (Mês/Ano) */
-.chuva-filtros-grid {
-  grid-template-columns: 220px 220px;
+/* Linha do form com ações ao lado: Data | Pluviômetro | Chuva | Botões */
+.chuva-page .chuva-row-actions {
+  display: grid;
+  grid-template-columns: 180px 1.7fr 220px max-content;
+  gap: 16px;
+  align-items: end;
 }
 
-/* Responsivo */
-@media (max-width: 900px) {
-  .chuva-form-row-3 {
+/* =========================================================
+   FILTROS — grid
+   ========================================================= */
+
+.chuva-page .chuva-filtros-grid {
+  display: grid;
+  grid-template-columns: 220px 220px;
+  gap: 16px;
+  align-items: end;
+}
+
+/* =========================================================
+   ESPAÇAMENTOS
+   ========================================================= */
+
+/* distância do conteúdo (form/filtros) até a tabela */
+.chuva-page .lista-card {
+  margin-top: 18px;
+}
+
+/* (opcional) se você quiser espaçar o wrapper interno também, deixe.
+   caso fique “duplo”, remova este bloco. */
+.chuva-page .tabela-wrapper {
+  margin-top: 18px;
+}
+
+/* =========================================================
+   TABELA — centralizar Data / Pluviômetro / Chuva
+   (a Chuva reutiliza .tabela-servicos do Realizado)
+   ========================================================= */
+
+.chuva-page .tabela-servicos thead th:nth-child(-n + 3),
+.chuva-page .tabela-servicos tbody td:nth-child(-n + 3) {
+  text-align: center !important;
+}
+
+/* =========================================================
+   RESPONSIVO
+   ========================================================= */
+
+@media (max-width: 980px) {
+  .chuva-page .chuva-row-actions {
     grid-template-columns: 1fr;
   }
 
-  .chuva-filtros-grid {
+  .chuva-page .form-actions-inline .actions-inline {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 900px) {
+  .chuva-page .chuva-form-row-3 {
     grid-template-columns: 1fr;
+  }
+
+  .chuva-page .chuva-filtros-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================
+   FILTROS — Chuva (Mês | Ano | Limpar)
+   ========================================================= */
+
+.chuva-page .filtros-grid-3 {
+  display: grid;
+  grid-template-columns: 220px 220px max-content;
+  gap: 16px;
+  align-items: end;
+}
+
+/* Coluna do botão */
+.chuva-page .filtro-actions {
+  display: flex;
+  align-items: flex-end;
+}
+
+/* Botão mantém padrão premium */
+.chuva-page .btn-limpar-filtros {
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* =========================================================
+   RESPONSIVO
+   ========================================================= */
+
+@media (max-width: 900px) {
+  .chuva-page .filtros-grid-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .chuva-page .filtro-actions {
+    justify-content: flex-start;
   }
 }

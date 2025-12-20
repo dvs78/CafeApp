@@ -83,7 +83,7 @@ function RealizadoForm({
 
         <button
           type="button"
-          className="btn-icon-close"
+          className="modal-close"
           onClick={onCancelar}
           aria-label="Fechar formulário"
           title="Fechar"
