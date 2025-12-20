@@ -1,11 +1,14 @@
 import "./Chuva.css";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import api from "../../services/api";
 import { notificar } from "../../components/Toast";
 import { useAuth } from "../../context/AuthContext";
 
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faXmark, faChevronDown } from "@fortawesome/free-solid-svg-icons";
+
 function ChuvaForm({ editando, onSaved, onCancelar }) {
-  const { workspace } = useAuth();
+  const { token, workspace } = useAuth();
 
   // ------------------------------
   // CONTEXTO
@@ -27,6 +30,8 @@ function ChuvaForm({ editando, onSaved, onCancelar }) {
   const [pluviometroId, setPluviometroId] = useState("");
   const [pluviometros, setPluviometros] = useState([]);
 
+  const titulo = editando ? "Editar chuva" : "Lançar chuva";
+
   // ------------------------------
   // CARREGAR PLUVIÔMETROS
   // ------------------------------
@@ -35,7 +40,10 @@ function ChuvaForm({ editando, onSaved, onCancelar }) {
       if (!clienteId || !fazendaId) return;
 
       try {
-        const { data } = await api.get(`/pluviometros/${clienteId}`);
+        const { data } = await api.get(`/pluviometros/${clienteId}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
+
         const lista = Array.isArray(data) ? data : [];
 
         const filtrados = lista.filter(
@@ -56,7 +64,16 @@ function ChuvaForm({ editando, onSaved, onCancelar }) {
     }
 
     carregarPluviometros();
-  }, [clienteId, fazendaId]);
+  }, [clienteId, fazendaId, token]);
+
+  const opcoesPluviometro = useMemo(() => {
+    return (Array.isArray(pluviometros) ? pluviometros : [])
+      .map((p) => ({
+        id: p?.id,
+        nome: p?.nome ?? "",
+      }))
+      .filter((x) => x.id && x.nome);
+  }, [pluviometros]);
 
   // ------------------------------
   // PREENCHER QUANDO EDITANDO
@@ -64,7 +81,7 @@ function ChuvaForm({ editando, onSaved, onCancelar }) {
   useEffect(() => {
     if (!editando) return;
 
-    setData(editando.data ? editando.data.split("T")[0] : "");
+    setData(editando.data ? String(editando.data).split("T")[0] : "");
     setChuva(
       editando.chuva !== null && editando.chuva !== undefined
         ? String(editando.chuva)
@@ -72,6 +89,15 @@ function ChuvaForm({ editando, onSaved, onCancelar }) {
     );
     setPluviometroId(editando.pluviometro_id || "");
   }, [editando]);
+
+  // ------------------------------
+  // LIMPAR
+  // ------------------------------
+  function limparFormulario() {
+    setData("");
+    setChuva("");
+    setPluviometroId("");
+  }
 
   // ------------------------------
   // SALVAR
@@ -103,13 +129,17 @@ function ChuvaForm({ editando, onSaved, onCancelar }) {
       chuva: chuvaNum,
       cliente_id: clienteId,
       fazenda_id: fazendaId,
-      safra_id: safraId, // ✅ AQUI
+      safra_id: safraId,
       pluviometro_id: pluviometroId,
     };
 
     const req = editando
-      ? api.put(`/chuvas/${editando.id}`, payload)
-      : api.post("/chuvas", payload);
+      ? api.put(`/chuvas/${editando.id}`, payload, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        })
+      : api.post("/chuvas", payload, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
 
     req
       .then((res) => {
@@ -125,76 +155,81 @@ function ChuvaForm({ editando, onSaved, onCancelar }) {
   // RENDER
   // ------------------------------
   return (
-    <section className="chuva-card-form anima-card">
-      <div className="chuva-topo">
-        <h2 className="chuva-title">
-          {editando ? "Editar chuva" : "Lançar chuva"}
-        </h2>
+    <section className="card card-form anima-card">
+      <div className="card-title-row">
+        <h2>{titulo}</h2>
 
         <button
           type="button"
-          className="btn-limpar-filtros"
+          className="btn-icon-close"
           onClick={onCancelar}
+          aria-label="Fechar formulário"
+          title="Fechar"
         >
-          Fechar
+          <FontAwesomeIcon icon={faXmark} />
         </button>
       </div>
 
-      <form onSubmit={salvar} className="chuva-form">
-        <div className="chuva-form-row">
-          <div className="login-campo">
-            <label className="login-label">Data</label>
+      <form onSubmit={salvar} className="form-grid">
+        {/* Linha única: Data | Pluviômetro | Chuva (mm) */}
+        <div className="chuva-form-row-3">
+          <div className="form-field">
+            <label>Data</label>
             <input
-              className="login-input"
+              className="form-control"
               type="date"
               value={data}
               onChange={(e) => setData(e.target.value)}
             />
           </div>
 
-          <div className="login-campo">
-            <label className="login-label">Pluviômetro</label>
-            <select
-              className="login-input"
-              value={pluviometroId}
-              onChange={(e) => setPluviometroId(e.target.value)}
-            >
-              <option value="">Selecione</option>
-              {pluviometros.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.nome}
-                </option>
-              ))}
-            </select>
+          <div className="form-field">
+            <label>Pluviômetro</label>
+            <div className="form-select-wrapper">
+              <select
+                className="form-control"
+                value={pluviometroId}
+                onChange={(e) => setPluviometroId(e.target.value)}
+              >
+                <option value="">Selecione</option>
+                {opcoesPluviometro.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.nome}
+                  </option>
+                ))}
+              </select>
+              <FontAwesomeIcon icon={faChevronDown} className="select-icon" />
+            </div>
           </div>
-        </div>
 
-        <div className="chuva-form-row">
-          <div className="login-campo">
-            <label className="login-label">Chuva (mm)</label>
+          <div className="form-field">
+            <label>Chuva (mm)</label>
             <input
-              className="login-input"
+              className="form-control"
               type="number"
               step="0.1"
               min="0"
               value={chuva}
               onChange={(e) => setChuva(e.target.value)}
+              placeholder="0"
             />
           </div>
-
-          <div className="login-campo" />
         </div>
 
-        <div className="chuva-actions">
-          <button className="btn-primario" type="submit">
-            Salvar
+        <div className="form-actions">
+          <button className="btn-primary" type="submit">
+            {editando ? "Salvar alterações" : "Salvar"}
           </button>
 
           <button
             type="button"
-            className="btn-limpar-filtros"
-            onClick={onCancelar}
+            className="btn-secondary"
+            onClick={limparFormulario}
           >
+            Limpar campos
+          </button>
+
+          <button type="button" className="btn-secondary" onClick={onCancelar}>
             Cancelar
           </button>
         </div>

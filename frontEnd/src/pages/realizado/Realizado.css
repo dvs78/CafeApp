@@ -1,0 +1,560 @@
+/* =========================================================
+   REALIZADO — layout da página
+   ========================================================= */
+
+.realizado-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  padding-top: calc(var(--header-h, 64px) + 12px);
+  padding-bottom: 14px;
+
+  --page-pad-x: clamp(12px, 7%, 100px);
+}
+
+.realizado-page .card,
+.realizado-page .card-form,
+.realizado-page .lista-card {
+  margin-left: var(--page-pad-x);
+  margin-right: var(--page-pad-x);
+}
+
+/* garante MESMA largura visual do form e da tabela */
+.realizado-page .card-form,
+.realizado-page .lista-servicos {
+  padding-left: var(--page-pad-x);
+  padding-right: var(--page-pad-x);
+}
+
+/* remove qualquer margin lateral que possa quebrar alinhamento */
+.realizado-page .card-form {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+/* =========================================================
+   EXPORTAÇÃO
+   ========================================================= */
+
+.export-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  margin-top: 18px;
+  flex-wrap: wrap;
+}
+
+/* =========================================================
+   TABELA — estrutura
+   ========================================================= */
+
+.tabela-servicos-wrapper {
+  margin-top: 18px;
+}
+
+.tabela-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.tabela-servicos {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+
+  background: #fff;
+  border: 1px solid rgba(17, 24, 39, 0.12);
+  border-radius: 14px;
+  overflow: hidden;
+
+  font-size: 14px;
+}
+
+/* =========================================================
+   TABELA — cabeçalho
+   ========================================================= */
+
+.tabela-servicos thead th {
+  padding: 14px 12px;
+
+  background: linear-gradient(to bottom, #f8fafc, #f1f5f9);
+  color: #0f172a;
+
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+
+  border-bottom: 1px solid rgba(17, 24, 39, 0.15);
+}
+
+/* =========================================================
+   TABELA — corpo
+   ========================================================= */
+
+.tabela-servicos tbody td {
+  padding: 14px 12px;
+  vertical-align: middle;
+  border-bottom: 1px solid rgba(17, 24, 39, 0.08);
+}
+
+.tabela-servicos tbody tr:hover {
+  background: rgba(15, 23, 42, 0.03);
+}
+
+.tabela-servicos tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* =========================================================
+   STATUS
+   ========================================================= */
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 4px 10px;
+  border-radius: 999px;
+
+  font-size: 12px;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.status-badge.realizado {
+  background: #e6f4ea;
+  color: #1e7e34;
+}
+
+.status-badge.cancelado {
+  background: #fdecea;
+  color: #b02a37;
+}
+
+/* =========================================================
+   AÇÕES — coluna e layout
+   ========================================================= */
+
+.tabela-servicos th.acoes,
+.tabela-servicos td.acoes {
+  text-align: center;
+  width: 140px;
+  white-space: nowrap;
+}
+
+.acoes-container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* =========================================================
+   BOTÕES DE AÇÃO — padrão Settings
+   ========================================================= */
+
+.acao {
+  width: 34px;
+  height: 34px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 999px;
+  border: 1px solid rgba(17, 24, 39, 0.14);
+
+  cursor: pointer;
+  background: transparent;
+
+  transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.acao:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.08);
+}
+
+.acao:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* editar */
+.acao.editar {
+  color: rgb(37, 99, 235);
+  background: rgba(37, 99, 235, 0.08);
+  border-color: rgba(37, 99, 235, 0.22);
+}
+
+.acao.editar:hover {
+  background: rgba(37, 99, 235, 0.18);
+}
+
+/* copiar */
+.acao.copiar {
+  color: rgb(180, 83, 9);
+  background: rgba(245, 158, 11, 0.14);
+  border-color: rgba(245, 158, 11, 0.28);
+}
+
+.acao.copiar:hover {
+  background: rgba(245, 158, 11, 0.22);
+}
+
+/* excluir */
+.acao.danger {
+  color: rgb(185, 28, 28);
+  background: rgba(220, 38, 38, 0.08);
+  border-color: rgba(220, 38, 38, 0.22);
+}
+
+.acao.danger:hover {
+  background: rgba(220, 38, 38, 0.18);
+}
+
+/* =========================================================
+   FAB — Novo lançamento
+   ========================================================= */
+
+.fab {
+  position: fixed;
+  right: 28px;
+  bottom: 28px;
+  z-index: 60;
+
+  font-size: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35), 0 6px 12px rgba(0, 0, 0, 0.15);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.fab:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.45), 0 10px 20px rgba(0, 0, 0, 0.18);
+}
+
+.fab:active {
+  transform: translateY(0);
+}
+
+/* =========================================================
+   REALIZADO FORM — refinado
+   ========================================================= */
+
+.alert-duplicar {
+  margin-top: 6px;
+  margin-bottom: 14px;
+  padding: 10px 14px;
+
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 10px;
+
+  font-size: 13px;
+  color: #92400e;
+}
+
+.form-servico {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.card-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.card-title-row h2 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -0.2px;
+}
+
+.btn-icon-close {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  margin-top: 2px;
+
+  border: 1px solid rgba(17, 24, 39, 0.18);
+  background: rgba(255, 255, 255, 0.96);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  color: rgba(17, 24, 39, 0.55);
+  font-size: 1rem;
+
+  cursor: pointer;
+
+  transition: transform 0.12s ease, box-shadow 0.15s ease,
+    border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.btn-icon-close:hover {
+  transform: translateY(-1px);
+  background: rgba(17, 24, 39, 0.04);
+  border-color: rgba(47, 127, 77, 0.45);
+  color: rgba(17, 24, 39, 0.85);
+  box-shadow: var(--shadow-sm);
+}
+
+/* =========================================================
+   FORM — grids (linha 1 e linha 2)
+   ========================================================= */
+
+.form-row-4 {
+  display: grid;
+  grid-template-columns: 1.25fr 1.25fr 180px 180px;
+  gap: 16px;
+}
+
+.form-row-prod {
+  display: grid;
+  grid-template-columns: 1.6fr 220px 220px;
+  gap: 16px;
+}
+
+.form-row-4 input[type="date"].form-control {
+  padding-right: 10px;
+}
+
+/* =========================================================
+   FORM — botões ao lado de Quantidade
+   ========================================================= */
+
+.form-row-prod-actions {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr max-content;
+  gap: 14px;
+  align-items: end;
+}
+
+.form-actions-inline label {
+  visibility: hidden;
+  height: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.form-actions-inline .actions-inline {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-start;
+  height: 44px;
+}
+
+/* mantém os botões consistentes com o input */
+.form-actions-inline .btn-primary,
+.form-actions-inline .btn-secondary {
+  height: 44px;
+  padding: 0 16px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* =========================================================
+   BOTÃO SECUNDÁRIO (padrão premium neutro)
+   ========================================================= */
+
+.btn-secondary {
+  border: 1px solid rgba(17, 24, 39, 0.14);
+  background: rgba(255, 255, 255, 0.96);
+  color: rgba(17, 24, 39, 0.88);
+  transition: transform 0.12s ease, box-shadow 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.btn-secondary:hover {
+  transform: translateY(-1px);
+  border-color: rgba(47, 127, 77, 0.28);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.08);
+}
+
+/* =========================================================
+   FILTROS — mesmo padrão do formulário
+   ========================================================= */
+
+.filtros-card {
+  background: transparent;
+  border-radius: 16px;
+}
+
+.filtros-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.filtros-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: -0.2px;
+}
+
+/* grid principal: Lavoura | Serviço | Ano | Mês */
+.filtros-grid-4 {
+  display: grid;
+  grid-template-columns: 1.6fr 1.6fr 0.75fr 0.75fr;
+  gap: 12px 14px;
+  align-items: end;
+}
+
+.filtro-full {
+  grid-column: 1 / -1;
+}
+
+.filtro-pequeno {
+  min-width: 140px;
+}
+
+/* buscar texto + botão inline */
+.filtro-busca-com-botao {
+  grid-column: 1 / -1;
+}
+
+.filtro-busca-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.btn-limpar-inline {
+  height: 44px;
+  padding: 0 16px;
+  white-space: nowrap;
+}
+
+/* botão limpar filtros (topo) */
+.btn-limpar-filtros {
+  appearance: none;
+  border: 1px solid rgba(17, 24, 39, 0.14);
+  background: #fff;
+  color: rgba(17, 24, 39, 0.9);
+
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 999px;
+
+  font-weight: 700;
+  cursor: pointer;
+
+  transition: transform 0.12s ease, box-shadow 0.12s ease,
+    border-color 0.12s ease;
+}
+
+.btn-limpar-filtros:hover {
+  border-color: rgba(58, 90, 64, 0.45);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.btn-limpar-filtros:active {
+  transform: translateY(0px);
+}
+
+/* =========================================================
+   GRIDS antigos (se ainda estiver usando em algum lugar)
+   ========================================================= */
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-row-3 {
+  display: grid;
+  grid-template-columns: 1.4fr 0.8fr 0.8fr;
+  gap: 16px;
+}
+
+.grid-2 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.grid-3 {
+  grid-template-columns: 1.4fr 0.8fr 0.8fr;
+}
+
+/* =========================================================
+   CAMPOS antigos (se ainda estiver usando em algum componente)
+   ========================================================= */
+
+.login-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.login-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #334155;
+}
+
+.login-input {
+  font-family: inherit;
+}
+
+/* =========================================================
+   RESPONSIVO
+   ========================================================= */
+
+@media (max-width: 980px) {
+  .filtros-grid-4 {
+    grid-template-columns: 1fr 1fr;
+  }
+  .filtro-pequeno {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 900px) {
+  .form-row,
+  .form-row-3,
+  .grid-2,
+  .grid-3,
+  .form-row-4,
+  .form-row-prod {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .filtros-grid-4 {
+    grid-template-columns: 1fr;
+  }
+  .btn-limpar-filtros {
+    height: 34px;
+    padding: 0 10px;
+  }
+}

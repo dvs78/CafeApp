@@ -1,87 +1,25 @@
-/* ================================
-   HOME — Power BI / SaaS (clean)
-   1 cor de marca + neutros
-   ================================ */
+/* src/pages/home/Home.css
+   HOME — Power BI / SaaS (clean) usando tokens globais
+   Requer: tokens.css + base.css + utilities.css
+*/
 
-:root {
-  --brand: #2f7f4d;
-
-  --text: #0f172a;
-  --muted: #64748b;
-
-  --card: rgba(255, 255, 255, 0.92);
-  --card-solid: #ffffff;
-
-  --border: rgba(229, 231, 235, 0.92);
-  --shadow1: 0 18px 40px rgba(15, 23, 42, 0.06);
-  --shadow2: 0 2px 10px rgba(15, 23, 42, 0.04);
-
-  --tile-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
-}
-
-/* Página */
-.home-page {
-  /* ✅ espaço para não “colar” no header fixo */
-  padding-top: calc(var(--header-h, 64px) + 24px);
-
-  /* mantém laterais e rodapé como você já tinha */
-  padding-right: 20px;
-  padding-left: 20px;
-  padding-bottom: 70px;
-
-  display: flex;
-  justify-content: center;
-
-  background: radial-gradient(
-      900px 500px at 15% 10%,
-      rgba(47, 127, 77, 0.06),
-      transparent 58%
-    ),
-    radial-gradient(
-      900px 520px at 55% 95%,
-      rgba(2, 6, 23, 0.03),
-      transparent 62%
-    ),
-    #ffffff;
-}
-
-/* Card principal */
 .home-card {
-  width: 100%;
-  max-width: 1120px;
-
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-
+  /* page-card já dá borda/sombra/fundo; aqui só layout interno */
   padding: 34px;
-  box-shadow: var(--shadow1), var(--shadow2);
-
-  position: relative;
-  overflow: hidden;
-}
-
-/* Linha premium no topo (monocromática) */
-.home-card::before {
-  content: "";
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 2px;
-  background: rgba(47, 127, 77, 0.85);
 }
 
 /* Tipografia */
 .home-title {
   font-size: 24px;
   font-weight: 800;
-  color: var(--text);
+  color: var(--text-main);
   letter-spacing: -0.3px;
   margin: 0 0 6px;
 }
 
 .home-subtitle {
   font-size: 14px;
-  color: var(--muted);
+  color: var(--text-muted);
   margin: 0 0 26px;
 }
 
@@ -99,9 +37,9 @@
 
   border: 1px solid var(--border);
   background: rgba(255, 255, 255, 0.98);
-  border-radius: 12px;
+  border-radius: calc(var(--r-lg) + 2px);
 
-  padding: 18px 18px;
+  padding: 18px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -113,7 +51,7 @@
   overflow: hidden;
 }
 
-/* Acento discreto (só a marca, nada de cor extra) */
+/* Acento discreto da marca */
 .home-tile::before {
   content: "";
   position: absolute;
@@ -129,8 +67,8 @@
 .home-tile:hover {
   transform: translateY(-2px);
   border-color: rgba(47, 127, 77, 0.22);
-  box-shadow: var(--tile-shadow);
-  background: var(--card-solid);
+  box-shadow: var(--shadow-md);
+  background: #fff;
 }
 
 .home-tile:hover::before {
@@ -142,6 +80,17 @@
   outline-offset: 3px;
 }
 
+.home-tile:disabled {
+  opacity: 0.72;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.home-tile:disabled::before {
+  display: none;
+}
+
 /* Left */
 .home-tile-left {
   display: flex;
@@ -149,44 +98,41 @@
   align-items: flex-start;
 }
 
-/* Ícone (badge clean, estilo Power BI) */
+/* Ícone (badge clean) */
 .home-icon {
   width: 44px;
   height: 44px;
   border-radius: 12px;
 
   background: linear-gradient(180deg, #ffffff, #f8fafc);
-  border: 1px solid rgba(226, 232, 240, 0.95);
+  border: 1px solid rgba(17, 24, 39, 0.08);
 
-  color: #0f172a;
+  color: var(--text-main);
   display: grid;
   place-items: center;
 
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+  box-shadow: var(--shadow-sm);
   font-size: 16px;
+
+  flex: 0 0 44px;
 }
 
 /* Texto */
 .home-tile-title {
   font-size: 15px;
   font-weight: 700;
-  color: var(--text);
+  color: var(--text-main);
   margin-top: 1px;
 }
 
 .home-tile-desc {
   font-size: 13px;
-  color: var(--muted);
+  color: var(--text-muted);
   margin-top: 3px;
   line-height: 1.35;
 }
 
-.home-tile.is-active {
-  border-color: rgba(47, 127, 77, 0.35);
-  background: rgba(47, 127, 77, 0.03);
-}
-
-/* Badge admin (bem sóbrio) */
+/* Badge "Em breve" */
 .home-badge {
   margin-left: 8px;
   font-size: 11px;

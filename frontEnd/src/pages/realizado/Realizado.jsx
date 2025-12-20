@@ -1,3 +1,4 @@
+import "./Realizado.css";
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
@@ -5,7 +6,11 @@ import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faTimes } from "@fortawesome/free-solid-svg-icons";
+import {
+  faPlus,
+  faTimes,
+  faChevronDown,
+} from "@fortawesome/free-solid-svg-icons";
 
 import RealizadoForm from "./RealizadoForm";
 import RealizadoLista from "./RealizadoLista";
@@ -31,15 +36,6 @@ function limparQuantidade(valor) {
 function normalizar(v) {
   return (v ?? "").toString().trim().toLowerCase();
 }
-
-// function normalizarStatus(v) {
-//   const s = (v ?? "").toString().trim().toLowerCase();
-//   // opcional: mapear variações
-//   if (s === "realizado") return "realizado";
-//   if (s === "cancelado") return "cancelado";
-//   if (s === "pendente") return "pendente";
-//   return s; // fallback
-// }
 
 function formatarQuantidadeParaInput(valor) {
   if (valor === null || valor === undefined || valor === "") return "";
@@ -83,14 +79,12 @@ function Realizado({
   const fazendaId =
     workspace?.fazendaId || localStorage.getItem("ctx_fazenda_id") || "";
 
-  // ✅ safraId (UUID) é o que manda para API
   const safraId =
     workspace?.safraId || localStorage.getItem("ctx_safra_id") || "";
 
-  // (opcional) nome da safra só para exibição
   const safraNome = workspace?.safra || localStorage.getItem("ctx_safra") || "";
 
-  // persistência do workspace no storage (extra segurança)
+  // persistência extra
   useEffect(() => {
     if (workspace?.clienteId)
       localStorage.setItem("ctx_cliente_id", workspace.clienteId);
@@ -140,7 +134,7 @@ function Realizado({
 
   const [confirmDuplicado, setConfirmDuplicado] = useState(false);
 
-  // ✅ CONTROLE DE DUPLICAÇÃO
+  // duplicação
   const [modoDuplicar, setModoDuplicar] = useState(false);
   const [lavouraOriginalDuplicacao, setLavouraOriginalDuplicacao] =
     useState("");
@@ -234,6 +228,7 @@ function Realizado({
     ])
       .then(([l, p, s]) => {
         setListaLavouras(Array.isArray(l.data) ? l.data : []);
+        // se vier ativo/inativo, você pode filtrar ativos aqui se quiser:
         setListaProdutos(Array.isArray(p.data) ? p.data : []);
         setListaServicos(Array.isArray(s.data) ? s.data : []);
       })
@@ -256,7 +251,7 @@ function Realizado({
   }, [listaLavouras, fazendaId]);
 
   // ------------------------------
-  // BASE DO CONTEXTO (cliente + safra_id + fazenda)
+  // BASE DO CONTEXTO
   // ------------------------------
   const servicosDoContexto = useMemo(() => {
     const lista = Array.isArray(servicosState) ? servicosState : [];
@@ -310,7 +305,7 @@ function Realizado({
   const filtroPreviewServico = mostrarFormulario ? servico : "";
 
   // ------------------------------
-  // FILTRAGEM + ORDENAÇÃO (data desc)
+  // FILTRAGEM + ORDENAÇÃO
   // ------------------------------
   const servicosFiltrados = useMemo(() => {
     const base = Array.isArray(servicosDoContexto) ? servicosDoContexto : [];
@@ -343,7 +338,6 @@ function Realizado({
       const ta = new Date(a?.data || 0).getTime();
       if (tb !== ta) return tb - ta;
 
-      // UUID não subtrai — ordena por string desc
       const ib = String(b?.id || "");
       const ia = String(a?.id || "");
       return ib < ia ? 1 : ib > ia ? -1 : 0;
@@ -379,7 +373,6 @@ function Realizado({
       return;
     }
 
-    // regra da duplicação: lavoura precisa mudar
     if (modoDuplicar) {
       if (normalizar(lavoura) === normalizar(lavouraOriginalDuplicacao)) {
         notificar(
@@ -452,7 +445,6 @@ function Realizado({
           err?.response?.data?.detail ||
           err?.response?.data?.message ||
           "Erro ao salvar.";
-
         notificar("erro", msg);
       });
   }
@@ -601,88 +593,116 @@ function Realizado({
           <header className="filtros-topo">
             <h2 className="filtros-title">Filtros</h2>
 
-            <button
-              className="btn-limpar-filtros"
+            {/* <button
+              className="btn-secondary"
               type="button"
               onClick={limparFiltros}
             >
               Limpar campos
-            </button>
+            </button> */}
           </header>
 
-          <div className="filtros-grid-2">
-            <div className="login-campo filtro-lavoura">
-              <label className="login-label">Lavoura</label>
-              <select
-                className="login-input"
-                value={filtroLavoura}
-                onChange={(e) => setFiltroLavoura(e.target.value)}
-              >
-                <option value="">Todas</option>
-                {opcoesLavoura.map((nome) => (
-                  <option key={nome} value={nome}>
-                    {nome}
-                  </option>
-                ))}
-              </select>
+          <div className="filtros-grid-4">
+            {/* Lavoura */}
+            <div className="form-field">
+              <label>Lavoura</label>
+              <div className="form-select-wrapper">
+                <select
+                  className="form-control"
+                  value={filtroLavoura}
+                  onChange={(e) => setFiltroLavoura(e.target.value)}
+                >
+                  <option value="">Todas</option>
+                  {opcoesLavoura.map((nome) => (
+                    <option key={nome} value={nome}>
+                      {nome}
+                    </option>
+                  ))}
+                </select>
+                <FontAwesomeIcon icon={faChevronDown} className="select-icon" />
+              </div>
             </div>
 
-            <div className="login-campo filtro-mes">
-              <label className="login-label">Mês</label>
-              <select
-                className="login-input"
-                value={filtroMes}
-                onChange={(e) => setFiltroMes(e.target.value)}
-              >
-                <option value="">Todos</option>
-                {opcoesMes.map((m) => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
-                ))}
-              </select>
+            {/* Serviço */}
+            <div className="form-field">
+              <label>Serviço</label>
+              <div className="form-select-wrapper">
+                <select
+                  className="form-control"
+                  value={filtroServico}
+                  onChange={(e) => setFiltroServico(e.target.value)}
+                >
+                  <option value="">Todos</option>
+                  {opcoesServico.map((nome) => (
+                    <option key={nome} value={nome}>
+                      {nome}
+                    </option>
+                  ))}
+                </select>
+                <FontAwesomeIcon icon={faChevronDown} className="select-icon" />
+              </div>
             </div>
 
-            <div className="login-campo filtro-ano">
-              <label className="login-label">Ano</label>
-              <select
-                className="login-input"
-                value={filtroAno}
-                onChange={(e) => setFiltroAno(e.target.value)}
-              >
-                <option value="">Todos</option>
-                {opcoesAno.map((a) => (
-                  <option key={a} value={a}>
-                    {a}
-                  </option>
-                ))}
-              </select>
+            {/* Ano (menor) */}
+            <div className="form-field filtro-pequeno">
+              <label>Ano</label>
+              <div className="form-select-wrapper">
+                <select
+                  className="form-control"
+                  value={filtroAno}
+                  onChange={(e) => setFiltroAno(e.target.value)}
+                >
+                  <option value="">Todos</option>
+                  {opcoesAno.map((a) => (
+                    <option key={a} value={a}>
+                      {a}
+                    </option>
+                  ))}
+                </select>
+                <FontAwesomeIcon icon={faChevronDown} className="select-icon" />
+              </div>
             </div>
 
-            <div className="login-campo filtro-servico">
-              <label className="login-label">Serviço</label>
-              <select
-                className="login-input"
-                value={filtroServico}
-                onChange={(e) => setFiltroServico(e.target.value)}
-              >
-                <option value="">Todos</option>
-                {opcoesServico.map((nome) => (
-                  <option key={nome} value={nome}>
-                    {nome}
-                  </option>
-                ))}
-              </select>
+            {/* Mês (menor) */}
+            <div className="form-field filtro-pequeno">
+              <label>Mês</label>
+              <div className="form-select-wrapper">
+                <select
+                  className="form-control"
+                  value={filtroMes}
+                  onChange={(e) => setFiltroMes(e.target.value)}
+                >
+                  <option value="">Todos</option>
+                  {opcoesMes.map((m) => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
+                  ))}
+                </select>
+                <FontAwesomeIcon icon={faChevronDown} className="select-icon" />
+              </div>
             </div>
 
-            <div className="login-campo filtro-buscar">
-              <label className="login-label">Buscar texto</label>
-              <input
-                className="login-input"
-                placeholder="Ex.: adubação, roçagem..."
-                value={filtroTexto}
-                onChange={(e) => setFiltroTexto(e.target.value)}
-              />
+            {/* Buscar texto + Limpar campos */}
+            <div className="form-field filtro-busca-com-botao">
+              <label>Buscar texto</label>
+
+              <div className="filtro-busca-row">
+                <input
+                  className="form-control"
+                  placeholder="Ex.: adubação, roçagem..."
+                  value={filtroTexto}
+                  onChange={(e) => setFiltroTexto(e.target.value)}
+                />
+
+                <button
+                  type="button"
+                  className="btn-secondary btn-limpar-inline"
+                  onClick={limparFiltros}
+                >
+                  Limpar campos
+                </button>
+              </div>
             </div>
           </div>
         </section>
@@ -739,6 +759,7 @@ Essa ação não pode ser desfeita.`
             setMostrarFormulario(true);
           }
         }}
+        title={mostrarFormulario ? "Fechar" : "Novo lançamento"}
       >
         <FontAwesomeIcon icon={mostrarFormulario ? faTimes : faPlus} />
       </button>

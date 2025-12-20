@@ -1,11 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import api from "../../../services/api";
 import { notificar } from "../../../components/Toast";
 import FormUsuario from "../components/FormUsuario";
 import { useAuth } from "../../../context/AuthContext";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
+
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faPen, faTrash, faSearch } from "@fortawesome/free-solid-svg-icons";
 
 function UsuariosTab() {
   const { usuario: usuarioLogado } = useAuth();
@@ -13,6 +14,21 @@ function UsuariosTab() {
   const [usuarios, setUsuarios] = useState([]);
   const [abrirForm, setAbrirForm] = useState(false);
   const [editar, setEditar] = useState(null);
+
+  // busca
+  const [busca, setBusca] = useState("");
+
+  const usuariosFiltrados = useMemo(() => {
+    const q = busca.trim().toLowerCase();
+    if (!q) return usuarios;
+
+    return usuarios.filter((u) => {
+      const nome = (u.usuario || "").toLowerCase();
+      const email = (u.email || "").toLowerCase();
+      const role = (u.role_global || "").toLowerCase();
+      return nome.includes(q) || email.includes(q) || role.includes(q);
+    });
+  }, [usuarios, busca]);
 
   // -------------------------
   // CONFIRM DIALOG (EXCLUIR)
@@ -62,16 +78,29 @@ function UsuariosTab() {
 
   return (
     <>
-      <div className="settings-header">
+      <div className="settings-header settings-header--stack">
+        {/* Linha 1 */}
         <h2>Usuários</h2>
 
-        <button
-          className="btn-primary"
-          type="button"
-          onClick={() => setAbrirForm(true)}
-        >
-          Novo Usuário
-        </button>
+        {/* Linha 2 */}
+        <div className="settings-header-actions settings-actions-wrap">
+          <div className="settings-search">
+            <FontAwesomeIcon icon={faSearch} />
+            <input
+              placeholder="Buscar por nome, e-mail ou permissão..."
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+            />
+          </div>
+
+          <button
+            className="btn-primary"
+            type="button"
+            onClick={() => setAbrirForm(true)}
+          >
+            Novo Usuário
+          </button>
+        </div>
       </div>
 
       <table className="settings-table">
@@ -85,7 +114,7 @@ function UsuariosTab() {
         </thead>
 
         <tbody>
-          {usuarios.map((u) => {
+          {usuariosFiltrados.map((u) => {
             const ehEu = String(usuarioLogado?.id) === String(u.id);
 
             return (
@@ -130,8 +159,14 @@ function UsuariosTab() {
           })}
 
           {usuarios.length === 0 && (
-            <tr>
+            <tr className="empty-row">
               <td colSpan={4}>Nenhum usuário cadastrado.</td>
+            </tr>
+          )}
+
+          {usuarios.length > 0 && usuariosFiltrados.length === 0 && (
+            <tr className="empty-row">
+              <td colSpan={4}>Nenhum usuário encontrado para essa busca.</td>
             </tr>
           )}
         </tbody>

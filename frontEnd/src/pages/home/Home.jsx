@@ -15,12 +15,11 @@ function Home() {
   const navigate = useNavigate();
   const { usuario } = useAuth();
 
-  // ✅ Admin: pelo seu print do banco existe role_global = "super_admin"
   const isAdmin = ["admin", "super_admin"].includes(usuario?.role_global);
 
   return (
-    <main className="home-page">
-      <section className="home-card">
+    <main className="page-shell">
+      <section className="home-card page-card">
         <h2 className="home-title">
           Bem-vindo, {usuario?.usuario || "Usuário"}!
         </h2>
@@ -33,7 +32,7 @@ function Home() {
             type="button"
           >
             <div className="home-tile-left">
-              <span className="home-icon">
+              <span className="home-icon" aria-hidden="true">
                 <FontAwesomeIcon icon={faClipboardCheck} />
               </span>
 
@@ -52,7 +51,7 @@ function Home() {
             type="button"
           >
             <div className="home-tile-left">
-              <span className="home-icon">
+              <span className="home-icon" aria-hidden="true">
                 <FontAwesomeIcon icon={faCloudRain} />
               </span>
 
@@ -67,7 +66,7 @@ function Home() {
 
           <button className="home-tile" type="button" disabled>
             <div className="home-tile-left">
-              <span className="home-icon">
+              <span className="home-icon" aria-hidden="true">
                 <FontAwesomeIcon icon={faTemperatureHalf} />
               </span>
 
@@ -84,7 +83,7 @@ function Home() {
 
           <button className="home-tile" type="button" disabled>
             <div className="home-tile-left">
-              <span className="home-icon">
+              <span className="home-icon" aria-hidden="true">
                 <FontAwesomeIcon icon={faDroplet} />
               </span>
 
@@ -106,7 +105,7 @@ function Home() {
               type="button"
             >
               <div className="home-tile-left">
-                <span className="home-icon">
+                <span className="home-icon" aria-hidden="true">
                   <FontAwesomeIcon icon={faGear} />
                 </span>
 

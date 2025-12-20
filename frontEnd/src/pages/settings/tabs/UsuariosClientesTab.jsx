@@ -4,7 +4,11 @@ import { notificar } from "../../../components/Toast";
 
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import {
+  faTrash,
+  faSearch,
+  faChevronDown,
+} from "@fortawesome/free-solid-svg-icons";
 
 function UsuariosClientesTab() {
   const [usuarios, setUsuarios] = useState([]);
@@ -13,6 +17,18 @@ function UsuariosClientesTab() {
   const [usuarioId, setUsuarioId] = useState("");
   const [vinculados, setVinculados] = useState([]);
   const [clienteParaVincular, setClienteParaVincular] = useState("");
+  const [busca, setBusca] = useState("");
+
+  const vinculadosFiltrados = useMemo(() => {
+    const q = busca.trim().toLowerCase();
+    if (!q) return vinculados;
+
+    return (vinculados || []).filter((c) =>
+      String(c.cliente || "")
+        .toLowerCase()
+        .includes(q)
+    );
+  }, [vinculados, busca]);
 
   // -------------------------
   // CONFIRM DIALOG (REMOVER VÍNCULO)
@@ -64,7 +80,6 @@ function UsuariosClientesTab() {
   }, []);
 
   useEffect(() => {
-    // evita remover vínculo do usuário errado após trocar o select
     fecharConfirm();
     carregarVinculos(usuarioId);
     setClienteParaVincular("");
@@ -124,44 +139,57 @@ function UsuariosClientesTab() {
 
   return (
     <>
-      <div className="settings-header">
-        <h2>Usuários x Clientes</h2>
+      <div className="settings-header settings-header--uxc">
+        <div className="settings-uxc-row settings-uxc-row--title">
+          <h2>Usuários x Clientes</h2>
+        </div>
 
-        <div
-          className="settings-header-actions"
-          style={{
-            display: "flex",
-            gap: 10,
-            alignItems: "center",
-            flexWrap: "wrap",
-          }}
-        >
-          <select
-            value={usuarioId}
-            onChange={(e) => setUsuarioId(e.target.value)}
-          >
-            {usuarios.map((u) => (
-              <option key={u.id} value={u.id}>
-                {u.usuario} ({u.email})
-              </option>
-            ))}
-          </select>
+        <div className="settings-uxc-row settings-uxc-row--selects">
+          <div className="select-wrapper">
+            <select
+              className="settings-select"
+              value={usuarioId}
+              onChange={(e) => setUsuarioId(e.target.value)}
+            >
+              {usuarios.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.usuario} ({u.email})
+                </option>
+              ))}
+            </select>
+            <FontAwesomeIcon icon={faChevronDown} className="select-icon" />
+          </div>
 
-          <select
-            value={clienteParaVincular}
-            onChange={(e) => setClienteParaVincular(e.target.value)}
-            disabled={!usuarioId}
-          >
-            <option value="">Selecione um cliente...</option>
-            {clientesDisponiveis.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.cliente}
-              </option>
-            ))}
-          </select>
+          <div className="select-wrapper">
+            <select
+              className="settings-select"
+              value={clienteParaVincular}
+              onChange={(e) => setClienteParaVincular(e.target.value)}
+              disabled={!usuarioId}
+            >
+              <option value="">Selecione um cliente...</option>
+              {clientesDisponiveis.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.cliente}
+                </option>
+              ))}
+            </select>
+            <FontAwesomeIcon icon={faChevronDown} className="select-icon" />
+          </div>
+        </div>
+
+        <div className="settings-uxc-row settings-uxc-row--bottom">
+          <div className="settings-search settings-uxc-search">
+            <FontAwesomeIcon icon={faSearch} />
+            <input
+              placeholder="Buscar cliente vinculado..."
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+            />
+          </div>
 
           <button
-            className="btn-primary"
+            className="btn-primary settings-uxc-btn"
             type="button"
             onClick={vincular}
             disabled={!usuarioId || !clienteParaVincular}
@@ -180,7 +208,7 @@ function UsuariosClientesTab() {
         </thead>
 
         <tbody>
-          {vinculados.map((c) => (
+          {vinculadosFiltrados.map((c) => (
             <tr key={c.id}>
               <td>{c.cliente}</td>
               <td className="acoes">
@@ -197,8 +225,14 @@ function UsuariosClientesTab() {
           ))}
 
           {vinculados.length === 0 && (
-            <tr>
+            <tr className="empty-row">
               <td colSpan={2}>Nenhum cliente vinculado a este usuário.</td>
+            </tr>
+          )}
+
+          {vinculados.length > 0 && vinculadosFiltrados.length === 0 && (
+            <tr className="empty-row">
+              <td colSpan={2}>Nenhum cliente encontrado para essa busca.</td>
             </tr>
           )}
         </tbody>

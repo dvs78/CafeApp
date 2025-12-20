@@ -3,13 +3,19 @@ import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faTimes } from "@fortawesome/free-solid-svg-icons";
+import {
+  faPlus,
+  faTimes,
+  faChevronDown,
+} from "@fortawesome/free-solid-svg-icons";
 
 import ChuvaForm from "./ChuvaForm";
 import ChuvaLista from "./ChuvaLista";
 import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
 import { notificar } from "../../components/Toast";
 import { useAuth } from "../../context/AuthContext";
+
+import "./Chuva.css";
 
 // ------------------------------
 // HELPERS
@@ -192,7 +198,7 @@ function Chuva({ mostrarFiltros, setOcultarBotaoFiltros, setTituloCustom }) {
   // RENDER
   // ------------------------------
   return (
-    <div className="chuva-page">
+    <div className="realizado-page chuva-page">
       {mostrarFormulario && (
         <ChuvaForm
           editando={editando}
@@ -210,7 +216,7 @@ function Chuva({ mostrarFiltros, setOcultarBotaoFiltros, setTituloCustom }) {
         />
       )}
 
-      {/* FILTROS (igual Realizado) */}
+      {/* FILTROS (mesmo padrão do Realizado) */}
       {!mostrarFormulario && mostrarFiltros && (
         <section className="card filtros-card anima-card">
           <header className="filtros-topo">
@@ -225,37 +231,43 @@ function Chuva({ mostrarFiltros, setOcultarBotaoFiltros, setTituloCustom }) {
             </button>
           </header>
 
-          <div className="filtros-grid-2">
-            <div className="login-campo filtro-mes">
-              <label className="login-label">Mês</label>
-              <select
-                className="login-input"
-                value={filtroMes}
-                onChange={(e) => setFiltroMes(e.target.value)}
-              >
-                <option value="">Todos</option>
-                {opcoesMes.map((m) => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
-                ))}
-              </select>
+          <div className="filtros-grid-4 chuva-filtros-grid">
+            <div className="form-field filtro-pequeno">
+              <label>Mês</label>
+              <div className="form-select-wrapper">
+                <select
+                  className="form-control"
+                  value={filtroMes}
+                  onChange={(e) => setFiltroMes(e.target.value)}
+                >
+                  <option value="">Todos</option>
+                  {opcoesMes.map((m) => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
+                  ))}
+                </select>
+                <FontAwesomeIcon icon={faChevronDown} className="select-icon" />
+              </div>
             </div>
 
-            <div className="login-campo filtro-ano">
-              <label className="login-label">Ano</label>
-              <select
-                className="login-input"
-                value={filtroAno}
-                onChange={(e) => setFiltroAno(e.target.value)}
-              >
-                <option value="">Todos</option>
-                {opcoesAno.map((a) => (
-                  <option key={a} value={a}>
-                    {a}
-                  </option>
-                ))}
-              </select>
+            <div className="form-field filtro-pequeno">
+              <label>Ano</label>
+              <div className="form-select-wrapper">
+                <select
+                  className="form-control"
+                  value={filtroAno}
+                  onChange={(e) => setFiltroAno(e.target.value)}
+                >
+                  <option value="">Todos</option>
+                  {opcoesAno.map((a) => (
+                    <option key={a} value={a}>
+                      {a}
+                    </option>
+                  ))}
+                </select>
+                <FontAwesomeIcon icon={faChevronDown} className="select-icon" />
+              </div>
             </div>
           </div>
         </section>
@@ -282,6 +294,7 @@ function Chuva({ mostrarFiltros, setOcultarBotaoFiltros, setTituloCustom }) {
             setMostrarFormulario(true);
           }
         }}
+        title={mostrarFormulario ? "Fechar" : "Novo lançamento"}
       >
         <FontAwesomeIcon icon={mostrarFormulario ? faTimes : faPlus} />
       </button>

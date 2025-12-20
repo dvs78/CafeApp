@@ -1,86 +1,94 @@
 import { useEffect, useState } from "react";
 import api from "../../../services/api";
 import { notificar } from "../../../components/Toast";
+import FormModal from "./FormModal";
 
-function FormCliente({ cliente, onClose, onSave }) {
+function FormCliente({ cliente, onClose, onSave, onSaved }) {
   const editando = Boolean(cliente?.id);
 
   const [nome, setNome] = useState("");
+  const [salvando, setSalvando] = useState(false);
 
   useEffect(() => {
-    setNome(cliente?.cliente || "");
-  }, [cliente]);
+    if (editando) {
+      setNome(cliente?.cliente || "");
+    } else {
+      setNome("");
+    }
+  }, [editando, cliente]);
 
-  async function salvar(e) {
-    e.preventDefault();
+  async function salvar() {
+    const nomeLimpo = (nome || "").trim();
 
-    if (!nome.trim()) {
-      notificar("erro", "Informe o nome do cliente.");
-      return;
+    if (!nomeLimpo) {
+      return notificar("erro", "Informe o nome do cliente.");
     }
 
+    setSalvando(true);
     try {
       let resp;
 
       if (editando) {
         resp = await api.put(`/clientes/${cliente.id}`, {
-          cliente: nome.trim(),
+          cliente: nomeLimpo,
         });
         notificar("sucesso", "Cliente atualizado.");
       } else {
-        resp = await api.post(`/clientes`, { cliente: nome.trim() });
+        resp = await api.post(`/clientes`, { cliente: nomeLimpo });
         notificar("sucesso", "Cliente criado.");
       }
 
+      // mantém compatibilidade com quem usa onSave e com quem usa onSaved
       onSave?.(resp?.data);
+      onSaved?.(resp?.data);
+
       onClose?.();
-    } catch {
-      notificar("erro", "Erro ao salvar cliente.");
+    } catch (err) {
+      notificar("erro", err?.response?.data?.erro || "Erro ao salvar cliente.");
+    } finally {
+      setSalvando(false);
     }
   }
 
   return (
-    <div className="modal-backdrop" role="dialog" aria-modal="true">
-      <div className="modal-card">
-        <div className="modal-header">
-          <h3>{editando ? "Editar Cliente" : "Novo Cliente"}</h3>
+    <FormModal
+      title={editando ? "Editar Cliente" : "Novo Cliente"}
+      onClose={onClose}
+      footer={
+        <>
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={salvar}
+            disabled={salvando}
+          >
+            {salvando ? "Salvando..." : "Salvar"}
+          </button>
 
           <button
             type="button"
-            className="modal-close"
+            className="btn-secondary"
             onClick={onClose}
-            aria-label="Fechar"
-            title="Fechar"
+            disabled={salvando}
           >
-            ×
+            Cancelar
           </button>
+        </>
+      }
+    >
+      <div className="form-grid">
+        <div className="form-field">
+          <label>Nome do cliente</label>
+          <input
+            className="form-control"
+            placeholder="Ex.: Agrocoffee"
+            value={nome}
+            onChange={(e) => setNome(e.target.value)}
+            autoFocus
+          />
         </div>
-
-        {/* IMPORTANTE: footer está DENTRO do form */}
-        <form onSubmit={salvar}>
-          <div className="modal-body">
-            <label>Nome do cliente</label>
-            <input
-              value={nome}
-              onChange={(e) => setNome(e.target.value)}
-              placeholder="Ex.: Agrocoffee"
-              autoFocus
-            />
-          </div>
-
-          <div className="modal-footer">
-            {/* GARANTIDO: submit */}
-            <button type="submit" className="btn-primary">
-              Salvar
-            </button>
-
-            <button type="button" className="btn-secondary" onClick={onClose}>
-              Cancelar
-            </button>
-          </div>
-        </form>
       </div>
-    </div>
+    </FormModal>
   );
 }
 

@@ -21,3 +21,26 @@
 .muted {
   color: var(--text-muted);
 }
+
+/* =========================================================
+   Shell padrão para telas internas (com header fixo)
+   ========================================================= */
+/* src/styles/utilities.css */
+
+.page-shell {
+  padding-top: calc(var(--header-h) + 14px);
+  padding-bottom: 18px;
+
+  padding-left: clamp(12px, 5vw, 22px);
+  padding-right: clamp(12px, 5vw, 22px);
+
+  width: min(var(--container), 100%);
+  margin: 0 auto;
+}
+
+.page-card {
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--r-lg) + 4px);
+  box-shadow: var(--shadow-lg);
+}

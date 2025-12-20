@@ -1,10 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
 import api from "../../../services/api";
 import { notificar } from "../../../components/Toast";
+
 import FormLavoura from "../components/FormLavoura";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
+
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
+import {
+  faPen,
+  faTrash,
+  faSearch,
+  faChevronDown,
+} from "@fortawesome/free-solid-svg-icons";
 
 function LavourasTab() {
   const [clientes, setClientes] = useState([]);
@@ -21,21 +28,31 @@ function LavourasTab() {
   const [abrirForm, setAbrirForm] = useState(false);
   const [editar, setEditar] = useState(null);
 
-  // -------------------------
-  // CONFIRM DIALOG (EXCLUIR)
-  // -------------------------
+  const [busca, setBusca] = useState("");
+
+  const lavourasFiltradas = useMemo(() => {
+    const q = busca.trim().toLowerCase();
+    if (!q) return lavouras;
+
+    return (lavouras || []).filter((l) => {
+      const nome = String(l.nome || "").toLowerCase();
+      const fazenda = String(
+        fazendaNomePorId.get(String(l.fazenda_id)) || ""
+      ).toLowerCase();
+      return nome.includes(q) || fazenda.includes(q);
+    });
+  }, [lavouras, busca, fazendaNomePorId]);
+
+  // confirm excluir
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [alvoExcluir, setAlvoExcluir] = useState(null);
 
   function abrirConfirmExcluir(lavoura) {
-    const nomeFazenda = fazendaNomePorId.get(String(lavoura.fazenda_id)) || "—";
-
     setAlvoExcluir({
       id: lavoura.id,
       lavoura: lavoura.nome,
-      fazenda: nomeFazenda,
+      fazenda: fazendaNomePorId.get(String(lavoura.fazenda_id)) || "—",
     });
-
     setConfirmOpen(true);
   }
 
@@ -49,24 +66,27 @@ function LavourasTab() {
 
     try {
       await api.delete(`/lavouras/${alvoExcluir.id}`);
-      setLavouras((prev) => prev.filter((l) => l.id !== alvoExcluir.id));
+      setLavouras((prev) =>
+        (prev || []).filter((l) => l.id !== alvoExcluir.id)
+      );
       notificar("sucesso", "Lavoura removida.");
     } catch (err) {
-      const msg = err?.response?.data?.erro || "Erro ao excluir lavoura.";
-      notificar("erro", msg);
+      notificar(
+        "erro",
+        err?.response?.data?.erro || "Erro ao excluir lavoura."
+      );
     } finally {
       fecharConfirmExcluir();
     }
   }
 
-  // -------------------------
-  // LOADERS
-  // -------------------------
+  // loaders
   async function carregarClientes() {
     try {
       const { data } = await api.get("/clientes");
-      setClientes(data || []);
-      if (!clienteId && (data || []).length) setClienteId(data[0].id);
+      const lista = Array.isArray(data) ? data : [];
+      setClientes(lista);
+      if (!clienteId && lista.length) setClienteId(lista[0].id);
     } catch {
       notificar("erro", "Erro ao carregar clientes.");
       setClientes([]);
@@ -79,7 +99,7 @@ function LavourasTab() {
       const { data } = await api.get("/fazendas", {
         params: { cliente_id: cid },
       });
-      setFazendas(data || []);
+      setFazendas(Array.isArray(data) ? data : []);
     } catch {
       notificar("erro", "Erro ao carregar fazendas.");
       setFazendas([]);
@@ -89,9 +109,8 @@ function LavourasTab() {
   async function carregarLavouras(cid) {
     if (!cid) return setLavouras([]);
     try {
-      // mantém seu endpoint atual: GET /lavouras/:clienteId
       const { data } = await api.get(`/lavouras/${cid}`);
-      setLavouras(data || []);
+      setLavouras(Array.isArray(data) ? data : []);
     } catch {
       notificar("erro", "Erro ao carregar lavouras.");
       setLavouras([]);
@@ -106,25 +125,39 @@ function LavourasTab() {
   useEffect(() => {
     carregarFazendas(clienteId);
     carregarLavouras(clienteId);
+    setBusca("");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clienteId]);
 
   return (
     <>
-      <div className="settings-header">
+      <div className="settings-header settings-header--stack">
         <h2>Lavouras</h2>
 
-        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          <select
-            value={clienteId}
-            onChange={(e) => setClienteId(e.target.value)}
-          >
-            {clientes.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.cliente}
-              </option>
-            ))}
-          </select>
+        <div className="settings-header-actions settings-actions-wrap">
+          <div className="select-wrapper" style={{ maxWidth: 320 }}>
+            <select
+              className="settings-select"
+              value={clienteId}
+              onChange={(e) => setClienteId(e.target.value)}
+            >
+              {clientes.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.cliente}
+                </option>
+              ))}
+            </select>
+            <FontAwesomeIcon icon={faChevronDown} className="select-icon" />
+          </div>
+
+          <div className="settings-search">
+            <FontAwesomeIcon icon={faSearch} />
+            <input
+              placeholder="Buscar lavoura ou fazenda..."
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+            />
+          </div>
 
           <button
             className="btn-primary"
@@ -145,12 +178,12 @@ function LavourasTab() {
             <th width="160">Ações</th>
           </tr>
         </thead>
+
         <tbody>
-          {lavouras.map((l) => (
+          {lavourasFiltradas.map((l) => (
             <tr key={l.id}>
               <td>{l.nome}</td>
               <td>{fazendaNomePorId.get(String(l.fazenda_id)) || "-"}</td>
-
               <td className="acoes">
                 <button
                   type="button"
@@ -174,8 +207,14 @@ function LavourasTab() {
           ))}
 
           {lavouras.length === 0 && (
-            <tr>
+            <tr className="empty-row">
               <td colSpan={3}>Nenhuma lavoura cadastrada para este cliente.</td>
+            </tr>
+          )}
+
+          {lavouras.length > 0 && lavourasFiltradas.length === 0 && (
+            <tr className="empty-row">
+              <td colSpan={3}>Nenhuma lavoura encontrada para essa busca.</td>
             </tr>
           )}
         </tbody>
@@ -198,10 +237,7 @@ function LavourasTab() {
         title="Excluir lavoura"
         description={
           alvoExcluir
-            ? `Você está prestes a excluir a lavoura:\n\n` +
-              `Lavoura: ${alvoExcluir.lavoura}\n` +
-              `Fazenda: ${alvoExcluir.fazenda}\n\n` +
-              `Esta ação não pode ser desfeita.`
+            ? `Lavoura: ${alvoExcluir.lavoura}\nFazenda: ${alvoExcluir.fazenda}\n\nEsta ação não pode ser desfeita.`
             : ""
         }
         confirmLabel="Confirmar"

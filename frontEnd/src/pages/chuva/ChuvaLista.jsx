@@ -1,4 +1,3 @@
-// TABELA
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { memo } from "react";
@@ -20,7 +19,7 @@ function formatarChuva(valor) {
 }
 
 // ------------------------------
-// LISTA (TABELA)
+// LISTA (TABELA) — padrão Realizado
 // ------------------------------
 function ChuvaLista({ chuvas, onEditar, onExcluir }) {
   const lista = Array.isArray(chuvas) ? chuvas : [];
@@ -36,7 +35,7 @@ function ChuvaLista({ chuvas, onEditar, onExcluir }) {
   return (
     <section className="card lista-card anima-card">
       <div className="tabela-wrapper">
-        <table className="tabela-chuvas">
+        <table className="tabela-servicos">
           <thead>
             <tr>
               <th>Data</th>
@@ -54,23 +53,25 @@ function ChuvaLista({ chuvas, onEditar, onExcluir }) {
                 <td>{formatarChuva(c.chuva)}</td>
 
                 <td className="acoes">
-                  <button
-                    className="btn-editar"
-                    type="button"
-                    title="Editar"
-                    onClick={() => onEditar(c)}
-                  >
-                    <FontAwesomeIcon icon={faPen} />
-                  </button>
+                  <div className="acoes-container">
+                    <button
+                      className="acao editar"
+                      type="button"
+                      title="Editar"
+                      onClick={() => onEditar(c)}
+                    >
+                      <FontAwesomeIcon icon={faPen} />
+                    </button>
 
-                  <button
-                    className="btn-excluir"
-                    type="button"
-                    title="Excluir"
-                    onClick={() => onExcluir(c)}
-                  >
-                    <FontAwesomeIcon icon={faTrash} />
-                  </button>
+                    <button
+                      className="acao danger"
+                      type="button"
+                      title="Excluir"
+                      onClick={() => onExcluir(c)}
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

@@ -1,77 +1,89 @@
 import { useEffect, useState } from "react";
 import api from "../../../services/api";
 import { notificar } from "../../../components/Toast";
+import FormModal from "./FormModal";
 
 function FormFazenda({ clienteId, fazenda, onClose, onSaved }) {
   const editando = Boolean(fazenda?.id);
+
   const [nome, setNome] = useState("");
+  const [salvando, setSalvando] = useState(false);
 
   useEffect(() => {
-    setNome(fazenda?.fazenda || "");
-  }, [fazenda]);
-
-  async function salvar(e) {
-    e.preventDefault();
-
-    if (!nome.trim()) {
-      notificar("erro", "Informe o nome da fazenda.");
-      return;
+    if (editando) {
+      setNome(fazenda?.fazenda || "");
+    } else {
+      setNome("");
     }
+  }, [editando, fazenda]);
 
+  async function salvar() {
+    const nomeLimpo = (nome || "").trim();
+
+    if (!clienteId) return notificar("erro", "Selecione um cliente.");
+    if (!nomeLimpo) return notificar("erro", "Informe o nome da fazenda.");
+
+    setSalvando(true);
     try {
       if (editando) {
-        await api.put(`/fazendas/${fazenda.id}`, { fazenda: nome });
+        await api.put(`/fazendas/${fazenda.id}`, { fazenda: nomeLimpo });
         notificar("sucesso", "Fazenda atualizada.");
       } else {
-        await api.post(`/fazendas`, { fazenda: nome, cliente_id: clienteId });
+        await api.post(`/fazendas`, {
+          fazenda: nomeLimpo,
+          cliente_id: clienteId,
+        });
         notificar("sucesso", "Fazenda criada.");
       }
 
       onSaved?.();
       onClose?.();
-    } catch {
-      notificar("erro", "Erro ao salvar fazenda.");
+    } catch (err) {
+      notificar("erro", err?.response?.data?.erro || "Erro ao salvar fazenda.");
+    } finally {
+      setSalvando(false);
     }
   }
 
   return (
-    <div className="modal-backdrop" role="dialog" aria-modal="true">
-      <div className="modal-card">
-        <div className="modal-header">
-          <h3>{editando ? "Editar Fazenda" : "Nova Fazenda"}</h3>
+    <FormModal
+      title={editando ? "Editar Fazenda" : "Nova Fazenda"}
+      onClose={onClose}
+      footer={
+        <>
           <button
             type="button"
-            className="modal-close"
-            onClick={onClose}
-            aria-label="Fechar"
+            className="btn-primary"
+            onClick={salvar}
+            disabled={salvando}
           >
-            ×
+            {salvando ? "Salvando..." : "Salvar"}
           </button>
+
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={onClose}
+            disabled={salvando}
+          >
+            Cancelar
+          </button>
+        </>
+      }
+    >
+      <div className="form-grid">
+        <div className="form-field">
+          <label>Fazenda</label>
+          <input
+            className="form-control"
+            value={nome}
+            onChange={(e) => setNome(e.target.value)}
+            placeholder="Nome da fazenda"
+            autoFocus
+          />
         </div>
-
-        <form onSubmit={salvar}>
-          <div className="modal-body">
-            <label>Fazenda</label>
-            <input
-              value={nome}
-              onChange={(e) => setNome(e.target.value)}
-              placeholder="Nome da fazenda"
-              autoFocus
-            />
-          </div>
-
-          <div className="modal-footer">
-            <button type="submit" className="btn-primary">
-              Salvar
-            </button>
-
-            <button type="button" className="btn-secondary" onClick={onClose}>
-              Cancelar
-            </button>
-          </div>
-        </form>
       </div>
-    </div>
+    </FormModal>
   );
 }
 

@@ -1,17 +1,20 @@
 // src/pages/settings/tabs/SafrasTab.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import api from "../../../services/api";
 import { notificar } from "../../../components/Toast";
 import FormSafra from "../components/FormSafra";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faPen, faTrash, faSearch } from "@fortawesome/free-solid-svg-icons";
 
 function SafrasTab() {
   const [safras, setSafras] = useState([]);
   const [abrirForm, setAbrirForm] = useState(false);
   const [editar, setEditar] = useState(null);
+
+  // 🔎 busca
+  const [busca, setBusca] = useState("");
 
   // ConfirmDialog
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -20,7 +23,7 @@ function SafrasTab() {
   async function carregar() {
     try {
       const { data } = await api.get("/safras-lista");
-      setSafras(data || []);
+      setSafras(Array.isArray(data) ? data : []);
     } catch {
       notificar("erro", "Erro ao carregar safras.");
       setSafras([]);
@@ -56,18 +59,39 @@ function SafrasTab() {
     }
   }
 
+  const safrasFiltradas = useMemo(() => {
+    const txt = (busca || "").trim().toLowerCase();
+    if (!txt) return safras;
+
+    return (safras || []).filter((s) =>
+      (s.nome || "").toLowerCase().includes(txt)
+    );
+  }, [safras, busca]);
+
   return (
     <>
-      <div className="settings-header">
+      <div className="settings-header settings-header--stack">
         <h2>Safras</h2>
 
-        <button
-          className="btn-primary"
-          type="button"
-          onClick={() => setAbrirForm(true)}
-        >
-          Nova Safra
-        </button>
+        <div className="settings-header-actions settings-actions-wrap">
+          {/* Busca */}
+          <div className="settings-search">
+            <FontAwesomeIcon icon={faSearch} />
+            <input
+              placeholder="Buscar safra..."
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+            />
+          </div>
+
+          <button
+            className="btn-primary"
+            type="button"
+            onClick={() => setAbrirForm(true)}
+          >
+            Nova Safra
+          </button>
+        </div>
       </div>
 
       <table className="settings-table">
@@ -79,7 +103,7 @@ function SafrasTab() {
         </thead>
 
         <tbody>
-          {safras.map((s) => (
+          {safrasFiltradas.map((s) => (
             <tr key={s.id}>
               <td>{s.nome}</td>
 
@@ -88,7 +112,7 @@ function SafrasTab() {
                   type="button"
                   className="acao editar"
                   onClick={() => setEditar(s)}
-                  title="Editar"
+                  title="Editar safra"
                 >
                   <FontAwesomeIcon icon={faPen} />
                 </button>
@@ -97,7 +121,7 @@ function SafrasTab() {
                   type="button"
                   className="acao danger"
                   onClick={() => abrirConfirmExcluir(s)}
-                  title="Excluir"
+                  title="Excluir safra"
                 >
                   <FontAwesomeIcon icon={faTrash} />
                 </button>
@@ -105,9 +129,9 @@ function SafrasTab() {
             </tr>
           ))}
 
-          {safras.length === 0 && (
-            <tr>
-              <td colSpan={2}>Nenhuma safra cadastrada.</td>
+          {safrasFiltradas.length === 0 && (
+            <tr className="empty-row">
+              <td colSpan={2}>Nenhuma safra encontrada.</td>
             </tr>
           )}
         </tbody>
@@ -120,7 +144,7 @@ function SafrasTab() {
             setAbrirForm(false);
             setEditar(null);
           }}
-          onSaved={carregar}
+          onSaved={() => carregar()}
         />
       )}
 
@@ -129,7 +153,7 @@ function SafrasTab() {
         title="Excluir safra"
         description={
           alvoExcluir
-            ? `Tem certeza que deseja excluir a safra "${alvoExcluir.nome}"?\n\nEsta ação não pode ser desfeita.`
+            ? `Tem certeza que deseja excluir a safra "${alvoExcluir.nome}"?\nEsta ação não pode ser desfeita.`
             : ""
         }
         confirmLabel="Confirmar"

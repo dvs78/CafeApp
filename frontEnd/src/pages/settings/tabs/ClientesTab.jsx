@@ -6,11 +6,16 @@ import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faSearch } from "@fortawesome/free-solid-svg-icons";
 
 function ClientesTab() {
   const [clientes, setClientes] = useState([]);
   const [abrirForm, setAbrirForm] = useState(false);
   const [editar, setEditar] = useState(null);
+  const [busca, setBusca] = useState("");
+  const clientesFiltrados = clientes.filter((c) =>
+    c.cliente.toLowerCase().includes(busca.toLowerCase())
+  );
 
   // -------------------------
   // CONFIRM DIALOG (EXCLUIR)
@@ -60,15 +65,27 @@ function ClientesTab() {
 
   return (
     <>
-      <div className="settings-header">
+      <div className="settings-header settings-header--stack">
         <h2>Clientes</h2>
-        <button
-          className="btn-primary"
-          type="button"
-          onClick={() => setAbrirForm(true)}
-        >
-          Novo Cliente
-        </button>
+
+        <div className="settings-header-actions">
+          <div className="settings-search">
+            <FontAwesomeIcon icon={faSearch} />
+            <input
+              placeholder="Buscar cliente..."
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+            />
+          </div>
+
+          <button
+            className="btn-primary"
+            type="button"
+            onClick={() => setAbrirForm(true)}
+          >
+            Novo Cliente
+          </button>
+        </div>
       </div>
 
       <table className="settings-table">
@@ -80,7 +97,7 @@ function ClientesTab() {
         </thead>
 
         <tbody>
-          {clientes.map((c) => (
+          {clientesFiltrados.map((c) => (
             <tr key={c.id}>
               <td>{c.cliente}</td>
 
@@ -107,7 +124,7 @@ function ClientesTab() {
           ))}
 
           {clientes.length === 0 && (
-            <tr>
+            <tr className="empty-row">
               <td colSpan={2}>Nenhum cliente cadastrado.</td>
             </tr>
           )}

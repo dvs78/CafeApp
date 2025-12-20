@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import api from "../../../services/api";
 import { notificar } from "../../../components/Toast";
+import FormModal from "./FormModal";
 
 function FormServico({ servico, onClose, onSaved }) {
   const editando = Boolean(servico?.id);
@@ -10,29 +11,24 @@ function FormServico({ servico, onClose, onSaved }) {
   const [salvando, setSalvando] = useState(false);
 
   useEffect(() => {
-    setNome(servico?.nome || "");
-  }, [servico]);
+    if (editando) {
+      setNome(servico?.nome || "");
+    } else {
+      setNome("");
+    }
+  }, [editando, servico]);
 
-  function validar() {
-    if (!nome.trim()) return "Informe o nome do serviço.";
-    return null;
-  }
-
-  async function salvar(e) {
-    e?.preventDefault?.();
-
-    const erro = validar();
-    if (erro) return notificar("erro", erro);
+  async function salvar() {
+    const nomeLimpo = (nome || "").trim();
+    if (!nomeLimpo) return notificar("erro", "Informe o nome do serviço.");
 
     setSalvando(true);
     try {
-      const payload = { nome: nome.trim() };
-
       if (editando) {
-        await api.put(`/servicos-lista/${servico.id}`, payload);
+        await api.put(`/servicos-lista/${servico.id}`, { nome: nomeLimpo });
         notificar("sucesso", "Serviço atualizado.");
       } else {
-        await api.post("/servicos-lista", payload);
+        await api.post("/servicos-lista", { nome: nomeLimpo });
         notificar("sucesso", "Serviço criado.");
       }
 
@@ -47,52 +43,44 @@ function FormServico({ servico, onClose, onSaved }) {
   }
 
   return (
-    <div className="modal-backdrop">
-      <div className="modal-card">
-        <div className="modal-header">
-          <h3>{editando ? "Editar Serviço" : "Novo Serviço"}</h3>
+    <FormModal
+      title={editando ? "Editar Serviço" : "Novo Serviço"}
+      onClose={onClose}
+      footer={
+        <>
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={salvar}
+            disabled={salvando}
+          >
+            {salvando ? "Salvando..." : "Salvar"}
+          </button>
 
           <button
             type="button"
-            className="modal-close"
+            className="btn-secondary"
             onClick={onClose}
-            aria-label="Fechar"
             disabled={salvando}
-            title="Fechar"
           >
-            ×
+            Cancelar
           </button>
+        </>
+      }
+    >
+      <div className="form-grid">
+        <div className="form-field">
+          <label>Serviço</label>
+          <input
+            className="form-control"
+            value={nome}
+            onChange={(e) => setNome(e.target.value)}
+            placeholder="Ex.: Adubação química"
+            autoFocus
+          />
         </div>
-
-        <form onSubmit={salvar}>
-          <div className="modal-body">
-            <label>Serviço</label>
-            <input
-              value={nome}
-              onChange={(e) => setNome(e.target.value)}
-              placeholder="Ex.: Adubação química"
-              autoFocus
-              disabled={salvando}
-            />
-          </div>
-
-          <div className="modal-footer">
-            <button
-              type="button"
-              onClick={onClose}
-              className="btn-secondary"
-              disabled={salvando}
-            >
-              Cancelar
-            </button>
-
-            <button type="submit" className="btn-primary" disabled={salvando}>
-              {salvando ? "Salvando..." : "Salvar"}
-            </button>
-          </div>
-        </form>
       </div>
-    </div>
+    </FormModal>
   );
 }
 

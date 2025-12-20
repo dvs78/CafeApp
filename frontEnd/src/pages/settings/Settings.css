@@ -1,506 +1,418 @@
 /* =========================================================
-   SETTINGS — layout + componentes padrão (tabs admin)
+   SETTINGS — Power BI / SaaS (alinhado com tokens.css)
    ========================================================= */
 
-:root {
-  --settings-radius: 16px;
-  --settings-radius-sm: 12px;
-
-  --settings-bg: rgba(255, 255, 255, 0.72);
-  --settings-card: rgba(255, 255, 255, 0.9);
-  --settings-border: rgba(0, 0, 0, 0.08);
-
-  --settings-shadow: 0 18px 40px rgba(0, 0, 0, 0.1);
-  --settings-shadow-sm: 0 10px 22px rgba(0, 0, 0, 0.08);
-
-  --settings-text: #111827;
-  --settings-muted: rgba(17, 24, 39, 0.7);
-}
-
-/* =========================================================
+/* =========================
    PÁGINA
-   ========================================================= */
+   ========================= */
 .settings-page {
   display: grid;
   grid-template-columns: 260px 1fr;
   gap: 16px;
-
-  background: var(--settings-bg);
-  border: 1px solid var(--settings-border);
-  border-radius: var(--settings-radius);
-  box-shadow: var(--settings-shadow);
-
-  padding: 14px;
+  padding: 16px;
 }
 
-/* =========================================================
+/* =========================
    MENU LATERAL
-   ========================================================= */
+   ========================= */
 .settings-menu {
-  font-family: "Montserrat", sans-serif;
-  border: 1px solid var(--settings-border);
-  border-radius: var(--settings-radius);
-  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--bg-panel);
+  box-shadow: var(--shadow-sm);
   padding: 10px;
 
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .settings-menu button {
   width: 100%;
   text-align: left;
-  padding: 10px 12px;
+  padding: 10px 14px;
 
-  border-radius: 12px;
+  border-radius: var(--r-md);
   border: 1px solid transparent;
-
   background: transparent;
-  color: var(--settings-text);
 
-  cursor: pointer;
-  transition: transform 0.12s ease, background 0.15s ease,
-    border-color 0.15s ease, box-shadow 0.15s ease;
+  color: var(--text-main);
+  font-weight: 650;
+
+  transition: background 0.15s ease, border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .settings-menu button:hover {
-  background: rgba(58, 90, 64, 0.1);
-  border-color: rgba(58, 90, 64, 0.18);
-  transform: translateY(-1px);
+  background: rgba(47, 127, 77, 0.08);
+  border-color: rgba(47, 127, 77, 0.18);
 }
 
 .settings-menu button.ativo {
-  background: rgba(58, 90, 64, 0.14);
-  border-color: rgba(58, 90, 64, 0.24);
-  box-shadow: var(--settings-shadow-sm);
-  font-weight: 700;
+  background: rgba(47, 127, 77, 0.12);
+  border-color: rgba(47, 127, 77, 0.28);
+  box-shadow: var(--shadow-sm);
+  font-weight: 800;
 }
 
-/* =========================================================
+/* =========================
    CONTEÚDO
-   ========================================================= */
+   ========================= */
 .settings-content {
-  border: 1px solid var(--settings-border);
-  border-radius: var(--settings-radius);
-
-  background: var(--settings-card);
-  padding: 16px;
-  min-height: 520px;
-}
-
-.settings-bloqueado {
-  border: 1px solid var(--settings-border);
-  border-radius: var(--settings-radius);
-  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--bg-panel);
+  box-shadow: var(--shadow-md);
   padding: 18px;
-  color: var(--settings-text);
+  min-height: 520px;
+  overflow: hidden; /* evita vazamento no mobile */
 }
 
-/* =========================================================
-   HEADER DA ABA (VOCÊ USA "settings-header")
-   ========================================================= */
+/* =========================
+   HEADER DA ABA
+   ========================= */
 .settings-header {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-
-  padding: 6px 2px 10px;
-}
-
-.settings-header-actions {
-  display: flex;
-  gap: 10px;
   align-items: center;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
 }
 
 .settings-header h2 {
   margin: 0;
   font-size: 20px;
   font-weight: 900;
-  color: var(--settings-text);
-  line-height: 1.1;
+  letter-spacing: -0.2px;
 }
 
-.settings-header .btn-primary {
-  height: 42px;
-}
-
-/* divisor opcional caso queira usar depois */
-.settings-divider {
-  height: 1px;
-  background: rgba(0, 0, 0, 0.08);
-  margin: 14px 0;
-}
-
-/* =========================================================
-   CONTROLES (labels / inputs / selects)
-   ========================================================= */
-.settings-content label,
-.modal-body label {
-  display: block;
-  font-size: 0.86rem;
-  font-weight: 800;
-  margin: 10px 0 6px;
-  color: var(--settings-text);
-}
-
-.settings-content input,
-.settings-content select,
-.modal-body input,
-.modal-body select {
-  width: 100%;
-  height: 44px;
-  padding: 0 12px;
-
-  border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  outline: none;
-
-  background: rgba(255, 255, 255, 0.96);
-  transition: box-shadow 0.15s ease, border-color 0.15s ease;
-  font-family: "Montserrat", sans-serif;
-  font-size: 0.96rem;
-}
-
-.settings-content input:focus,
-.settings-content select:focus,
-.modal-body input:focus,
-.modal-body select:focus {
-  border-color: rgba(58, 90, 64, 0.35);
-  box-shadow: 0 0 0 4px rgba(58, 90, 64, 0.12);
-}
-
-/* =========================================================
-   BOTÕES DE AÇÃO (ícones)
-   ========================================================= */
-
-.settings-table .acoes {
+.settings-header-actions {
   display: flex;
-  gap: 10px;
   align-items: center;
+  gap: 12px;
 }
 
-/* base comum */
-.settings-table .acoes .acao {
-  width: 36px;
-  height: 36px;
+/* quebra bem quando tiver muitos controls */
+.settings-actions-wrap {
+  flex-wrap: wrap;
+}
+
+/* 2 linhas: título em cima, ações embaixo */
+.settings-header--stack {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* a linha de ações deve ocupar 100% */
+.settings-header--stack .settings-header-actions {
+  width: 100%;
+}
+
+/* busca cresce e ocupa o resto */
+.settings-header-actions .settings-search {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+}
+
+/* =========================
+   BUSCA
+   ========================= */
+.settings-search {
+  position: relative;
+  width: min(340px, 38vw);
+  min-width: 220px;
+}
+
+.settings-search svg {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.settings-search input {
+  width: 100%;
+  height: 40px;
+  padding: 0 14px 0 36px;
+
   border-radius: 999px;
+  border: 1px solid var(--border);
+  background: #fff;
 
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  font-size: 0.92rem;
+  color: var(--text-main);
 
-  background: transparent;
-  border: 1px solid transparent;
-
-  cursor: pointer;
-  font-size: 0.85rem;
-
-  transition: background 0.15s ease, border-color 0.15s ease,
-    box-shadow 0.15s ease, transform 0.12s ease;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
 }
 
-/* ===== EDITAR ===== */
-/* ===== EDITAR (AZUL) ===== */
-.settings-table .acoes .editar {
-  color: rgb(37, 99, 235); /* azul elegante */
-  border-color: rgba(37, 99, 235, 0.35);
-  background: rgba(37, 99, 235, 0.06);
+.settings-search input::placeholder {
+  color: rgba(107, 114, 128, 0.9);
 }
 
-.settings-table .acoes .editar:hover {
-  background: rgba(37, 99, 235, 0.14);
-  border-color: rgba(37, 99, 235, 0.55);
-  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.25);
-  transform: translateY(-1px);
+.settings-search input:focus {
+  outline: none;
+  border-color: rgba(47, 127, 77, 0.45);
+  box-shadow: 0 0 0 3px rgba(47, 127, 77, 0.18);
 }
 
-/* ===== EXCLUIR ===== */
-.settings-table .acoes .danger {
-  color: rgb(185, 28, 28);
-  border-color: rgba(220, 38, 38, 0.35);
-  background: rgba(220, 38, 38, 0.08);
+/* =========================
+   SELECT (padrão com FontAwesome)
+   ========================= */
+/* wrapper que permite desenhar a seta com FA */
+.select-wrapper {
+  position: relative;
+  width: 100%;
 }
 
-.settings-table .acoes .danger:hover {
-  background: rgba(220, 38, 38, 0.16);
-  border-color: rgba(220, 38, 38, 0.55);
-  box-shadow: 0 6px 14px rgba(220, 38, 38, 0.25);
-  transform: translateY(-1px);
+/* select “limpo”: SEM background-image */
+.settings-select {
+  height: 40px;
+  width: 100%;
+  padding: 0 44px 0 14px;
+  font-family: inherit;
+
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background-color: #fff;
+  color: var(--text-main);
+
+  font-weight: 500;
+  font-size: 0.9rem;
+
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
 }
 
-.settings-table .acoes .acao svg {
-  transition: transform 0.15s ease;
+.settings-select:focus {
+  outline: none;
+  border-color: rgba(47, 127, 77, 0.45);
+  box-shadow: 0 0 0 3px rgba(47, 127, 77, 0.18);
 }
 
-.settings-table .acoes .acao:hover svg {
-  transform: scale(1.05);
+.settings-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: rgba(255, 255, 255, 0.85);
 }
 
+/* ícone seta */
+.select-icon {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+
+  font-size: 0.8rem;
+  color: #6b7280;
+
+  transition: transform 0.2s ease, color 0.15s ease;
+}
+
+.select-wrapper:hover .select-icon {
+  color: #2f7f4d;
+}
+
+.select-wrapper:focus-within .select-icon {
+  transform: translateY(-50%) rotate(180deg);
+}
+
+/* =========================
+   BOTÕES
+   ========================= */
 .btn-primary {
-  height: 42px;
-  padding: 0 16px;
-
+  height: 40px;
+  padding: 0 18px;
   border-radius: 999px;
 
   background: linear-gradient(
     180deg,
-    rgba(58, 90, 64, 0.95),
-    rgba(58, 90, 64, 0.85)
+    rgba(47, 127, 77, 0.98),
+    rgba(47, 127, 77, 0.86)
   );
 
-  color: #ffffff;
+  color: #fff;
   font-weight: 800;
-  font-size: 0.9rem;
+  font-size: 0.86rem;
 
-  border: 1px solid rgba(58, 90, 64, 0.35);
-
-  box-shadow: 0 6px 14px rgba(58, 90, 64, 0.25);
-
-  cursor: pointer;
+  border: 1px solid rgba(47, 127, 77, 0.35);
+  box-shadow: var(--shadow-sm);
 
   transition: transform 0.12s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
 
 .btn-primary:hover {
   transform: translateY(-1px);
-  background: rgba(58, 90, 64, 0.75);
-  box-shadow: 0 10px 22px rgba(58, 90, 64, 0.35);
+  box-shadow: var(--shadow-md);
+  background: rgba(47, 127, 77, 0.8);
 }
 
 .btn-primary:disabled {
-  opacity: 0.55;
+  opacity: 0.6;
   cursor: not-allowed;
   transform: none;
-  box-shadow: none;
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-secondary {
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+
   background: transparent;
-  border: none;
-  color: black;
-  font-weight: 700;
+  /* background: rgba(255, 255, 255, 0.92); */
+  color: var(--text-main);
+  font-weight: 800;
+
+  /* border: 1px solid rgba(17, 24, 39, 0.12); */
+  box-shadow: none;
+
+  transition: transform 0.12s ease, box-shadow 0.15s ease, background 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .btn-secondary:hover {
-  background: rgba(128, 128, 128, 0.8);
-}
-
-/* danger */
-.settings-table .acoes .danger {
-  border-color: rgba(220, 38, 38, 0.35);
-  color: rgb(185, 28, 28);
-  background: rgba(220, 38, 38, 0.08);
-}
-
-.settings-table .acoes .danger:hover {
-  background: rgba(220, 38, 38, 0.16);
-  border-color: rgba(220, 38, 38, 0.55);
-  box-shadow: 0 6px 14px rgba(220, 38, 38, 0.25);
   transform: translateY(-1px);
+  background: rgba(128, 128, 128, 0.3);
+  box-shadow: var(--shadow-sm);
 }
 
-/* =========================================================
+/* =========================
    TABELA
-   ========================================================= */
+   ========================= */
 .settings-table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
   overflow: hidden;
-
-  border: 1px solid var(--settings-border);
-  border-radius: var(--settings-radius);
-  background: rgba(255, 255, 255, 0.92);
+  background: #fff;
 }
 
 .settings-table thead th {
-  text-align: left;
-  font-size: 0.86rem;
-  padding: 12px 12px;
-  background: rgba(88, 129, 87, 0.12);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 12px;
+  font-size: 0.85rem;
+  background: rgba(47, 127, 77, 0.08);
+  border-bottom: 1px solid rgba(17, 24, 39, 0.08);
+  vertical-align: middle;
+}
+
+.settings-table thead th:first-child {
+  text-align: center;
+}
+
+.settings-table thead th:last-child {
+  text-align: center;
 }
 
 .settings-table tbody td {
   padding: 11px 12px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-  color: var(--settings-text);
+  border-bottom: 1px solid rgba(17, 24, 39, 0.06);
+  color: var(--text-main);
+  vertical-align: middle;
+}
+
+.settings-table tbody td:first-child {
+  text-align: left;
 }
 
 .settings-table tbody tr:last-child td {
   border-bottom: none;
 }
 
-.settings-table .acoes {
+.settings-table .empty-row td {
+  padding: 16px 12px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* =========================
+   AÇÕES (ícones)
+   ========================= */
+.settings-table td.acoes {
   display: flex;
-  gap: 8px;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
+  gap: 14px;
 }
 
-/* =========================================================
-   MODAL (ÚNICO) — refinado
-   ========================================================= */
-
-body.modal-open {
-  overflow: hidden;
-}
-
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 2000;
-
-  display: grid;
-  place-items: center;
-
-  padding: 22px;
-
-  /* fundo escurecido LIMPO (sem embaçar) */
-  background: rgba(0, 0, 0, 0.35);
-}
-
-@keyframes modalIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px) scale(0.985);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.modal-card {
-  width: min(640px, 100%);
-  max-height: calc(100vh - 44px);
-
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.98);
-  border: 1px solid rgba(0, 0, 0, 0.12);
-
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.28), 0 10px 22px rgba(0, 0, 0, 0.12);
-
-  overflow: hidden;
-  animation: modalIn 0.16s ease-out;
-}
-
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-
-  padding: 14px 16px;
-
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  background: rgba(255, 255, 255, 0.92);
-}
-
-.modal-header h3 {
-  margin: 0;
-  font-size: 1.12rem;
-  font-weight: 900;
-  color: var(--settings-text);
-}
-
-.modal-close {
-  width: 40px;
-  height: 40px;
+.settings-table .acao {
+  width: 34px;
+  height: 34px;
   border-radius: 999px;
-
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  background: rgba(255, 255, 255, 0.96);
-  cursor: pointer;
+  border: 1px solid transparent;
 
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
-  transition: transform 0.12s ease, box-shadow 0.15s ease,
-    border-color 0.15s ease, background 0.15s ease;
-}
-
-.modal-close:hover {
-  transform: translateY(-1px);
-  border-color: rgba(58, 90, 64, 0.22);
-  box-shadow: var(--settings-shadow-sm);
-  background: rgba(58, 90, 64, 0.06);
-}
-
-.modal-body {
-  padding: 16px;
-  display: grid;
-  gap: 10px;
-  overflow: auto;
-}
-
-.modal-footer {
-  padding: 12px 16px 16px;
-
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 10px;
-
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
-  background: rgba(255, 255, 255, 0.92);
-}
-
-/* GARANTE visual mesmo se você esquecer classes nos botões */
-.modal-footer button {
-  height: 42px;
-  padding: 0 14px;
-  border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  cursor: pointer;
-  font-family: "Montserrat", sans-serif;
-  font-weight: 800;
   transition: transform 0.12s ease, box-shadow 0.15s ease, background 0.15s ease,
-    border-color 0.15s ease, opacity 0.15s ease;
+    border-color 0.15s ease;
 }
 
-/* Hover geral apenas para botões primários */
-.modal-footer .btn-primary:hover {
+.settings-table .acao:hover {
   transform: translateY(-1px);
-  box-shadow: var(--settings-shadow-sm);
+  box-shadow: var(--shadow-sm);
 }
 
-/* Remove borda do botão Cancelar no modal */
-.modal-footer .btn-secondary {
-  border: none !important;
-  box-shadow: none !important;
-  background: transparent;
+.settings-table .editar {
+  color: rgb(37, 99, 235);
+  background: rgba(37, 99, 235, 0.08);
+  border-color: rgba(37, 99, 235, 0.22);
 }
 
-/* Hover elegante do botão Cancelar (cinza suave) */
-.modal-footer .btn-secondary:hover {
-  background: rgba(0, 0, 0, 0.08);
-  box-shadow: none;
+.settings-table .acao.editar:hover {
+  background: rgba(37, 99, 235, 0.18);
+}
+
+.settings-table .danger {
+  color: rgb(185, 28, 28);
+  background: rgba(220, 38, 38, 0.08);
+  border-color: rgba(220, 38, 38, 0.22);
+}
+
+.settings-table .acao.danger:hover {
+  background: rgba(220, 38, 38, 0.18);
+}
+
+.settings-table .acao:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
   transform: none;
-}
-
-@media (max-width: 520px) {
-  .modal-footer {
-    flex-direction: column-reverse;
-    align-items: stretch;
-  }
-
-  .modal-footer button,
-  .modal-footer .btn-primary,
-  .modal-footer .btn-secondary {
-    width: 100%;
-  }
+  box-shadow: none;
 }
 
 /* =========================================================
-   RESPONSIVO
+   MODAL (mantido como você já tinha)
    ========================================================= */
+body.modal-open {
+  overflow: hidden;
+}
+
+/* .modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 4000;
+
+  display: grid;
+  place-items: center;
+
+  padding: 22px;
+  background: rgba(17, 24, 39, 0.35);
+} */
+
+/* ... resto do seu CSS de modal pode continuar igual ... */
+
+/* =========================
+   RESPONSIVO (geral)
+   ========================= */
 @media (max-width: 900px) {
   .settings-page {
     grid-template-columns: 1fr;
@@ -515,26 +427,207 @@ body.modal-open {
   .settings-menu button {
     width: auto;
   }
+
+  .settings-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .settings-header-actions {
+    justify-content: space-between;
+  }
+
+  .settings-search {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 520px) {
+  .settings-header-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .settings-header-actions .btn-primary {
+    width: fit-content;
+    justify-self: start;
+  }
+
+  .settings-select {
+    width: 100%;
+  }
+
+  .settings-table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    min-width: 560px;
+  }
 }
 
 /* =========================================================
-   SETTINGS — INPUT DE PESQUISA (com ícone)
+   USUÁRIOS x CLIENTES — HEADER 3 LINHAS
+   ========================================================= */
+.settings-header--uxc {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.settings-uxc-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Linha 2: selects ocupando toda a largura */
+.settings-uxc-row--selects {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+}
+
+/* Linha 3: busca ocupa tudo, botão fixa */
+.settings-uxc-search {
+  flex: 1;
+  min-width: 0;
+}
+
+.settings-uxc-btn {
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .settings-uxc-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .settings-uxc-row--selects {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-uxc-btn {
+    align-self: flex-start;
+  }
+}
+
+/* =========================================================
+   FILTROS — mesmo padrão visual do app (card + inputs)
    ========================================================= */
 
-.settings-search {
-  position: relative;
-  min-width: 260px;
+.filtros-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
-.settings-search__icon {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  opacity: 0.55;
-  pointer-events: none;
+/* Cabeçalho do card (Título + Limpar campos) */
+.filtros-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-.settings-search input {
-  padding-left: 38px !important; /* abre espaço pro ícone */
+.filtros-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+/* Botão “Limpar campos” no estilo SaaS */
+.btn-limpar-filtros {
+  appearance: none;
+  border: 1px solid rgba(17, 24, 39, 0.14);
+  background: rgba(255, 255, 255, 0.85);
+  color: rgba(17, 24, 39, 0.86);
+
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 999px;
+
+  font-weight: 700;
+  font-size: 13px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease,
+    border-color 120ms ease, background 120ms ease;
+}
+
+.btn-limpar-filtros:hover {
+  border-color: rgba(58, 90, 64, 0.55); /* verde do app */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.btn-limpar-filtros:active {
+  transform: translateY(0px);
+}
+
+.btn-limpar-filtros:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(58, 90, 64, 0.18);
+}
+
+/* Grid dos filtros (responsivo e “clean”) */
+.filtros-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: 12px 14px;
+}
+
+/* garante que os campos sigam o mesmo “gap” */
+.filtros-grid-2 .login-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* “Buscar texto” ocupa a linha toda */
+.filtros-grid-2 .filtro-buscar {
+  grid-column: 1 / -1;
+}
+
+/* Ajustes finos para inputs/select dentro do card de filtros */
+.filtros-card .login-label {
+  font-size: 12px;
+  font-weight: 800;
+  opacity: 0.9;
+}
+
+/* melhora sensação premium em select/input dentro do card */
+.filtros-card .login-input {
+  min-height: 44px; /* igual ao padrão de inputs modernos */
+  border-radius: 12px;
+}
+
+/* Responsivo */
+@media (max-width: 900px) {
+  .filtros-grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .filtros-grid-2 .filtro-buscar {
+    grid-column: auto;
+  }
+
+  .filtros-topo {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .btn-limpar-filtros {
+    width: fit-content;
+  }
 }

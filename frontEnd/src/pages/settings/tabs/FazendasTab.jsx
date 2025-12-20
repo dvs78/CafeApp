@@ -1,11 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import api from "../../../services/api";
 import { notificar } from "../../../components/Toast";
 import FormFazenda from "../components/FormFazenda";
 
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
+import {
+  faPen,
+  faTrash,
+  faSearch,
+  faChevronDown,
+} from "@fortawesome/free-solid-svg-icons";
 
 function FazendasTab() {
   const [clientes, setClientes] = useState([]);
@@ -14,6 +19,9 @@ function FazendasTab() {
 
   const [abrirForm, setAbrirForm] = useState(false);
   const [editar, setEditar] = useState(null);
+
+  // 🔎 busca
+  const [busca, setBusca] = useState("");
 
   // -------------------------
   // CONFIRM DIALOG (EXCLUIR)
@@ -60,6 +68,7 @@ function FazendasTab() {
 
   useEffect(() => {
     carregarFazendas(clienteId);
+    setBusca("");
   }, [clienteId]);
 
   function abrirConfirmExcluir(fazenda) {
@@ -88,23 +97,50 @@ function FazendasTab() {
     }
   }
 
+  const fazendasFiltradas = useMemo(() => {
+    const txt = (busca || "").trim().toLowerCase();
+    if (!txt) return fazendas;
+    return (fazendas || []).filter((f) =>
+      (f.fazenda || "").toLowerCase().includes(txt)
+    );
+  }, [fazendas, busca]);
+
   return (
     <>
-      <div className="settings-header">
+      <div className="settings-header settings-header--stack">
+        {/* Linha 1 — título */}
         <h2>Fazendas</h2>
 
-        <div className="settings-header-actions">
-          <select
-            value={clienteId}
-            onChange={(e) => setClienteId(e.target.value)}
-          >
-            {clientes.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.cliente}
-              </option>
-            ))}
-          </select>
+        {/* Linha 2 — ações */}
+        <div className="settings-header-actions settings-actions-wrap">
+          {/* Select cliente */}
+          <div className="select-wrapper" style={{ maxWidth: 360 }}>
+            <select
+              className="settings-select"
+              value={clienteId}
+              onChange={(e) => setClienteId(e.target.value)}
+            >
+              {clientes.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.cliente}
+                </option>
+              ))}
+            </select>
 
+            <FontAwesomeIcon icon={faChevronDown} className="select-icon" />
+          </div>
+
+          {/* Busca */}
+          <div className="settings-search">
+            <FontAwesomeIcon icon={faSearch} />
+            <input
+              placeholder="Buscar fazenda..."
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+            />
+          </div>
+
+          {/* Botão */}
           <button
             className="btn-primary"
             type="button"
@@ -125,7 +161,7 @@ function FazendasTab() {
         </thead>
 
         <tbody>
-          {fazendas.map((f) => (
+          {fazendasFiltradas.map((f) => (
             <tr key={f.id}>
               <td>{f.fazenda}</td>
 
@@ -151,9 +187,9 @@ function FazendasTab() {
             </tr>
           ))}
 
-          {fazendas.length === 0 && (
-            <tr>
-              <td colSpan={2}>Nenhuma fazenda cadastrada para este cliente.</td>
+          {fazendasFiltradas.length === 0 && (
+            <tr className="empty-row">
+              <td colSpan={2}>Nenhuma fazenda encontrada.</td>
             </tr>
           )}
         </tbody>

@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 import api from "../../../services/api";
 import { notificar } from "../../../components/Toast";
+import FormModal from "./FormModal";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faChevronDown,
+  faEye,
+  faEyeSlash,
+} from "@fortawesome/free-solid-svg-icons";
 
 function FormUsuario({ usuario, onClose, onSaved }) {
   const editando = Boolean(usuario?.id);
@@ -11,12 +18,14 @@ function FormUsuario({ usuario, onClose, onSaved }) {
   const [senha, setSenha] = useState("");
   const [senha2, setSenha2] = useState("");
   const [salvando, setSalvando] = useState(false);
+  const [verSenha, setVerSenha] = useState(false);
+  const [verSenha2, setVerSenha2] = useState(false);
 
   useEffect(() => {
     if (editando) {
-      setNome(usuario.usuario || "");
-      setEmail(usuario.email || "");
-      setRole(usuario.role_global || "user");
+      setNome(usuario?.usuario || "");
+      setEmail(usuario?.email || "");
+      setRole(usuario?.role_global || "user");
       setSenha("");
       setSenha2("");
     } else {
@@ -29,9 +38,12 @@ function FormUsuario({ usuario, onClose, onSaved }) {
   }, [editando, usuario]);
 
   function validar() {
-    if (!nome.trim()) return "Informe o nome do usuário.";
-    if (!email.trim()) return "Informe o e-mail.";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
+    const nomeLimpo = (nome || "").trim();
+    const emailLimpo = (email || "").trim().toLowerCase();
+
+    if (!nomeLimpo) return "Informe o nome do usuário.";
+    if (!emailLimpo) return "Informe o e-mail.";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailLimpo))
       return "E-mail inválido.";
     if (!["user", "super_admin"].includes(role)) return "Permissão inválida.";
 
@@ -51,17 +63,15 @@ function FormUsuario({ usuario, onClose, onSaved }) {
     return null;
   }
 
-  async function salvar(e) {
-    e.preventDefault();
-
+  async function salvar() {
     const erro = validar();
     if (erro) return notificar("erro", erro);
 
     setSalvando(true);
     try {
       const payload = {
-        usuario: nome.trim(),
-        email: email.trim().toLowerCase(),
+        usuario: (nome || "").trim(),
+        email: (email || "").trim().toLowerCase(),
         role_global: role,
         ...(senha ? { senha } : {}),
       };
@@ -74,7 +84,7 @@ function FormUsuario({ usuario, onClose, onSaved }) {
         "sucesso",
         editando ? "Usuário atualizado." : "Usuário criado."
       );
-      onSaved?.(resp.data);
+      onSaved?.(resp?.data);
       onClose?.();
     } catch (err) {
       const msg = err?.response?.data?.erro || "Erro ao salvar usuário.";
@@ -85,73 +95,121 @@ function FormUsuario({ usuario, onClose, onSaved }) {
   }
 
   return (
-    <div className="modal-backdrop" role="dialog" aria-modal="true">
-      <div className="modal-card">
-        <div className="modal-header">
-          <h3>{editando ? "Editar Usuário" : "Novo Usuário"}</h3>
+    <FormModal
+      title={editando ? "Editar Usuário" : "Novo Usuário"}
+      onClose={onClose}
+      footer={
+        <>
           <button
             type="button"
-            className="modal-close"
-            onClick={onClose}
-            aria-label="Fechar"
+            className="btn-primary"
+            onClick={salvar}
+            disabled={salvando}
           >
-            ×
+            {salvando ? "Salvando..." : "Salvar"}
           </button>
+
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={onClose}
+            disabled={salvando}
+          >
+            Cancelar
+          </button>
+        </>
+      }
+    >
+      <div className="form-grid">
+        <div className="form-field">
+          <label>Nome</label>
+          <input
+            className="form-control"
+            value={nome}
+            onChange={(e) => setNome(e.target.value)}
+            placeholder="Nome do usuário"
+            autoComplete="name"
+          />
         </div>
 
-        <form onSubmit={salvar}>
-          <div className="modal-body">
-            <label>Nome</label>
-            <input
-              value={nome}
-              onChange={(e) => setNome(e.target.value)}
-              placeholder="Nome do usuário"
-            />
+        <div className="form-field">
+          <label>E-mail</label>
+          <input
+            className="form-control"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="email@exemplo.com"
+            inputMode="email"
+            autoComplete="email"
+          />
+        </div>
 
-            <label>E-mail</label>
-            <input
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="email@exemplo.com"
-              inputMode="email"
-              autoComplete="email"
-            />
+        <div className="form-field">
+          <label>Permissão</label>
 
-            <label>Permissão</label>
-            <select value={role} onChange={(e) => setRole(e.target.value)}>
+          <div className="form-select-wrapper">
+            <select
+              className="form-control"
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+            >
               <option value="user">user</option>
               <option value="super_admin">super_admin</option>
             </select>
 
-            <label>{editando ? "Nova senha (opcional)" : "Senha"}</label>
+            <FontAwesomeIcon icon={faChevronDown} className="select-icon" />
+          </div>
+        </div>
+
+        <div className="form-field">
+          <label>{editando ? "Nova senha (opcional)" : "Senha"}</label>
+
+          <div className="form-input-wrapper">
             <input
-              type="password"
+              className="form-control"
+              type={verSenha ? "text" : "password"}
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
-              autoComplete={editando ? "new-password" : "new-password"}
+              autoComplete="new-password"
             />
 
-            <label>Confirmar senha</label>
+            <button
+              type="button"
+              className="input-icon-btn"
+              onClick={() => setVerSenha((v) => !v)}
+              aria-label={verSenha ? "Ocultar senha" : "Mostrar senha"}
+              title={verSenha ? "Ocultar senha" : "Mostrar senha"}
+            >
+              <FontAwesomeIcon icon={verSenha ? faEyeSlash : faEye} />
+            </button>
+          </div>
+        </div>
+
+        <div className="form-field">
+          <label>Confirmar senha</label>
+
+          <div className="form-input-wrapper">
             <input
-              type="password"
+              className="form-control"
+              type={verSenha2 ? "text" : "password"}
               value={senha2}
               onChange={(e) => setSenha2(e.target.value)}
               autoComplete="new-password"
             />
-          </div>
 
-          <div className="modal-footer">
-            <button type="submit" className="btn-primary" disabled={salvando}>
-              {salvando ? "Salvando..." : "Salvar"}
-            </button>
-
-            <button type="button" onClick={onClose} className="btn-secondary">
-              Cancelar
+            <button
+              type="button"
+              className="input-icon-btn"
+              onClick={() => setVerSenha2((v) => !v)}
+              aria-label={verSenha2 ? "Ocultar senha" : "Mostrar senha"}
+              title={verSenha2 ? "Ocultar senha" : "Mostrar senha"}
+            >
+              <FontAwesomeIcon icon={verSenha2 ? faEyeSlash : faEye} />
             </button>
           </div>
-        </form>
+        </div>
       </div>
-    </div>
+    </FormModal>
   );
 }
 
