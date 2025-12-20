@@ -1,13 +1,4 @@
 /* =========================================================
-   CHUVA — ajustes finos (padrão Realizado)
-   Tudo encapsulado em .chuva-page para evitar conflito
-   ========================================================= */
-
-.chuva-page {
-  /* se quiser, pode definir variáveis locais aqui no futuro */
-}
-
-/* =========================================================
    FORM — grids
    ========================================================= */
 
@@ -28,14 +19,38 @@
 }
 
 /* =========================================================
-   FILTROS — grid
+   FILTROS — grids
    ========================================================= */
 
+/* Grid simples (2 colunas) */
 .chuva-page .chuva-filtros-grid {
   display: grid;
   grid-template-columns: 220px 220px;
   gap: 16px;
   align-items: end;
+}
+
+/* Grid da Chuva (Mês | Ano | Limpar) */
+.chuva-page .filtros-grid-3 {
+  display: grid;
+  grid-template-columns: 220px 220px max-content;
+  gap: 16px;
+  align-items: end;
+}
+
+/* Coluna do botão (limpar filtros) */
+.chuva-page .filtro-actions {
+  display: flex;
+  align-items: flex-end;
+}
+
+/* Botão mantém padrão premium */
+.chuva-page .btn-limpar-filtros {
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 /* =========================================================
@@ -47,8 +62,7 @@
   margin-top: 18px;
 }
 
-/* (opcional) se você quiser espaçar o wrapper interno também, deixe.
-   caso fique “duplo”, remova este bloco. */
+/* opcional: se ficar “duplo” com o margin da lista-card, remova este bloco */
 .chuva-page .tabela-wrapper {
   margin-top: 18px;
 }
@@ -72,6 +86,7 @@
     grid-template-columns: 1fr;
   }
 
+  /* se existir essa estrutura no seu JSX */
   .chuva-page .form-actions-inline .actions-inline {
     justify-content: flex-start;
   }
@@ -85,39 +100,7 @@
   .chuva-page .chuva-filtros-grid {
     grid-template-columns: 1fr;
   }
-}
 
-/* =========================================================
-   FILTROS — Chuva (Mês | Ano | Limpar)
-   ========================================================= */
-
-.chuva-page .filtros-grid-3 {
-  display: grid;
-  grid-template-columns: 220px 220px max-content;
-  gap: 16px;
-  align-items: end;
-}
-
-/* Coluna do botão */
-.chuva-page .filtro-actions {
-  display: flex;
-  align-items: flex-end;
-}
-
-/* Botão mantém padrão premium */
-.chuva-page .btn-limpar-filtros {
-  height: 44px;
-  padding: 0 18px;
-  border-radius: 999px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-/* =========================================================
-   RESPONSIVO
-   ========================================================= */
-
-@media (max-width: 900px) {
   .chuva-page .filtros-grid-3 {
     grid-template-columns: 1fr;
   }
