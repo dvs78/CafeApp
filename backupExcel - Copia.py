@@ -100,15 +100,22 @@ def mostrar_resumo(df: pd.DataFrame, titulo: str):
 # =============================================================================
 # TRANSFORMAÇÃO (PADRÃO EXCEL) - LANÇAMENTOS (REALIZADO)
 #   - CLIENTES = chave do objeto CLIENTES (ex: "Sergio_Lucas")
+#   - SAFRAS   = resolve realizado.safra_id -> safras_lista.nome
 # =============================================================================
-def transformar_dataframe_realizado(df: pd.DataFrame, cliente_chave: str) -> pd.DataFrame:
-    if df.empty:
-        return pd.DataFrame(columns=[
-            "SAFRAS", "DATA", "LAVOURAS", "SERVIÇOS", "PRODUTOS", "UNI",
-            "Qtde TOTAL", "Ok", "CLIENTES", "ANO", "MÊS", "DIA"
-        ])
+def transformar_dataframe_realizado(
+    df: pd.DataFrame,
+    cliente_chave: str,
+    df_safras: pd.DataFrame,
+) -> pd.DataFrame:
+    colunas_saida = [
+        "SAFRAS", "DATA", "LAVOURAS", "SERVIÇOS", "PRODUTOS", "UNI",
+        "Qtde TOTAL", "Ok", "CLIENTES", "ANO", "MÊS", "DIA"
+    ]
 
-    # data
+    if df.empty:
+        return pd.DataFrame(columns=colunas_saida)
+
+    # ---------------- DATA
     if "data" in df.columns:
         df["data"] = pd.to_datetime(df["data"], errors="coerce")
         df["ANO"] = df["data"].dt.year
@@ -121,12 +128,24 @@ def transformar_dataframe_realizado(df: pd.DataFrame, cliente_chave: str) -> pd.
         df["MÊS"] = ""
         df["DIA"] = ""
 
-    # clientes = chave do dicionário
+    # ---------------- CLIENTES = chave do dicionário
     df["CLIENTES"] = cliente_chave
 
-    # renomeia
+    # ---------------- SAFRAS (resolve safra_id -> nome)
+    # safras_lista: id (uuid), nome (text)
+    if (
+        "safra_id" in df.columns
+        and isinstance(df_safras, pd.DataFrame)
+        and not df_safras.empty
+        and {"id", "nome"}.issubset(df_safras.columns)
+    ):
+        mapa_safras = df_safras.set_index(df_safras["id"].astype(str))["nome"]
+        df["SAFRAS"] = df["safra_id"].astype(str).map(mapa_safras).fillna("")
+    else:
+        df["SAFRAS"] = ""
+
+    # ---------------- RENOMEIA (sem "safra", porque não existe; usamos SAFRAS acima)
     df = df.rename(columns={
-        "safra": "SAFRAS",
         "lavoura": "LAVOURAS",
         "servico": "SERVIÇOS",
         "produto": "PRODUTOS",
@@ -135,7 +154,7 @@ def transformar_dataframe_realizado(df: pd.DataFrame, cliente_chave: str) -> pd.
         "status": "Ok",
     })
 
-    # status
+    # ---------------- STATUS
     if "Ok" in df.columns:
         df["Ok"] = (
             df["Ok"]
@@ -145,18 +164,29 @@ def transformar_dataframe_realizado(df: pd.DataFrame, cliente_chave: str) -> pd.
             .fillna(df["Ok"])
         )
 
-    # remove colunas técnicas
+    # ---------------- REMOVE COLUNAS TÉCNICAS
     df = df.drop(
-        columns=[c for c in ["id", "usuario_id", "cliente_id", "fazenda_id", "criado_em", "data"] if c in df.columns],
+        columns=[
+            c for c in [
+                "id",
+                "usuario_id",
+                "cliente_id",
+                "fazenda_id",
+                "safra_id",
+                "criado_em",
+                "data",
+            ]
+            if c in df.columns
+        ],
         errors="ignore",
     )
 
-    ordem = [
-        "SAFRAS", "DATA", "LAVOURAS", "SERVIÇOS", "PRODUTOS", "UNI",
-        "Qtde TOTAL", "Ok", "CLIENTES", "ANO", "MÊS", "DIA"
-    ]
-    cols = [c for c in ordem if c in df.columns]
-    return df[cols]
+    # garante todas as colunas de saída
+    for c in colunas_saida:
+        if c not in df.columns:
+            df[c] = ""
+
+    return df[colunas_saida]
 
 # =============================================================================
 # TRANSFORMAÇÃO (PADRÃO EXCEL) - CHUVAS
@@ -164,6 +194,7 @@ def transformar_dataframe_realizado(df: pd.DataFrame, cliente_chave: str) -> pd.
 #   - FAZENDAS: vem da tabela fazendas (coluna fazenda) via join fazenda_id
 #   - CHUVA: vem da tabela chuvas (coluna chuva)
 #   - CLIENTES: chave do objeto CLIENTES
+#   - PLUVIÔMETRO: se quiser nome, precisa join com tabela pluviometros (aqui fica ID)
 # =============================================================================
 def transformar_dataframe_chuvas(
     df_chuvas: pd.DataFrame,
@@ -188,30 +219,38 @@ def transformar_dataframe_chuvas(
     # ---------------- CLIENTES
     df_chuvas["CLIENTES"] = cliente_chave
 
-    # ---------------- CHUVA (coluna "chuva" na tabela chuvas)
+    # ---------------- CHUVA
     if "chuva" in df_chuvas.columns:
         df_chuvas["CHUVA"] = df_chuvas["chuva"]
     else:
         df_chuvas["CHUVA"] = ""
 
-    # ---------------- PLUVIÔMETRO (join em pluviometros é opcional; aqui mostramos o ID)
-    # Se você quiser o "nome" do pluviômetro, precisa baixar a tabela pluviometros e mapear igual fazendas.
+    # ---------------- PLUVIÔMETRO (por enquanto ID)
     if "pluviometro_id" in df_chuvas.columns:
         df_chuvas["PLUVIÔMETRO"] = df_chuvas["pluviometro_id"].astype(str)
     else:
         df_chuvas["PLUVIÔMETRO"] = ""
 
     # ---------------- FAZENDAS (nome vem da tabela fazendas)
-    # Pelo seu print, fazendas tem colunas: id (uuid), fazenda (text), cliente_id
     if "id" in df_fazendas.columns and "fazenda" in df_fazendas.columns and "fazenda_id" in df_chuvas.columns:
         mapa_fazendas = df_fazendas.set_index(df_fazendas["id"].astype(str))["fazenda"]
         df_chuvas["FAZENDAS"] = df_chuvas["fazenda_id"].astype(str).map(mapa_fazendas).fillna("")
     else:
         df_chuvas["FAZENDAS"] = ""
 
-    # remove colunas técnicas
+    # ---------------- REMOVE COLUNAS TÉCNICAS
     df_chuvas = df_chuvas.drop(
-        columns=[c for c in ["id", "cliente_id", "fazenda_id", "pluviometro_id", "criado_em", "data"] if c in df_chuvas.columns],
+        columns=[
+            c for c in [
+                "id",
+                "cliente_id",
+                "fazenda_id",
+                "pluviometro_id",
+                "criado_em",
+                "data",
+            ]
+            if c in df_chuvas.columns
+        ],
         errors="ignore",
     )
 
@@ -263,6 +302,7 @@ def exportar_excel_com_abas(df_lanc: pd.DataFrame, df_chuvas: pd.DataFrame, cami
                 },
             )
 
+
 # =============================================================================
 # MAIN
 # =============================================================================
@@ -291,6 +331,10 @@ def main():
         print("-> fazendas ...")
         df_fazendas = pd.read_sql(text("SELECT * FROM fazendas"), conn)
         print(f"   Total fazendas: {len(df_fazendas)}")
+
+        print("-> safras_lista ...")
+        df_safras = pd.read_sql(text("SELECT * FROM safras_lista"), conn)
+        print(f"   Total safras..: {len(df_safras)}")
 
         print("============================================================")
 
@@ -333,8 +377,16 @@ def main():
             print(f"Registros encontrados (chuvas)....: {len(df_chuvas_filtrado)}")
 
             # ---- transforma para Excel
-            df_lanc_final = transformar_dataframe_realizado(df_realizado_filtrado, cliente_chave)
-            df_chuvas_final = transformar_dataframe_chuvas(df_chuvas_filtrado, cliente_chave, df_fazendas)
+            df_lanc_final = transformar_dataframe_realizado(
+                df_realizado_filtrado,
+                cliente_chave,
+                df_safras,
+            )
+            df_chuvas_final = transformar_dataframe_chuvas(
+                df_chuvas_filtrado,
+                cliente_chave,
+                df_fazendas,
+            )
 
             # ---- exporta um único xlsx com duas abas
             exportar_excel_com_abas(df_lanc_final, df_chuvas_final, saida)
